@@ -57,10 +57,14 @@ Cloudflare Workers (Paid $5)
 │   ├── /{lang}/{slug}/     → Yazı & sayfa (SSR/ISR, trailing slash korunur)
 │   ├── /{lang}/category/…  → Kategori arşivleri (indexli)
 │   ├── /sitemap_index.xml  → Rank Math ile aynı yapıda
-│   └── /robots.txt
+│   ├── /robots.txt
+│   └── /wp-content/uploads/… → Workers route ile R2'den (görsel URL'leri DEĞİŞMEZ)
 ├── D1 (SQLite)             → @payloadcms/db-d1-sqlite (içerik + SEO meta)
-└── R2                      → Medya (görseller)
+└── R2                      → Medya (görseller, orijinal yol korunur)
 ```
+
+**Geliştirme/test ortamı:** Önce geçici `*.workers.dev` subdomain'inde geliştirilip doğrulanır;
+§6 listesi geçtikten sonra gerçek domain'e (DNS) geçilir.
 
 - Temel: resmi **`with-cloudflare-d1`** Payload template'i.
 - Bilinen risk: büyük şemalarda D1 "too many SQL variables" (Issue #14766) → kayıtlar parça parça
@@ -118,8 +122,9 @@ Bu liste göçün kabul kriteridir; her madde doğrulanmadan cutover yapılmaz.
 6. **Sitemap** — Rank Math ile aynı yapı (`sitemap_index.xml` → post/page/category) + `lastmod`;
    GSC'ye submit edilir.
 7. **robots.txt** — eşdeğer kurallar.
-8. **Görsel URL stratejisi** — R2 custom domain ile **aynı yol** korunur; mümkün değilse eski medya
-   yollarından 301. alt/title/caption korunur; og:image kırılmaz.
+8. **Görsel URL stratejisi (KARARLAŞTI)** — Görseller **aynı domainde, eski `/wp-content/uploads/...`
+   yolundan** sunulur (Workers route → R2). Böylece görsel URL'leri **hiç değişmez**; Google Images ve
+   og:image birebir korunur, 301'e gerek kalmaz. alt/title/caption korunur.
 9. **Tarih korunur** — post_date / modified → publishedAt / modifiedAt (freshness + sitemap lastmod).
 10. **İç link audit** — gövdedeki `roadtostudy.com` linkleri taranır; kırık/yanlış olanlar raporlanır.
 11. **Hiçbir içerik geride kalmaz** — REST API tip/taksonomi keşfiyle doğrulanır.
@@ -169,7 +174,7 @@ Bu liste göçün kabul kriteridir; her madde doğrulanmadan cutover yapılmaz.
 |---|---|
 | Payload+Workers bleeding-edge | Resmi `with-cloudflare-d1` template; Paid plan; erken PoC |
 | D1 "too many SQL variables" | Batch insert, sade şema |
-| Görsel URL değişimi → Google Images kaybı | R2 custom domain ile yol koruma veya 301 |
+| Görsel URL değişimi → Google Images kaybı | Aynı domain + `/wp-content/uploads/` yolu korunur (URL değişmez) |
 | hreflang/çeviri bağı kopması | Polylang haritası birebir taşınır, otomatik doğrulama |
 | Bundle boyut limiti | Frontend sade tutulur, gereksiz bağımlılık yok |
 | Çöp HTML temizliği içeriği bozar | Temizlik kuralları whitelist; örnek diff incelemesi |
