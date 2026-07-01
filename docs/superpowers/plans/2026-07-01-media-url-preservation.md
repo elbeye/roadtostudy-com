@@ -512,24 +512,24 @@ git commit -m "feat: R2 media serve-route core with cache + etag handling"
 
 Create `apps/site/src/pages/wp-content/uploads/[...path].ts`:
 
+> **Astro 6 binding access:** Astro v6 + `@astrojs/cloudflare` removed `Astro.locals.runtime.env` (it now throws). Bindings and `waitUntil` come from the `cloudflare:workers` virtual module — this is the established convention in this stack (EmDash's own `@emdash-cms/cloudflare` imports `{ env, waitUntil } from "cloudflare:workers"`). `env.MEDIA` is typed `R2Bucket` via the generated `worker-configuration.d.ts`.
+
 ```ts
 import type { APIRoute } from "astro";
+import { env, waitUntil } from "cloudflare:workers";
 import { serveMediaObject, type R2Like, type CacheLike } from "../../../lib/media-route.ts";
 
 export const prerender = false;
 
-const handler: APIRoute = async ({ params, request, locals }) => {
+const handler: APIRoute = async ({ params, request }) => {
 	const path = params.path;
 	if (!path) return new Response("Not Found", { status: 404 });
 
-	const runtime = (locals as { runtime?: { env?: Record<string, unknown>; ctx?: { waitUntil?: (p: Promise<unknown>) => void } } }).runtime;
-	const bucket = runtime?.env?.MEDIA as R2Like | undefined;
+	const bucket = env.MEDIA as R2Like | undefined;
 	if (!bucket) return new Response("Storage unavailable", { status: 500 });
 
 	const key = `wp-content/uploads/${path}`;
 	const cache = (globalThis as { caches?: { default?: CacheLike } }).caches?.default;
-	const ctx = runtime?.ctx;
-	const waitUntil = ctx?.waitUntil ? ctx.waitUntil.bind(ctx) : undefined;
 
 	return serveMediaObject({ bucket, cache, request, key, waitUntil });
 };
