@@ -154,6 +154,54 @@ test("collectMediaUrls still includes root-relative urls in body scan", () => {
 	assert.deepEqual(urls, ["https://roadtostudy.com/wp-content/uploads/doc2.pdf"]);
 });
 
+test("collectMediaUrls excludes protocol-relative foreign-origin urls in body scan", () => {
+	const source = {
+		content: {
+			posts: [
+				{
+					content: {
+						raw: '<img src="//evil.com/wp-content/uploads/x.jpg">',
+					},
+				},
+			],
+		},
+	};
+	const urls = collectMediaUrls(source, OPTS);
+	assert.deepEqual(urls, []);
+});
+
+test("collectMediaUrls includes protocol-relative same-origin urls in body scan", () => {
+	const source = {
+		content: {
+			posts: [
+				{
+					content: {
+						raw: '<img src="//roadtostudy.com/wp-content/uploads/pr.jpg">',
+					},
+				},
+			],
+		},
+	};
+	const urls = collectMediaUrls(source, OPTS);
+	assert.deepEqual(urls, ["https://roadtostudy.com/wp-content/uploads/pr.jpg"]);
+});
+
+test("collectMediaUrls excludes bare-host schemeless urls in body scan", () => {
+	const source = {
+		content: {
+			posts: [
+				{
+					content: {
+						raw: "See evil.com/wp-content/uploads/x.jpg for details",
+					},
+				},
+			],
+		},
+	};
+	const urls = collectMediaUrls(source, OPTS);
+	assert.deepEqual(urls, []);
+});
+
 test("buildFeaturedImage returns plain object with alt fallback", () => {
 	const img = buildFeaturedImage(
 		{ source_url: "https://roadtostudy.com/wp-content/uploads/f.jpg", alt_text: "" },

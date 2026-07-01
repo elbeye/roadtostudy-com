@@ -61,7 +61,17 @@ export function collectMediaUrls(source, { baseUrl = DEFAULT_BASE_URL } = {}) {
 		baseOrigin = null;
 	}
 
-	const pattern = /(?:https?:\/\/[^\s"'()<>]+)?\/wp-content\/uploads\/[^\s"'()<>]+/gi;
+	const basePrefix = (() => {
+		try {
+			return new URL(baseUrl).protocol;
+		} catch {
+			return null;
+		}
+	})();
+
+	// Matches any of the four reference forms, leading with an optional host part:
+	//   scheme://host/..., //host/..., bare-host/... (host contains a dot), or /wp-content/...
+	const pattern = /(?:https?:\/\/[^\s"'()<>]+|\/\/[^\s"'()<>]+|[^\s"'()<>/]*\.[^\s"'()<>/]+\/[^\s"'()<>]*wp-content\/uploads\/[^\s"'()<>]+|\/wp-content\/uploads\/[^\s"'()<>]+)/gi;
 	const TRAILING_PUNCTUATION = /[.,;:!?)"'<>]+$/;
 	for (const list of [source.content?.posts || [], source.content?.pages || []]) {
 		for (const item of list) {
@@ -69,6 +79,7 @@ export function collectMediaUrls(source, { baseUrl = DEFAULT_BASE_URL } = {}) {
 			for (const match of html.matchAll(pattern)) {
 				const cleaned = match[0].replace(TRAILING_PUNCTUATION, "");
 				if (/^https?:\/\//i.test(cleaned)) {
+					// Absolute with scheme: include only if same origin as baseUrl.
 					let origin;
 					try {
 						origin = new URL(cleaned).origin;
@@ -76,8 +87,24 @@ export function collectMediaUrls(source, { baseUrl = DEFAULT_BASE_URL } = {}) {
 						continue;
 					}
 					if (!baseOrigin || origin !== baseOrigin) continue;
+					add(cleaned);
+				} else if (/^\/\//.test(cleaned)) {
+					// Protocol-relative: resolve against baseUrl's protocol, then check origin.
+					if (!basePrefix) continue;
+					let origin;
+					try {
+						origin = new URL(`${basePrefix}${cleaned}`).origin;
+					} catch {
+						continue;
+					}
+					if (!baseOrigin || origin !== baseOrigin) continue;
+					add(`${basePrefix}${cleaned}`);
+				} else if (/^\/wp-content\//i.test(cleaned)) {
+					// True root-relative (single leading slash, no host): always belongs to source site.
+					add(cleaned);
 				}
-				add(cleaned);
+				// Anything else is a bare-host schemeless reference (e.g. "evil.com/wp-content/...");
+				// the leading dotted token is a foreign host, so it is excluded.
 			}
 		}
 	}
