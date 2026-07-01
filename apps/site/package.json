@@ -15,7 +15,9 @@
     "typecheck": "astro check",
     "load:test": "node scripts/load-test.mjs",
     "wp:sample": "node --env-file=.env scripts/wp-export-sample.mjs",
-    "wp:seed": "node scripts/wp-sample-to-emdash-seed.mjs"
+    "wp:seed": "node scripts/wp-sample-to-emdash-seed.mjs",
+    "media:upload": "node --env-file=.env scripts/wp-media-to-r2.mjs",
+    "test": "node --test scripts/*.test.mjs && node --experimental-strip-types --test src/lib/*.test.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "13.7.0",
@@ -29,6 +31,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.7",
     "@cloudflare/workers-types": "4.20260630.1",
+    "aws4fetch": "^1.0.20",
     "wrangler": "4.105.0"
   },
   "overrides": {
