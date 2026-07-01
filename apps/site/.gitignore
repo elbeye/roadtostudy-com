@@ -1,7 +1,7 @@
 node_modules
 dist
 .astro
-uploads
+/uploads
 data.db
 
 # Environment / Wrangler secrets
