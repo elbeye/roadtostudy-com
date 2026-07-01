@@ -73,6 +73,87 @@ test("collectMediaUrls unions library, featured, and body refs", () => {
 	]);
 });
 
+test("collectMediaUrls strips a trailing period from body-scanned urls", () => {
+	const source = {
+		content: {
+			posts: [
+				{
+					content: {
+						raw: "See https://roadtostudy.com/wp-content/uploads/a.jpg.",
+					},
+				},
+			],
+		},
+	};
+	const urls = collectMediaUrls(source, OPTS);
+	assert.deepEqual(urls, ["https://roadtostudy.com/wp-content/uploads/a.jpg"]);
+});
+
+test("collectMediaUrls strips trailing prose punctuation like ),; from body-scanned urls", () => {
+	const source = {
+		content: {
+			posts: [
+				{
+					content: {
+						raw: "(see https://roadtostudy.com/wp-content/uploads/b.png), also https://roadtostudy.com/wp-content/uploads/c.gif; and https://roadtostudy.com/wp-content/uploads/d.pdf:",
+					},
+				},
+			],
+		},
+	};
+	const urls = collectMediaUrls(source, OPTS);
+	const keys = urls.map((u) => r2KeyFromUrl(u, OPTS)).sort();
+	assert.deepEqual(keys, [
+		"wp-content/uploads/b.png",
+		"wp-content/uploads/c.gif",
+		"wp-content/uploads/d.pdf",
+	]);
+});
+
+test("collectMediaUrls excludes foreign-origin absolute urls found in body scan", () => {
+	const source = {
+		content: {
+			posts: [
+				{
+					content: {
+						raw: '<img src="https://evil.com/wp-content/uploads/x.jpg">',
+					},
+				},
+			],
+		},
+	};
+	const urls = collectMediaUrls(source, OPTS);
+	assert.deepEqual(urls, []);
+});
+
+test("collectMediaUrls still includes same-origin absolute urls in body scan", () => {
+	const source = {
+		content: {
+			posts: [
+				{
+					content: {
+						raw: '<img src="https://roadtostudy.com/wp-content/uploads/same-origin.jpg">',
+					},
+				},
+			],
+		},
+	};
+	const urls = collectMediaUrls(source, OPTS);
+	assert.deepEqual(urls, ["https://roadtostudy.com/wp-content/uploads/same-origin.jpg"]);
+});
+
+test("collectMediaUrls still includes root-relative urls in body scan", () => {
+	const source = {
+		content: {
+			pages: [
+				{ content: { raw: '<a href="/wp-content/uploads/doc2.pdf">x</a>' } },
+			],
+		},
+	};
+	const urls = collectMediaUrls(source, OPTS);
+	assert.deepEqual(urls, ["https://roadtostudy.com/wp-content/uploads/doc2.pdf"]);
+});
+
 test("buildFeaturedImage returns plain object with alt fallback", () => {
 	const img = buildFeaturedImage(
 		{ source_url: "https://roadtostudy.com/wp-content/uploads/f.jpg", alt_text: "" },

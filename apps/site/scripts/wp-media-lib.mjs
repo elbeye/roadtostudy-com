@@ -54,12 +54,30 @@ export function collectMediaUrls(source, { baseUrl = DEFAULT_BASE_URL } = {}) {
 
 	for (const item of source.content?.media || []) add(item.source_url);
 
+	let baseOrigin;
+	try {
+		baseOrigin = new URL(baseUrl).origin;
+	} catch {
+		baseOrigin = null;
+	}
+
 	const pattern = /(?:https?:\/\/[^\s"'()<>]+)?\/wp-content\/uploads\/[^\s"'()<>]+/gi;
+	const TRAILING_PUNCTUATION = /[.,;:!?)"'<>]+$/;
 	for (const list of [source.content?.posts || [], source.content?.pages || []]) {
 		for (const item of list) {
 			const html = item.content?.raw || item.content?.rendered || "";
 			for (const match of html.matchAll(pattern)) {
-				add(match[0].replace(/["'<>]+$/, ""));
+				const cleaned = match[0].replace(TRAILING_PUNCTUATION, "");
+				if (/^https?:\/\//i.test(cleaned)) {
+					let origin;
+					try {
+						origin = new URL(cleaned).origin;
+					} catch {
+						continue;
+					}
+					if (!baseOrigin || origin !== baseOrigin) continue;
+				}
+				add(cleaned);
 			}
 		}
 	}
