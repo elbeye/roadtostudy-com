@@ -11,6 +11,10 @@ const handler: APIRoute = async ({ params, request }) => {
 	const bucket = env.MEDIA as R2Like | undefined;
 	if (!bucket) return new Response("Storage unavailable", { status: 500 });
 
+	// `params.path` is already URL-decoded by Astro (decodeURI). The upload
+	// script (scripts/wp-media-lib.mjs) derives the R2 key with decodeURIComponent.
+	// These agree for ASCII/spaces/UTF-8 (incl. Turkish); keep both sides on a
+	// decoded path so the served key matches the uploaded object.
 	const key = `wp-content/uploads/${path}`;
 	const cache = (globalThis as { caches?: { default?: CacheLike } }).caches?.default;
 
