@@ -1,0 +1,281 @@
+---
+import {
+	decodeSlug,
+	getEmDashCollection,
+	getEmDashEntry,
+	getSeoMeta,
+	getSiteSettings,
+	getTerm,
+} from "emdash";
+import { Image, PortableText } from "emdash/ui";
+import Base from "../layouts/Base.astro";
+import PostCard from "../components/PostCard.astro";
+import { categoryPath, contentPath } from "../utils/content-url";
+import { contentAlternates } from "../utils/hreflang";
+import { getReadingTime } from "../utils/reading-time";
+import { resolveBlogSiteIdentity } from "../utils/site-identity";
+
+const LOCALES = new Set(["en", "fr", "id"]);
+
+function parsePath(pathParam: string | undefined) {
+	const segments = (pathParam || "").split("/").filter(Boolean).map(decodeSlug);
+	if (segments.length === 0) return null;
+	if (LOCALES.has(segments[0] || "")) {
+		return { locale: segments[0], segments: segments.slice(1), prefix: `/${segments[0]}` };
+	}
+	return { locale: "tr", segments, prefix: "" };
+}
+
+function getImageUrl(img: unknown): string | undefined {
+	if (!img || typeof img !== "object") return undefined;
+	const image = img as Record<string, unknown>;
+	if (typeof image.src === "string" && image.src) {
+		return image.src.startsWith("http") ? image.src : `${Astro.url.origin}${image.src}`;
+	}
+	const meta = image.meta as Record<string, unknown> | undefined;
+	const storageKey =
+		(typeof meta?.storageKey === "string" ? meta.storageKey : undefined) ||
+		(typeof image.id === "string" ? image.id : undefined);
+	return storageKey ? `${Astro.url.origin}/_emdash/api/media/file/${storageKey}` : undefined;
+}
+
+const parsed = parsePath(Astro.params.path);
+if (!parsed || parsed.segments.length === 0) return Astro.redirect("/404");
+
+const locale: string = parsed.locale || "tr";
+const segments: string[] = parsed.segments.filter((segment): segment is string => !!segment);
+const [first, second] = segments;
+let view: "post" | "page" | "category" | null = null;
+let slug = "";
+let post: any = null;
+let page: any = null;
+let term: any = null;
+let categoryPosts: any[] = [];
+
+if (first === "category" && second && segments.length === 2) {
+	slug = second;
+	term = await getTerm("category", slug, { locale });
+	if (term) {
+		const result = await getEmDashCollection("posts", {
+			where: { category: term.slug },
+			orderBy: { published_at: "desc" },
+			locale,
+		});
+		if (Astro.cache?.enabled) Astro.cache.set(result.cacheHint);
+		categoryPosts = result.entries;
+		view = "category";
+	}
+} else if (first && segments.length === 1) {
+	slug = first;
+	const postResult = await getEmDashEntry("posts", slug, { locale });
+	post = postResult.entry;
+	if (post) {
+		if (Astro.cache?.enabled) Astro.cache.set(postResult.cacheHint);
+		view = "post";
+	} else {
+		const pageResult = await getEmDashEntry("pages", slug, { locale });
+		page = pageResult.entry;
+		if (page) {
+			if (Astro.cache?.enabled) Astro.cache.set(pageResult.cacheHint);
+			view = "page";
+		}
+	}
+}
+
+if (!view) return Astro.redirect("/404");
+
+const { siteTitle } = resolveBlogSiteIdentity(await getSiteSettings());
+const resolvedSlug: string = slug || "";
+const canonical = `${Astro.url.origin}${contentPath(locale, resolvedSlug)}`;
+const currentPost = post;
+const currentPage = page;
+const currentTerm = term;
+const pageTitle =
+	view === "post"
+		? currentPost.data.title
+		: view === "page"
+			? currentPage.data.title
+			: `${currentTerm.label} posts`;
+const featuredImageUrl = view === "post" ? getImageUrl(currentPost.data.featured_image) : undefined;
+const seo =
+	view === "post"
+		? getSeoMeta(currentPost, {
+				siteTitle,
+				siteUrl: Astro.url.origin,
+				path: contentPath(locale, resolvedSlug),
+				defaultOgImage: featuredImageUrl,
+			})
+		: null;
+const alternates =
+	view === "post"
+		? await contentAlternates("posts", currentPost.data.id, Astro.url.origin, {
+				locale,
+				slug: resolvedSlug,
+			})
+		: view === "page"
+			? await contentAlternates("pages", currentPage.data.id, Astro.url.origin, {
+					locale,
+					slug: resolvedSlug,
+				})
+			: [];
+---
+
+{
+	view === "post" && (
+		<Base
+			title={seo?.title || currentPost.data.title}
+			pageTitle={seo?.ogTitle}
+			description={seo?.description}
+			image={seo?.ogImage}
+			canonical={seo?.canonical || canonical}
+			lang={locale}
+			alternates={alternates}
+			robots={seo?.robots}
+			type="article"
+			publishedTime={currentPost.data.publishedAt?.toISOString() ?? null}
+			modifiedTime={currentPost.data.updatedAt.toISOString()}
+			content={{ collection: "posts", id: currentPost.data.id, slug: resolvedSlug }}
+		>
+			<article class="wp-content article">
+				{currentPost.data.featured_image && (
+					<div class="wp-hero">
+						<Image image={currentPost.data.featured_image} />
+					</div>
+				)}
+				<header class="wp-header">
+					<p class="wp-meta">{getReadingTime(currentPost.data.content)} min read</p>
+					<h1>{currentPost.data.title}</h1>
+					{currentPost.data.excerpt && <p class="wp-excerpt">{currentPost.data.excerpt}</p>}
+				</header>
+				<div class="wp-body">
+					<PortableText value={currentPost.data.content} />
+				</div>
+			</article>
+		</Base>
+	)
+}
+
+{
+	view === "page" && (
+		<Base
+			title={currentPage.data.title}
+			canonical={canonical}
+			lang={locale}
+			alternates={alternates}
+			content={{ collection: "pages", id: currentPage.data.id, slug: resolvedSlug }}
+		>
+			<article class="wp-content">
+				<header class="wp-header">
+					<h1>{currentPage.data.title}</h1>
+				</header>
+				<div class="wp-body">
+					<PortableText value={currentPage.data.content} />
+				</div>
+			</article>
+		</Base>
+	)
+}
+
+{
+	view === "category" && (
+		<Base
+			title={pageTitle}
+			description={`All posts in ${currentTerm.label}`}
+			canonical={`${Astro.url.origin}${categoryPath(locale, resolvedSlug)}`}
+			manualCanonical
+		>
+			<section class="wp-archive">
+				<header class="wp-header">
+					<p class="wp-meta">Category</p>
+					<h1>{currentTerm.label}</h1>
+					<p class="wp-excerpt">
+						{categoryPosts.length} {categoryPosts.length === 1 ? "post" : "posts"}
+					</p>
+				</header>
+				<div class="wp-grid">
+					{categoryPosts.map((entry) => (
+						<PostCard
+							title={entry.data.title}
+							excerpt={entry.data.excerpt}
+							featuredImage={entry.data.featured_image}
+							href={contentPath(entry.data.locale || locale, entry.data.slug || entry.id)}
+							date={entry.data.publishedAt ?? undefined}
+							readingTime={getReadingTime(entry.data.content)}
+						/>
+					))}
+				</div>
+			</section>
+		</Base>
+	)
+}
+
+<style>
+	.wp-content {
+		max-width: var(--content-width);
+		margin: 0 auto;
+		padding: var(--spacing-10) var(--spacing-6) var(--spacing-16);
+	}
+
+	.wp-hero {
+		margin: 0 auto var(--spacing-8);
+		max-width: var(--wide-width);
+	}
+
+	.wp-header {
+		margin-bottom: var(--spacing-8);
+	}
+
+	.wp-header h1 {
+		font-size: var(--font-size-4xl);
+		line-height: var(--leading-tight);
+		margin: 0;
+	}
+
+	.wp-meta {
+		color: var(--color-muted);
+		font-size: var(--font-size-sm);
+		margin-bottom: var(--spacing-2);
+	}
+
+	.wp-excerpt {
+		color: var(--color-muted);
+		font-size: var(--font-size-lg);
+		margin-top: var(--spacing-4);
+	}
+
+	.wp-body :global(p),
+	.wp-body :global(ul),
+	.wp-body :global(ol) {
+		margin-bottom: 1.35em;
+	}
+
+	.wp-body :global(h2),
+	.wp-body :global(h3) {
+		margin-top: 1.8em;
+		margin-bottom: 0.7em;
+	}
+
+	.wp-archive {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-12) var(--spacing-6) var(--spacing-16);
+	}
+
+	.wp-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: var(--spacing-10) var(--spacing-8);
+	}
+
+	@media (max-width: 900px) {
+		.wp-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	@media (max-width: 640px) {
+		.wp-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

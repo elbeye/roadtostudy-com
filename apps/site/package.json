@@ -1,0 +1,37 @@
+{
+  "name": "roadtostudy-emdash",
+  "version": "0.0.3",
+  "private": true,
+  "type": "module",
+  "emdash": {
+    "label": "RoadToStudy",
+    "seed": "seed/seed.json"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "deploy": "astro build && wrangler deploy --config dist/server/wrangler.json",
+    "typecheck": "astro check",
+    "load:test": "node scripts/load-test.mjs",
+    "wp:sample": "node --env-file=.env scripts/wp-export-sample.mjs",
+    "wp:seed": "node scripts/wp-sample-to-emdash-seed.mjs"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "13.7.0",
+    "@astrojs/react": "5.0.7",
+    "@emdash-cms/cloudflare": "0.24.1",
+    "astro": "6.4.8",
+    "emdash": "0.24.1",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.7",
+    "@cloudflare/workers-types": "4.20260630.1",
+    "wrangler": "4.105.0"
+  },
+  "overrides": {
+    "vite": "7.3.6"
+  }
+}
