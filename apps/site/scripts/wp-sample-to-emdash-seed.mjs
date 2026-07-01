@@ -1,4 +1,5 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { buildFeaturedImage } from "./wp-media-lib.mjs";
 
 const inputPath = process.env.WP_SAMPLE_INPUT || "data/wp-sample.json";
 const outputPath = process.env.WP_SEED_OUTPUT || "data/wp-sample.emdash-seed.json";
@@ -121,14 +122,9 @@ function mapContent(item, isPost) {
 
 	if (isPost) {
 		data.excerpt = excerpt;
-		if (includeMediaReferences && media?.source_url) {
-			data.featured_image = {
-				$media: {
-					url: media.source_url,
-					alt: media.alt_text || title,
-					filename: filenameFromUrl(media.source_url),
-				},
-			};
+		if (includeMediaReferences) {
+			const featured = buildFeaturedImage(media, title, { baseUrl: process.env.WP_BASE_URL });
+			if (featured) data.featured_image = featured;
 		}
 	}
 
@@ -299,14 +295,6 @@ function decodeHtml(value) {
 		.replaceAll("&#8212;", "-")
 		.replaceAll("&lt;", "<")
 		.replaceAll("&gt;", ">");
-}
-
-function filenameFromUrl(value) {
-	try {
-		return decodeURIComponent(new URL(value).pathname.split("/").pop() || "media");
-	} catch {
-		return "media";
-	}
 }
 
 await mkdir("data", { recursive: true });
