@@ -46,22 +46,27 @@ async function exists(key) {
 }
 
 async function upload(url) {
-	const key = r2KeyFromUrl(url, { baseUrl });
-	if (!key) return { key: url, status: "skipped-nonuploads" };
+	let key;
+	try {
+		key = r2KeyFromUrl(url, { baseUrl });
+		if (!key) return { key: url, status: "skipped-nonuploads" };
 
-	if (await exists(key)) return { key, status: "skipped-exists" };
+		if (await exists(key)) return { key, status: "skipped-exists" };
 
-	const download = await fetch(url);
-	if (!download.ok) return { key, status: "failed", error: `download ${download.status}` };
-	const bytes = new Uint8Array(await download.arrayBuffer());
+		const download = await fetch(url);
+		if (!download.ok) return { key, status: "failed", error: `download ${download.status}` };
+		const bytes = new Uint8Array(await download.arrayBuffer());
 
-	const put = await aws.fetch(objectUrl(key), {
-		method: "PUT",
-		body: bytes,
-		headers: { "Content-Type": download.headers.get("content-type") || contentTypeForKey(key) },
-	});
-	if (!put.ok) return { key, status: "failed", error: `put ${put.status}` };
-	return { key, status: "uploaded" };
+		const put = await aws.fetch(objectUrl(key), {
+			method: "PUT",
+			body: bytes,
+			headers: { "Content-Type": download.headers.get("content-type") || contentTypeForKey(key) },
+		});
+		if (!put.ok) return { key, status: "failed", error: `put ${put.status}` };
+		return { key, status: "uploaded" };
+	} catch (error) {
+		return { key: key || url, status: "failed", error: String(error) };
+	}
 }
 
 async function runPool(items, worker) {
