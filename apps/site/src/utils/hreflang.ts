@@ -63,11 +63,13 @@ function sortByLocale(translations: TranslationSummary[]) {
 }
 
 function dedupeAlternates(alternates: Alternate[]) {
+	// One alternate per hreflang value (language + x-default). A translation group
+	// with two members of the same locale would otherwise emit duplicate hreflang
+	// tags with different hrefs, which is invalid.
 	const seen = new Set<string>();
 	return alternates.filter((alternate) => {
-		const key = `${alternate.hreflang}:${alternate.href}`;
-		if (seen.has(key)) return false;
-		seen.add(key);
+		if (seen.has(alternate.hreflang)) return false;
+		seen.add(alternate.hreflang);
 		return true;
 	});
 }
