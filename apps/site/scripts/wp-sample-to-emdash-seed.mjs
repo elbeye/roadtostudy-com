@@ -1,8 +1,11 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { dirname } from "node:path";
 import { buildFeaturedImage } from "./wp-media-lib.mjs";
 
 const inputPath = process.env.WP_SAMPLE_INPUT || "data/wp-sample.json";
-const outputPath = process.env.WP_SEED_OUTPUT || "data/wp-sample.emdash-seed.json";
+// Default to the seed the worker actually loads (package.json emdash.seed), so
+// regenerating never silently drifts from what gets deployed.
+const outputPath = process.env.WP_SEED_OUTPUT || "seed/seed.json";
 const includeAuditFields = process.env.WP_SEED_AUDIT_FIELDS === "1";
 const includeMediaReferences = process.env.WP_SEED_MEDIA_REFERENCES === "1";
 
@@ -297,7 +300,7 @@ function decodeHtml(value) {
 		.replaceAll("&gt;", ">");
 }
 
-await mkdir("data", { recursive: true });
+await mkdir(dirname(outputPath), { recursive: true });
 await writeFile(outputPath, `${JSON.stringify(seed, null, 2)}\n`);
 
 console.log(
