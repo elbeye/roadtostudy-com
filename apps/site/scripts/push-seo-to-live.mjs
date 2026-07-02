@@ -1,5 +1,7 @@
-// Push migrated featured_image + Rank Math meta description onto the LIVE EmDash
-// instance via the authenticated content API (emdash CLI stored login).
+// Push migrated featured_image onto the LIVE EmDash instance via the authenticated
+// content API (emdash CLI stored login). NOTE: only featured_image is pushed — the
+// CLI content update rejects a `seo` key ("unknown field"), so per-post Rank Math
+// title/description parity is NOT handled here (see progress ledger for the plan).
 //
 // SAFETY:
 // - Only PUBLISHED posts are touched (content update auto-publishes; we must not
