@@ -214,3 +214,28 @@ test("buildFeaturedImage returns plain object with alt fallback", () => {
 test("buildFeaturedImage returns null without a source_url", () => {
 	assert.equal(buildFeaturedImage({}, "t", OPTS), null);
 });
+
+test("collectMediaUrls includes _embedded featured media not in the media array", () => {
+	const source = {
+		content: {
+			media: [{ id: 1, source_url: "https://roadtostudy.com/wp-content/uploads/lib.jpg" }],
+			posts: [
+				{
+					featured_media: 99,
+					_embedded: {
+						"wp:featuredmedia": [
+							{ source_url: "https://roadtostudy.com/wp-content/uploads/2025/02/featured.webp" },
+						],
+					},
+					content: { raw: "" },
+				},
+			],
+			pages: [],
+		},
+	};
+	const keys = collectMediaUrls(source, OPTS).map((u) => r2KeyFromUrl(u, OPTS)).sort();
+	assert.deepEqual(keys, [
+		"wp-content/uploads/2025/02/featured.webp",
+		"wp-content/uploads/lib.jpg",
+	]);
+});

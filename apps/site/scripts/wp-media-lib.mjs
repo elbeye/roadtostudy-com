@@ -75,6 +75,11 @@ export function collectMediaUrls(source, { baseUrl = DEFAULT_BASE_URL } = {}) {
 	const TRAILING_PUNCTUATION = /[.,;:!?)"'<>]+$/;
 	for (const list of [source.content?.posts || [], source.content?.pages || []]) {
 		for (const item of list) {
+			// Featured image may come from _embedded wp:featuredmedia rather than the
+			// top-level media array (the same source buildFeaturedImage falls back to),
+			// so include it here or those featured images never get uploaded → 404.
+			add(item._embedded?.["wp:featuredmedia"]?.[0]?.source_url);
+
 			const html = item.content?.raw || item.content?.rendered || "";
 			for (const match of html.matchAll(pattern)) {
 				const cleaned = match[0].replace(TRAILING_PUNCTUATION, "");
