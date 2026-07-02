@@ -11,3 +11,8 @@ data.db
 .dev.vars
 .dev.vars.*
 .wrangler
+
+# Full-migration export artifacts (large, regenerable)
+data/full/
+data/wp-full.json
+data/wp-full-summary.json

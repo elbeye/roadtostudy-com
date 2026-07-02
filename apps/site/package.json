@@ -17,7 +17,8 @@
     "wp:sample": "node --env-file=.env scripts/wp-export-sample.mjs",
     "wp:seed": "node scripts/wp-sample-to-emdash-seed.mjs",
     "media:upload": "node --env-file=.env scripts/wp-media-to-r2.mjs",
-    "test": "node --test scripts/*.test.mjs && node --experimental-strip-types --test src/lib/*.test.ts"
+    "test": "node --test scripts/*.test.mjs && node --experimental-strip-types --test src/lib/*.test.ts",
+    "wp:full": "node --env-file=.env scripts/wp-export-full.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "13.7.0",
