@@ -8,6 +8,9 @@ const inputPath = process.env.WP_SAMPLE_INPUT || "data/wp-sample.json";
 const outputPath = process.env.WP_SEED_OUTPUT || "seed/seed.json";
 const includeAuditFields = process.env.WP_SEED_AUDIT_FIELDS === "1";
 const includeMediaReferences = process.env.WP_SEED_MEDIA_REFERENCES === "1";
+// Store the verbatim source (Rank Math) head per entry so the template can replay
+// title/description/robots/og/twitter/canonical/hreflang/JSON-LD exactly (SEO §6.3).
+const includeSourceSeo = process.env.WP_SEED_SEO !== "0";
 
 const source = JSON.parse(await readFile(inputPath, "utf8"));
 const headByUrl = new Map(source.seo.headSnapshots.map((snapshot) => [snapshot.url, snapshot]));
@@ -75,6 +78,10 @@ function commonFields(includePostFields) {
 		{ slug: "content", label: "Content", type: "portableText", searchable: true },
 	];
 
+	if (includeSourceSeo) {
+		fields.push({ slug: "source_seo", label: "Source SEO (verbatim head)", type: "json" });
+	}
+
 	if (includeAuditFields) {
 		fields.push(
 			{ slug: "content_html", label: "Source HTML", type: "text" },
@@ -121,6 +128,11 @@ function mapContent(item, isPost) {
 		data.seo_source = headByUrl.get(item.link) || null;
 		data.published_at = item.date_gmt || item.date || null;
 		data.modified_at = item.modified_gmt || item.modified || null;
+	}
+
+	if (includeSourceSeo) {
+		const sourceSeo = buildSourceSeo(headByUrl.get(item.link));
+		if (sourceSeo) data.source_seo = sourceSeo;
 	}
 
 	if (isPost) {
@@ -187,6 +199,34 @@ function pickAnchorId(groupIds, wpItemsById) {
 		if (id) return id;
 	}
 	return groupIds[0];
+}
+
+function buildSourceSeo(snap) {
+	if (!snap || snap.status !== 200) return null;
+	const metaOf = (key) =>
+		(snap.meta || []).find((m) => m.name === key || m.property === key)?.content || null;
+	const relPath = (url) => {
+		if (!url) return null;
+		try {
+			return new URL(url).pathname;
+		} catch {
+			return url;
+		}
+	};
+	return {
+		title: snap.title || null,
+		description: metaOf("description"),
+		robots: metaOf("robots"),
+		ogTitle: metaOf("og:title"),
+		ogDescription: metaOf("og:description"),
+		ogImage: relPath(metaOf("og:image")),
+		twitterCard: metaOf("twitter:card"),
+		twitterTitle: metaOf("twitter:title"),
+		twitterDescription: metaOf("twitter:description"),
+		canonicalPath: relPath(snap.canonical),
+		hreflang: (snap.hreflang || []).map((h) => ({ hreflang: h.hreflang, href: relPath(h.href) })),
+		jsonLd: snap.jsonLd || [],
+	};
 }
 
 function mapTaxonomies(item) {

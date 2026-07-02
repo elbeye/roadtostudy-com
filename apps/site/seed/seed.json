@@ -46,6 +46,11 @@
           "label": "Content",
           "type": "portableText",
           "searchable": true
+        },
+        {
+          "slug": "source_seo",
+          "label": "Source SEO (verbatim head)",
+          "type": "json"
         }
       ]
     },
@@ -72,6 +77,11 @@
           "label": "Content",
           "type": "portableText",
           "searchable": true
+        },
+        {
+          "slug": "source_seo",
+          "label": "Source SEO (verbatim head)",
+          "type": "json"
         }
       ]
     }
@@ -1618,6 +1628,108 @@
               "_key": "b47"
             }
           ],
+          "source_seo": {
+            "title": "Türkiye'de Şehirlerarası Ulaşım Seçenekleri - RoadtoStudy",
+            "description": "Türkiye'de şehirlerarası ulaşım seçeneklerini ve maliyetlerini keşfedin. Seyahatinizi planlayın, en uygun alternatifleri değerlendirin!",
+            "robots": "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+            "ogTitle": "Türkiye'de Şehirlerarası Ulaşım Seçenekleri - RoadtoStudy",
+            "ogDescription": "Türkiye'de şehirlerarası ulaşım seçeneklerini ve maliyetlerini keşfedin. Seyahatinizi planlayın, en uygun alternatifleri değerlendirin!",
+            "ogImage": null,
+            "twitterCard": "summary_large_image",
+            "twitterTitle": "Türkiye'de Şehirlerarası Ulaşım Seçenekleri - RoadtoStudy",
+            "twitterDescription": "Türkiye'de şehirlerarası ulaşım seçeneklerini ve maliyetlerini keşfedin. Seyahatinizi planlayın, en uygun alternatifleri değerlendirin!",
+            "canonicalPath": "/turkiyede-sehirlerarasi-ulasim-secenekleri/",
+            "hreflang": [],
+            "jsonLd": [
+              {
+                "@context": "https://schema.org",
+                "@graph": [
+                  {
+                    "@type": [
+                      "Organization",
+                      "Person"
+                    ],
+                    "@id": "https://roadtostudy.com/#person",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "url": "https://roadtostudy.com",
+                    "logo": {
+                      "@type": "ImageObject",
+                      "@id": "https://roadtostudy.com/#logo",
+                      "url": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "contentUrl": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "caption": "Road to Study - Turkey University Guide for Students",
+                      "inLanguage": "tr",
+                      "width": "450",
+                      "height": "445"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/#logo"
+                    }
+                  },
+                  {
+                    "@type": "WebSite",
+                    "@id": "https://roadtostudy.com/#website",
+                    "url": "https://roadtostudy.com",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "alternateName": "Road to Study in Turkey",
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "WebPage",
+                    "@id": "https://roadtostudy.com/turkiyede-sehirlerarasi-ulasim-secenekleri/#webpage",
+                    "url": "https://roadtostudy.com/turkiyede-sehirlerarasi-ulasim-secenekleri/",
+                    "name": "Türkiye&#039;de Şehirlerarası Ulaşım Seçenekleri - RoadtoStudy",
+                    "datePublished": "2026-04-17T12:43:59+03:00",
+                    "dateModified": "2026-04-17T12:44:00+03:00",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/#website"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "Person",
+                    "@id": "https://roadtostudy.com/author/murat/",
+                    "name": "Murat",
+                    "url": "https://roadtostudy.com/author/murat/",
+                    "image": {
+                      "@type": "ImageObject",
+                      "@id": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "url": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "caption": "Murat",
+                      "inLanguage": "tr"
+                    }
+                  },
+                  {
+                    "@type": "BlogPosting",
+                    "headline": "Türkiye&#039;de Şehirlerarası Ulaşım Seçenekleri - RoadtoStudy",
+                    "datePublished": "2026-04-17T12:43:59+03:00",
+                    "dateModified": "2026-04-17T12:44:00+03:00",
+                    "articleSection": "Sağlık ve Güvenlik",
+                    "author": {
+                      "@id": "https://roadtostudy.com/author/murat/",
+                      "name": "Murat"
+                    },
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "description": "Türkiye&#039;de şehirlerarası ulaşım seçeneklerini ve maliyetlerini keşfedin. Seyahatinizi planlayın, en uygun alternatifleri değerlendirin!",
+                    "name": "Türkiye&#039;de Şehirlerarası Ulaşım Seçenekleri - RoadtoStudy",
+                    "@id": "https://roadtostudy.com/turkiyede-sehirlerarasi-ulasim-secenekleri/#richSnippet",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/turkiyede-sehirlerarasi-ulasim-secenekleri/#webpage"
+                    },
+                    "inLanguage": "tr",
+                    "mainEntityOfPage": {
+                      "@id": "https://roadtostudy.com/turkiyede-sehirlerarasi-ulasim-secenekleri/#webpage"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
           "excerpt": "Türkiye'de şehirlerarası ulaşım seçeneklerini ve maliyetlerini keşfedin. Seyahatinizi planlayın, en uygun alternatifleri değerlendirin!"
         },
         "taxonomies": {
@@ -3699,6 +3811,124 @@
               "_key": "b34"
             }
           ],
+          "source_seo": {
+            "title": "Uzaktan Eğitimde Maliyet Tasarrufu Yöntemleri",
+            "description": "Türkiye'de uzaktan eğitimde maliyet tasarrufu sağlamak için etkili yöntemleri keşfedin. Hemen öğrenin ve bütçenizi koruyun!",
+            "robots": "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+            "ogTitle": "Uzaktan Eğitimde Maliyet Tasarrufu Yöntemleri",
+            "ogDescription": "Türkiye'de uzaktan eğitimde maliyet tasarrufu sağlamak için etkili yöntemleri keşfedin. Hemen öğrenin ve bütçenizi koruyun!",
+            "ogImage": "/wp-content/uploads/2025/02/international-students-in-turkey.webp",
+            "twitterCard": "summary_large_image",
+            "twitterTitle": "Uzaktan Eğitimde Maliyet Tasarrufu Yöntemleri",
+            "twitterDescription": "Türkiye'de uzaktan eğitimde maliyet tasarrufu sağlamak için etkili yöntemleri keşfedin. Hemen öğrenin ve bütçenizi koruyun!",
+            "canonicalPath": "/uzaktan-egitim-maliyet-tasarrufu-2/",
+            "hreflang": [],
+            "jsonLd": [
+              {
+                "@context": "https://schema.org",
+                "@graph": [
+                  {
+                    "@type": [
+                      "Organization",
+                      "Person"
+                    ],
+                    "@id": "https://roadtostudy.com/#person",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "url": "https://roadtostudy.com",
+                    "logo": {
+                      "@type": "ImageObject",
+                      "@id": "https://roadtostudy.com/#logo",
+                      "url": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "contentUrl": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "caption": "Road to Study - Turkey University Guide for Students",
+                      "inLanguage": "tr",
+                      "width": "450",
+                      "height": "445"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/#logo"
+                    }
+                  },
+                  {
+                    "@type": "WebSite",
+                    "@id": "https://roadtostudy.com/#website",
+                    "url": "https://roadtostudy.com",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "alternateName": "Road to Study in Turkey",
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "ImageObject",
+                    "@id": "https://roadtostudy.com/wp-content/uploads/2025/02/international-students-in-turkey.webp",
+                    "url": "https://roadtostudy.com/wp-content/uploads/2025/02/international-students-in-turkey.webp",
+                    "width": "1152",
+                    "height": "864",
+                    "caption": "Social life for international students studying at universities in Turkey.",
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "WebPage",
+                    "@id": "https://roadtostudy.com/uzaktan-egitim-maliyet-tasarrufu-2/#webpage",
+                    "url": "https://roadtostudy.com/uzaktan-egitim-maliyet-tasarrufu-2/",
+                    "name": "Uzaktan Eğitimde Maliyet Tasarrufu Yöntemleri",
+                    "datePublished": "2026-04-17T12:43:35+03:00",
+                    "dateModified": "2026-04-17T12:43:36+03:00",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/#website"
+                    },
+                    "primaryImageOfPage": {
+                      "@id": "https://roadtostudy.com/wp-content/uploads/2025/02/international-students-in-turkey.webp"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "Person",
+                    "@id": "https://roadtostudy.com/author/murat/",
+                    "name": "Murat",
+                    "url": "https://roadtostudy.com/author/murat/",
+                    "image": {
+                      "@type": "ImageObject",
+                      "@id": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "url": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "caption": "Murat",
+                      "inLanguage": "tr"
+                    }
+                  },
+                  {
+                    "@type": "BlogPosting",
+                    "headline": "Uzaktan Eğitimde Maliyet Tasarrufu Yöntemleri",
+                    "keywords": "Uzaktan Eğitim",
+                    "datePublished": "2026-04-17T12:43:35+03:00",
+                    "dateModified": "2026-04-17T12:43:36+03:00",
+                    "articleSection": "Yaşam Maliyeti ve Konaklama",
+                    "author": {
+                      "@id": "https://roadtostudy.com/author/murat/",
+                      "name": "Murat"
+                    },
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "description": "Türkiye&#039;de uzaktan eğitimde maliyet tasarrufu sağlamak için etkili yöntemleri keşfedin. Hemen öğrenin ve bütçenizi koruyun!",
+                    "name": "Uzaktan Eğitimde Maliyet Tasarrufu Yöntemleri",
+                    "@id": "https://roadtostudy.com/uzaktan-egitim-maliyet-tasarrufu-2/#richSnippet",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/uzaktan-egitim-maliyet-tasarrufu-2/#webpage"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/wp-content/uploads/2025/02/international-students-in-turkey.webp"
+                    },
+                    "inLanguage": "tr",
+                    "mainEntityOfPage": {
+                      "@id": "https://roadtostudy.com/uzaktan-egitim-maliyet-tasarrufu-2/#webpage"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
           "excerpt": "Türkiye'de uzaktan eğitimde maliyet tasarrufu sağlamak için etkili yöntemleri keşfedin. Hemen öğrenin ve bütçenizi koruyun!",
           "featured_image": {
             "provider": "external",
@@ -5660,6 +5890,108 @@
               "_key": "b41"
             }
           ],
+          "source_seo": {
+            "title": "Türkiye'de Öğrenciler İçin Sağlıklı Beslenme İpuçları - RoadtoStudy",
+            "description": "Öğrenciler için sağlıklı ve ekonomik beslenme önerileri keşfedin. Daha iyi bir yaşam için hemen başlayın!",
+            "robots": "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+            "ogTitle": "Türkiye'de Öğrenciler İçin Sağlıklı Beslenme İpuçları - RoadtoStudy",
+            "ogDescription": "Öğrenciler için sağlıklı ve ekonomik beslenme önerileri keşfedin. Daha iyi bir yaşam için hemen başlayın!",
+            "ogImage": null,
+            "twitterCard": "summary_large_image",
+            "twitterTitle": "Türkiye'de Öğrenciler İçin Sağlıklı Beslenme İpuçları - RoadtoStudy",
+            "twitterDescription": "Öğrenciler için sağlıklı ve ekonomik beslenme önerileri keşfedin. Daha iyi bir yaşam için hemen başlayın!",
+            "canonicalPath": "/turkiyede-ogrenciler-icin-saglikli-beslenme-2/",
+            "hreflang": [],
+            "jsonLd": [
+              {
+                "@context": "https://schema.org",
+                "@graph": [
+                  {
+                    "@type": [
+                      "Organization",
+                      "Person"
+                    ],
+                    "@id": "https://roadtostudy.com/#person",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "url": "https://roadtostudy.com",
+                    "logo": {
+                      "@type": "ImageObject",
+                      "@id": "https://roadtostudy.com/#logo",
+                      "url": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "contentUrl": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "caption": "Road to Study - Turkey University Guide for Students",
+                      "inLanguage": "tr",
+                      "width": "450",
+                      "height": "445"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/#logo"
+                    }
+                  },
+                  {
+                    "@type": "WebSite",
+                    "@id": "https://roadtostudy.com/#website",
+                    "url": "https://roadtostudy.com",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "alternateName": "Road to Study in Turkey",
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "WebPage",
+                    "@id": "https://roadtostudy.com/turkiyede-ogrenciler-icin-saglikli-beslenme-2/#webpage",
+                    "url": "https://roadtostudy.com/turkiyede-ogrenciler-icin-saglikli-beslenme-2/",
+                    "name": "Türkiye&#039;de Öğrenciler İçin Sağlıklı Beslenme İpuçları - RoadtoStudy",
+                    "datePublished": "2026-04-17T12:43:03+03:00",
+                    "dateModified": "2026-04-17T12:43:04+03:00",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/#website"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "Person",
+                    "@id": "https://roadtostudy.com/author/murat/",
+                    "name": "Murat",
+                    "url": "https://roadtostudy.com/author/murat/",
+                    "image": {
+                      "@type": "ImageObject",
+                      "@id": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "url": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "caption": "Murat",
+                      "inLanguage": "tr"
+                    }
+                  },
+                  {
+                    "@type": "BlogPosting",
+                    "headline": "Türkiye&#039;de Öğrenciler İçin Sağlıklı Beslenme İpuçları - RoadtoStudy",
+                    "datePublished": "2026-04-17T12:43:03+03:00",
+                    "dateModified": "2026-04-17T12:43:04+03:00",
+                    "articleSection": "Sağlık ve Güvenlik",
+                    "author": {
+                      "@id": "https://roadtostudy.com/author/murat/",
+                      "name": "Murat"
+                    },
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "description": "Öğrenciler için sağlıklı ve ekonomik beslenme önerileri keşfedin. Daha iyi bir yaşam için hemen başlayın!",
+                    "name": "Türkiye&#039;de Öğrenciler İçin Sağlıklı Beslenme İpuçları - RoadtoStudy",
+                    "@id": "https://roadtostudy.com/turkiyede-ogrenciler-icin-saglikli-beslenme-2/#richSnippet",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/turkiyede-ogrenciler-icin-saglikli-beslenme-2/#webpage"
+                    },
+                    "inLanguage": "tr",
+                    "mainEntityOfPage": {
+                      "@id": "https://roadtostudy.com/turkiyede-ogrenciler-icin-saglikli-beslenme-2/#webpage"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
           "excerpt": "Öğrenciler için sağlıklı ve ekonomik beslenme önerileri keşfedin. Daha iyi bir yaşam için hemen başlayın!"
         },
         "taxonomies": {
@@ -8173,6 +8505,108 @@
               "_key": "b38"
             }
           ],
+          "source_seo": {
+            "title": "Türkiye'de Öğrenciler İçin Teknoloji Alışveriş İpuçları - RoadtoStudy",
+            "description": "Türkiye'de öğrenciler için teknoloji alışverişi ipuçlarını keşfedin. Akıllı seçimler yaparak bütçenizi koruyun!",
+            "robots": "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+            "ogTitle": "Türkiye'de Öğrenciler İçin Teknoloji Alışveriş İpuçları - RoadtoStudy",
+            "ogDescription": "Türkiye'de öğrenciler için teknoloji alışverişi ipuçlarını keşfedin. Akıllı seçimler yaparak bütçenizi koruyun!",
+            "ogImage": null,
+            "twitterCard": "summary_large_image",
+            "twitterTitle": "Türkiye'de Öğrenciler İçin Teknoloji Alışveriş İpuçları - RoadtoStudy",
+            "twitterDescription": "Türkiye'de öğrenciler için teknoloji alışverişi ipuçlarını keşfedin. Akıllı seçimler yaparak bütçenizi koruyun!",
+            "canonicalPath": "/turkiyede-ogrenciler-teknoloji-alisverisi-ipuclari/",
+            "hreflang": [],
+            "jsonLd": [
+              {
+                "@context": "https://schema.org",
+                "@graph": [
+                  {
+                    "@type": [
+                      "Organization",
+                      "Person"
+                    ],
+                    "@id": "https://roadtostudy.com/#person",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "url": "https://roadtostudy.com",
+                    "logo": {
+                      "@type": "ImageObject",
+                      "@id": "https://roadtostudy.com/#logo",
+                      "url": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "contentUrl": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "caption": "Road to Study - Turkey University Guide for Students",
+                      "inLanguage": "tr",
+                      "width": "450",
+                      "height": "445"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/#logo"
+                    }
+                  },
+                  {
+                    "@type": "WebSite",
+                    "@id": "https://roadtostudy.com/#website",
+                    "url": "https://roadtostudy.com",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "alternateName": "Road to Study in Turkey",
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "WebPage",
+                    "@id": "https://roadtostudy.com/turkiyede-ogrenciler-teknoloji-alisverisi-ipuclari/#webpage",
+                    "url": "https://roadtostudy.com/turkiyede-ogrenciler-teknoloji-alisverisi-ipuclari/",
+                    "name": "Türkiye&#039;de Öğrenciler İçin Teknoloji Alışveriş İpuçları - RoadtoStudy",
+                    "datePublished": "2026-04-17T12:42:55+03:00",
+                    "dateModified": "2026-04-17T12:42:56+03:00",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/#website"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "Person",
+                    "@id": "https://roadtostudy.com/author/murat/",
+                    "name": "Murat",
+                    "url": "https://roadtostudy.com/author/murat/",
+                    "image": {
+                      "@type": "ImageObject",
+                      "@id": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "url": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "caption": "Murat",
+                      "inLanguage": "tr"
+                    }
+                  },
+                  {
+                    "@type": "BlogPosting",
+                    "headline": "Türkiye&#039;de Öğrenciler İçin Teknoloji Alışveriş İpuçları - RoadtoStudy",
+                    "datePublished": "2026-04-17T12:42:55+03:00",
+                    "dateModified": "2026-04-17T12:42:56+03:00",
+                    "articleSection": "Sağlık ve Güvenlik",
+                    "author": {
+                      "@id": "https://roadtostudy.com/author/murat/",
+                      "name": "Murat"
+                    },
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "description": "Türkiye&#039;de öğrenciler için teknoloji alışverişi ipuçlarını keşfedin. Akıllı seçimler yaparak bütçenizi koruyun!",
+                    "name": "Türkiye&#039;de Öğrenciler İçin Teknoloji Alışveriş İpuçları - RoadtoStudy",
+                    "@id": "https://roadtostudy.com/turkiyede-ogrenciler-teknoloji-alisverisi-ipuclari/#richSnippet",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/turkiyede-ogrenciler-teknoloji-alisverisi-ipuclari/#webpage"
+                    },
+                    "inLanguage": "tr",
+                    "mainEntityOfPage": {
+                      "@id": "https://roadtostudy.com/turkiyede-ogrenciler-teknoloji-alisverisi-ipuclari/#webpage"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
           "excerpt": "Türkiye'de öğrenciler için teknoloji alışverişi ipuçlarını keşfedin. Akıllı seçimler yaparak bütçenizi koruyun!"
         },
         "taxonomies": {
@@ -9534,6 +9968,108 @@
               "_key": "b34"
             }
           ],
+          "source_seo": {
+            "title": "Türkiye'de İnternet Alışverişi: Güvenilir İpuçları - RoadtoStudy",
+            "description": "Türkiye'de güvenilir internet alışverişi yapın! En iyi siteleri keşfedin ve alışveriş ipuçlarıyla güvenli bir deneyim yaşayın.",
+            "robots": "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+            "ogTitle": "Türkiye'de İnternet Alışverişi: Güvenilir İpuçları - RoadtoStudy",
+            "ogDescription": "Türkiye'de güvenilir internet alışverişi yapın! En iyi siteleri keşfedin ve alışveriş ipuçlarıyla güvenli bir deneyim yaşayın.",
+            "ogImage": null,
+            "twitterCard": "summary_large_image",
+            "twitterTitle": "Türkiye'de İnternet Alışverişi: Güvenilir İpuçları - RoadtoStudy",
+            "twitterDescription": "Türkiye'de güvenilir internet alışverişi yapın! En iyi siteleri keşfedin ve alışveriş ipuçlarıyla güvenli bir deneyim yaşayın.",
+            "canonicalPath": "/turkiyede-internet-alisverisi-guvenilir-ipuclari/",
+            "hreflang": [],
+            "jsonLd": [
+              {
+                "@context": "https://schema.org",
+                "@graph": [
+                  {
+                    "@type": [
+                      "Organization",
+                      "Person"
+                    ],
+                    "@id": "https://roadtostudy.com/#person",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "url": "https://roadtostudy.com",
+                    "logo": {
+                      "@type": "ImageObject",
+                      "@id": "https://roadtostudy.com/#logo",
+                      "url": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "contentUrl": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "caption": "Road to Study - Turkey University Guide for Students",
+                      "inLanguage": "tr",
+                      "width": "450",
+                      "height": "445"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/#logo"
+                    }
+                  },
+                  {
+                    "@type": "WebSite",
+                    "@id": "https://roadtostudy.com/#website",
+                    "url": "https://roadtostudy.com",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "alternateName": "Road to Study in Turkey",
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "WebPage",
+                    "@id": "https://roadtostudy.com/turkiyede-internet-alisverisi-guvenilir-ipuclari/#webpage",
+                    "url": "https://roadtostudy.com/turkiyede-internet-alisverisi-guvenilir-ipuclari/",
+                    "name": "Türkiye&#039;de İnternet Alışverişi: Güvenilir İpuçları - RoadtoStudy",
+                    "datePublished": "2026-04-17T12:42:24+03:00",
+                    "dateModified": "2026-04-17T12:42:26+03:00",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/#website"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "Person",
+                    "@id": "https://roadtostudy.com/author/murat/",
+                    "name": "Murat",
+                    "url": "https://roadtostudy.com/author/murat/",
+                    "image": {
+                      "@type": "ImageObject",
+                      "@id": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "url": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "caption": "Murat",
+                      "inLanguage": "tr"
+                    }
+                  },
+                  {
+                    "@type": "BlogPosting",
+                    "headline": "Türkiye&#039;de İnternet Alışverişi: Güvenilir İpuçları - RoadtoStudy",
+                    "datePublished": "2026-04-17T12:42:24+03:00",
+                    "dateModified": "2026-04-17T12:42:26+03:00",
+                    "articleSection": "Sağlık ve Güvenlik",
+                    "author": {
+                      "@id": "https://roadtostudy.com/author/murat/",
+                      "name": "Murat"
+                    },
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "description": "Türkiye&#039;de güvenilir internet alışverişi yapın! En iyi siteleri keşfedin ve alışveriş ipuçlarıyla güvenli bir deneyim yaşayın.",
+                    "name": "Türkiye&#039;de İnternet Alışverişi: Güvenilir İpuçları - RoadtoStudy",
+                    "@id": "https://roadtostudy.com/turkiyede-internet-alisverisi-guvenilir-ipuclari/#richSnippet",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/turkiyede-internet-alisverisi-guvenilir-ipuclari/#webpage"
+                    },
+                    "inLanguage": "tr",
+                    "mainEntityOfPage": {
+                      "@id": "https://roadtostudy.com/turkiyede-internet-alisverisi-guvenilir-ipuclari/#webpage"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
           "excerpt": "Türkiye'de güvenilir internet alışverişi yapın! En iyi siteleri keşfedin ve alışveriş ipuçlarıyla güvenli bir deneyim yaşayın."
         },
         "taxonomies": {
@@ -11579,6 +12115,124 @@
               "_key": "b46"
             }
           ],
+          "source_seo": {
+            "title": "Türkiye'de Kadın Öğrenciler İçin Güvenli Konaklama",
+            "description": "Türkiye'de kadın öğrenciler için güvenli konaklama seçeneklerini keşfedin. Güvenli ve konforlu bir yaşam alanı için hemen bilgi alın!",
+            "robots": "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+            "ogTitle": "Türkiye'de Kadın Öğrenciler İçin Güvenli Konaklama",
+            "ogDescription": "Türkiye'de kadın öğrenciler için güvenli konaklama seçeneklerini keşfedin. Güvenli ve konforlu bir yaşam alanı için hemen bilgi alın!",
+            "ogImage": "/wp-content/uploads/2025/02/international-students-in-turkey.webp",
+            "twitterCard": "summary_large_image",
+            "twitterTitle": "Türkiye'de Kadın Öğrenciler İçin Güvenli Konaklama",
+            "twitterDescription": "Türkiye'de kadın öğrenciler için güvenli konaklama seçeneklerini keşfedin. Güvenli ve konforlu bir yaşam alanı için hemen bilgi alın!",
+            "canonicalPath": "/turkiyede-kadin-ogrenciler-icin-guvenli-konaklama/",
+            "hreflang": [],
+            "jsonLd": [
+              {
+                "@context": "https://schema.org",
+                "@graph": [
+                  {
+                    "@type": [
+                      "Organization",
+                      "Person"
+                    ],
+                    "@id": "https://roadtostudy.com/#person",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "url": "https://roadtostudy.com",
+                    "logo": {
+                      "@type": "ImageObject",
+                      "@id": "https://roadtostudy.com/#logo",
+                      "url": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "contentUrl": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "caption": "Road to Study - Turkey University Guide for Students",
+                      "inLanguage": "tr",
+                      "width": "450",
+                      "height": "445"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/#logo"
+                    }
+                  },
+                  {
+                    "@type": "WebSite",
+                    "@id": "https://roadtostudy.com/#website",
+                    "url": "https://roadtostudy.com",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "alternateName": "Road to Study in Turkey",
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "ImageObject",
+                    "@id": "https://roadtostudy.com/wp-content/uploads/2025/02/international-students-in-turkey.webp",
+                    "url": "https://roadtostudy.com/wp-content/uploads/2025/02/international-students-in-turkey.webp",
+                    "width": "1152",
+                    "height": "864",
+                    "caption": "Social life for international students studying at universities in Turkey.",
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "WebPage",
+                    "@id": "https://roadtostudy.com/turkiyede-kadin-ogrenciler-icin-guvenli-konaklama/#webpage",
+                    "url": "https://roadtostudy.com/turkiyede-kadin-ogrenciler-icin-guvenli-konaklama/",
+                    "name": "Türkiye&#039;de Kadın Öğrenciler İçin Güvenli Konaklama",
+                    "datePublished": "2026-04-17T12:42:22+03:00",
+                    "dateModified": "2026-04-17T12:42:23+03:00",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/#website"
+                    },
+                    "primaryImageOfPage": {
+                      "@id": "https://roadtostudy.com/wp-content/uploads/2025/02/international-students-in-turkey.webp"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "Person",
+                    "@id": "https://roadtostudy.com/author/murat/",
+                    "name": "Murat",
+                    "url": "https://roadtostudy.com/author/murat/",
+                    "image": {
+                      "@type": "ImageObject",
+                      "@id": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "url": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "caption": "Murat",
+                      "inLanguage": "tr"
+                    }
+                  },
+                  {
+                    "@type": "BlogPosting",
+                    "headline": "Türkiye&#039;de Kadın Öğrenciler İçin Güvenli Konaklama",
+                    "keywords": "Güvenli Konaklama",
+                    "datePublished": "2026-04-17T12:42:22+03:00",
+                    "dateModified": "2026-04-17T12:42:23+03:00",
+                    "articleSection": "Yaşam Maliyeti ve Konaklama",
+                    "author": {
+                      "@id": "https://roadtostudy.com/author/murat/",
+                      "name": "Murat"
+                    },
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "description": "Türkiye&#039;de kadın öğrenciler için güvenli konaklama seçeneklerini keşfedin. Güvenli ve konforlu bir yaşam alanı için hemen bilgi alın!",
+                    "name": "Türkiye&#039;de Kadın Öğrenciler İçin Güvenli Konaklama",
+                    "@id": "https://roadtostudy.com/turkiyede-kadin-ogrenciler-icin-guvenli-konaklama/#richSnippet",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/turkiyede-kadin-ogrenciler-icin-guvenli-konaklama/#webpage"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/wp-content/uploads/2025/02/international-students-in-turkey.webp"
+                    },
+                    "inLanguage": "tr",
+                    "mainEntityOfPage": {
+                      "@id": "https://roadtostudy.com/turkiyede-kadin-ogrenciler-icin-guvenli-konaklama/#webpage"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
           "excerpt": "Türkiye'de kadın öğrenciler için güvenli konaklama seçeneklerini keşfedin. Güvenli ve konforlu bir yaşam alanı için hemen bilgi alın!",
           "featured_image": {
             "provider": "external",
@@ -13846,6 +14500,124 @@
               "_key": "b41"
             }
           ],
+          "source_seo": {
+            "title": "Türkiye'de Faturaları Düşürmenin Yolları",
+            "description": "Faturalarınızı düşürmek için etkili yöntemleri keşfedin. Tasarruf edin, bütçenizi koruyun! Hemen öğrenin.",
+            "robots": "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+            "ogTitle": "Türkiye'de Faturaları Düşürmenin Yolları",
+            "ogDescription": "Faturalarınızı düşürmek için etkili yöntemleri keşfedin. Tasarruf edin, bütçenizi koruyun! Hemen öğrenin.",
+            "ogImage": "/wp-content/uploads/2025/02/international-students-in-turkey.webp",
+            "twitterCard": "summary_large_image",
+            "twitterTitle": "Türkiye'de Faturaları Düşürmenin Yolları",
+            "twitterDescription": "Faturalarınızı düşürmek için etkili yöntemleri keşfedin. Tasarruf edin, bütçenizi koruyun! Hemen öğrenin.",
+            "canonicalPath": "/turkiyede-faturalarda-tasarruf/",
+            "hreflang": [],
+            "jsonLd": [
+              {
+                "@context": "https://schema.org",
+                "@graph": [
+                  {
+                    "@type": [
+                      "Organization",
+                      "Person"
+                    ],
+                    "@id": "https://roadtostudy.com/#person",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "url": "https://roadtostudy.com",
+                    "logo": {
+                      "@type": "ImageObject",
+                      "@id": "https://roadtostudy.com/#logo",
+                      "url": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "contentUrl": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "caption": "Road to Study - Turkey University Guide for Students",
+                      "inLanguage": "tr",
+                      "width": "450",
+                      "height": "445"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/#logo"
+                    }
+                  },
+                  {
+                    "@type": "WebSite",
+                    "@id": "https://roadtostudy.com/#website",
+                    "url": "https://roadtostudy.com",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "alternateName": "Road to Study in Turkey",
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "ImageObject",
+                    "@id": "https://roadtostudy.com/wp-content/uploads/2025/02/international-students-in-turkey.webp",
+                    "url": "https://roadtostudy.com/wp-content/uploads/2025/02/international-students-in-turkey.webp",
+                    "width": "1152",
+                    "height": "864",
+                    "caption": "Social life for international students studying at universities in Turkey.",
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "WebPage",
+                    "@id": "https://roadtostudy.com/turkiyede-faturalarda-tasarruf/#webpage",
+                    "url": "https://roadtostudy.com/turkiyede-faturalarda-tasarruf/",
+                    "name": "Türkiye&#039;de Faturaları Düşürmenin Yolları",
+                    "datePublished": "2026-04-17T12:42:18+03:00",
+                    "dateModified": "2026-04-17T12:42:19+03:00",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/#website"
+                    },
+                    "primaryImageOfPage": {
+                      "@id": "https://roadtostudy.com/wp-content/uploads/2025/02/international-students-in-turkey.webp"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "Person",
+                    "@id": "https://roadtostudy.com/author/murat/",
+                    "name": "Murat",
+                    "url": "https://roadtostudy.com/author/murat/",
+                    "image": {
+                      "@type": "ImageObject",
+                      "@id": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "url": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "caption": "Murat",
+                      "inLanguage": "tr"
+                    }
+                  },
+                  {
+                    "@type": "BlogPosting",
+                    "headline": "Türkiye&#039;de Faturaları Düşürmenin Yolları",
+                    "keywords": "fatura",
+                    "datePublished": "2026-04-17T12:42:18+03:00",
+                    "dateModified": "2026-04-17T12:42:19+03:00",
+                    "articleSection": "Yaşam Maliyeti ve Konaklama",
+                    "author": {
+                      "@id": "https://roadtostudy.com/author/murat/",
+                      "name": "Murat"
+                    },
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "description": "Faturalarınızı düşürmek için etkili yöntemleri keşfedin. Tasarruf edin, bütçenizi koruyun! Hemen öğrenin.",
+                    "name": "Türkiye&#039;de Faturaları Düşürmenin Yolları",
+                    "@id": "https://roadtostudy.com/turkiyede-faturalarda-tasarruf/#richSnippet",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/turkiyede-faturalarda-tasarruf/#webpage"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/wp-content/uploads/2025/02/international-students-in-turkey.webp"
+                    },
+                    "inLanguage": "tr",
+                    "mainEntityOfPage": {
+                      "@id": "https://roadtostudy.com/turkiyede-faturalarda-tasarruf/#webpage"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
           "excerpt": "Faturalarınızı düşürmek için etkili yöntemleri keşfedin. Tasarruf edin, bütçenizi koruyun! Hemen öğrenin.",
           "featured_image": {
             "provider": "external",
@@ -16053,6 +16825,124 @@
               "_key": "b42"
             }
           ],
+          "source_seo": {
+            "title": "Türkiye'de İkinci El Eşya Pazarları ve Online Satış",
+            "description": "Türkiye'de ikinci el eşya pazarlarını keşfedin! Online platformlarda uygun fiyatlarla alışveriş yapın. Hemen başlayın!",
+            "robots": "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+            "ogTitle": "Türkiye'de İkinci El Eşya Pazarları ve Online Satış",
+            "ogDescription": "Türkiye'de ikinci el eşya pazarlarını keşfedin! Online platformlarda uygun fiyatlarla alışveriş yapın. Hemen başlayın!",
+            "ogImage": "/wp-content/uploads/2025/02/international-students-in-turkey.webp",
+            "twitterCard": "summary_large_image",
+            "twitterTitle": "Türkiye'de İkinci El Eşya Pazarları ve Online Satış",
+            "twitterDescription": "Türkiye'de ikinci el eşya pazarlarını keşfedin! Online platformlarda uygun fiyatlarla alışveriş yapın. Hemen başlayın!",
+            "canonicalPath": "/turkiyede-ikinci-el-esya-pazarlari-online-platformlar/",
+            "hreflang": [],
+            "jsonLd": [
+              {
+                "@context": "https://schema.org",
+                "@graph": [
+                  {
+                    "@type": [
+                      "Organization",
+                      "Person"
+                    ],
+                    "@id": "https://roadtostudy.com/#person",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "url": "https://roadtostudy.com",
+                    "logo": {
+                      "@type": "ImageObject",
+                      "@id": "https://roadtostudy.com/#logo",
+                      "url": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "contentUrl": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "caption": "Road to Study - Turkey University Guide for Students",
+                      "inLanguage": "tr",
+                      "width": "450",
+                      "height": "445"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/#logo"
+                    }
+                  },
+                  {
+                    "@type": "WebSite",
+                    "@id": "https://roadtostudy.com/#website",
+                    "url": "https://roadtostudy.com",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "alternateName": "Road to Study in Turkey",
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "ImageObject",
+                    "@id": "https://roadtostudy.com/wp-content/uploads/2025/02/international-students-in-turkey.webp",
+                    "url": "https://roadtostudy.com/wp-content/uploads/2025/02/international-students-in-turkey.webp",
+                    "width": "1152",
+                    "height": "864",
+                    "caption": "Social life for international students studying at universities in Turkey.",
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "WebPage",
+                    "@id": "https://roadtostudy.com/turkiyede-ikinci-el-esya-pazarlari-online-platformlar/#webpage",
+                    "url": "https://roadtostudy.com/turkiyede-ikinci-el-esya-pazarlari-online-platformlar/",
+                    "name": "Türkiye&#039;de İkinci El Eşya Pazarları ve Online Satış",
+                    "datePublished": "2026-04-17T12:40:11+03:00",
+                    "dateModified": "2026-04-17T12:40:13+03:00",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/#website"
+                    },
+                    "primaryImageOfPage": {
+                      "@id": "https://roadtostudy.com/wp-content/uploads/2025/02/international-students-in-turkey.webp"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "Person",
+                    "@id": "https://roadtostudy.com/author/murat/",
+                    "name": "Murat",
+                    "url": "https://roadtostudy.com/author/murat/",
+                    "image": {
+                      "@type": "ImageObject",
+                      "@id": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "url": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "caption": "Murat",
+                      "inLanguage": "tr"
+                    }
+                  },
+                  {
+                    "@type": "BlogPosting",
+                    "headline": "Türkiye&#039;de İkinci El Eşya Pazarları ve Online Satış",
+                    "keywords": "İkinci El Eşya",
+                    "datePublished": "2026-04-17T12:40:11+03:00",
+                    "dateModified": "2026-04-17T12:40:13+03:00",
+                    "articleSection": "Yaşam Maliyeti ve Konaklama",
+                    "author": {
+                      "@id": "https://roadtostudy.com/author/murat/",
+                      "name": "Murat"
+                    },
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "description": "Türkiye&#039;de ikinci el eşya pazarlarını keşfedin! Online platformlarda uygun fiyatlarla alışveriş yapın. Hemen başlayın!",
+                    "name": "Türkiye&#039;de İkinci El Eşya Pazarları ve Online Satış",
+                    "@id": "https://roadtostudy.com/turkiyede-ikinci-el-esya-pazarlari-online-platformlar/#richSnippet",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/turkiyede-ikinci-el-esya-pazarlari-online-platformlar/#webpage"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/wp-content/uploads/2025/02/international-students-in-turkey.webp"
+                    },
+                    "inLanguage": "tr",
+                    "mainEntityOfPage": {
+                      "@id": "https://roadtostudy.com/turkiyede-ikinci-el-esya-pazarlari-online-platformlar/#webpage"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
           "excerpt": "Türkiye'de ikinci el eşya pazarlarını keşfedin! Online platformlarda uygun fiyatlarla alışveriş yapın. Hemen başlayın!",
           "featured_image": {
             "provider": "external",
@@ -18308,6 +19198,123 @@
               "_key": "b46"
             }
           ],
+          "source_seo": {
+            "title": "Türkiye'de Öğrenciler İçin İndirimli Alışveriş Rehberi - RoadtoStudy",
+            "description": "Öğrenciler için en iyi indirimli alışveriş dönemlerini keşfedin. Tasarruf edin ve fırsatları kaçırmayın! Hemen alışverişe başlayın!",
+            "robots": "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+            "ogTitle": "Türkiye'de Öğrenciler İçin İndirimli Alışveriş Rehberi - RoadtoStudy",
+            "ogDescription": "Öğrenciler için en iyi indirimli alışveriş dönemlerini keşfedin. Tasarruf edin ve fırsatları kaçırmayın! Hemen alışverişe başlayın!",
+            "ogImage": "/wp-content/uploads/2025/02/international-students-in-turkey.webp",
+            "twitterCard": "summary_large_image",
+            "twitterTitle": "Türkiye'de Öğrenciler İçin İndirimli Alışveriş Rehberi - RoadtoStudy",
+            "twitterDescription": "Öğrenciler için en iyi indirimli alışveriş dönemlerini keşfedin. Tasarruf edin ve fırsatları kaçırmayın! Hemen alışverişe başlayın!",
+            "canonicalPath": "/turkiyede-ogrenciler-icin-indirimli-alisveris/",
+            "hreflang": [],
+            "jsonLd": [
+              {
+                "@context": "https://schema.org",
+                "@graph": [
+                  {
+                    "@type": [
+                      "Organization",
+                      "Person"
+                    ],
+                    "@id": "https://roadtostudy.com/#person",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "url": "https://roadtostudy.com",
+                    "logo": {
+                      "@type": "ImageObject",
+                      "@id": "https://roadtostudy.com/#logo",
+                      "url": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "contentUrl": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "caption": "Road to Study - Turkey University Guide for Students",
+                      "inLanguage": "tr",
+                      "width": "450",
+                      "height": "445"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/#logo"
+                    }
+                  },
+                  {
+                    "@type": "WebSite",
+                    "@id": "https://roadtostudy.com/#website",
+                    "url": "https://roadtostudy.com",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "alternateName": "Road to Study in Turkey",
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "ImageObject",
+                    "@id": "https://roadtostudy.com/wp-content/uploads/2025/02/international-students-in-turkey.webp",
+                    "url": "https://roadtostudy.com/wp-content/uploads/2025/02/international-students-in-turkey.webp",
+                    "width": "1152",
+                    "height": "864",
+                    "caption": "Social life for international students studying at universities in Turkey.",
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "WebPage",
+                    "@id": "https://roadtostudy.com/turkiyede-ogrenciler-icin-indirimli-alisveris/#webpage",
+                    "url": "https://roadtostudy.com/turkiyede-ogrenciler-icin-indirimli-alisveris/",
+                    "name": "Türkiye&#039;de Öğrenciler İçin İndirimli Alışveriş Rehberi - RoadtoStudy",
+                    "datePublished": "2026-03-23T12:32:04+03:00",
+                    "dateModified": "2026-03-23T12:32:05+03:00",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/#website"
+                    },
+                    "primaryImageOfPage": {
+                      "@id": "https://roadtostudy.com/wp-content/uploads/2025/02/international-students-in-turkey.webp"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "Person",
+                    "@id": "https://roadtostudy.com/author/murat/",
+                    "name": "Murat",
+                    "url": "https://roadtostudy.com/author/murat/",
+                    "image": {
+                      "@type": "ImageObject",
+                      "@id": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "url": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "caption": "Murat",
+                      "inLanguage": "tr"
+                    }
+                  },
+                  {
+                    "@type": "BlogPosting",
+                    "headline": "Türkiye&#039;de Öğrenciler İçin İndirimli Alışveriş Rehberi - RoadtoStudy",
+                    "datePublished": "2026-03-23T12:32:04+03:00",
+                    "dateModified": "2026-03-23T12:32:05+03:00",
+                    "articleSection": "Yaşam Maliyeti ve Konaklama",
+                    "author": {
+                      "@id": "https://roadtostudy.com/author/murat/",
+                      "name": "Murat"
+                    },
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "description": "Öğrenciler için en iyi indirimli alışveriş dönemlerini keşfedin. Tasarruf edin ve fırsatları kaçırmayın! Hemen alışverişe başlayın!",
+                    "name": "Türkiye&#039;de Öğrenciler İçin İndirimli Alışveriş Rehberi - RoadtoStudy",
+                    "@id": "https://roadtostudy.com/turkiyede-ogrenciler-icin-indirimli-alisveris/#richSnippet",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/turkiyede-ogrenciler-icin-indirimli-alisveris/#webpage"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/wp-content/uploads/2025/02/international-students-in-turkey.webp"
+                    },
+                    "inLanguage": "tr",
+                    "mainEntityOfPage": {
+                      "@id": "https://roadtostudy.com/turkiyede-ogrenciler-icin-indirimli-alisveris/#webpage"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
           "excerpt": "Öğrenciler için en iyi indirimli alışveriş dönemlerini keşfedin. Tasarruf edin ve fırsatları kaçırmayın! Hemen alışverişe başlayın!",
           "featured_image": {
             "provider": "external",
@@ -19784,6 +20791,118 @@
               "_key": "b22"
             }
           ],
+          "source_seo": {
+            "title": "Banking Transactions with Student Residence Permit in Turkey",
+            "description": "Is it possible to open a bank account in Turkey with a student residence permit? Learn about banking procedures, required documents, and tips right away!",
+            "robots": "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+            "ogTitle": "Banking Transactions with Student Residence Permit in Turkey",
+            "ogDescription": "Is it possible to open a bank account in Turkey with a student residence permit? Learn about banking procedures, required documents, and tips right away!",
+            "ogImage": null,
+            "twitterCard": "summary_large_image",
+            "twitterTitle": "Banking Transactions with Student Residence Permit in Turkey",
+            "twitterDescription": "Is it possible to open a bank account in Turkey with a student residence permit? Learn about banking procedures, required documents, and tips right away!",
+            "canonicalPath": "/en/banking-with-a-student-residence-permit/",
+            "hreflang": [
+              {
+                "hreflang": "tr",
+                "href": "/ogrenci-ikamet-izni-bankacilik/"
+              },
+              {
+                "hreflang": "en",
+                "href": "/en/banking-with-a-student-residence-permit/"
+              }
+            ],
+            "jsonLd": [
+              {
+                "@context": "https://schema.org",
+                "@graph": [
+                  {
+                    "@type": [
+                      "Organization",
+                      "Person"
+                    ],
+                    "@id": "https://roadtostudy.com/#person",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "url": "https://roadtostudy.com",
+                    "logo": {
+                      "@type": "ImageObject",
+                      "@id": "https://roadtostudy.com/#logo",
+                      "url": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "contentUrl": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "caption": "Road to Study - Turkey University Guide for Students",
+                      "inLanguage": "en-US",
+                      "width": "450",
+                      "height": "445"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/#logo"
+                    }
+                  },
+                  {
+                    "@type": "WebSite",
+                    "@id": "https://roadtostudy.com/#website",
+                    "url": "https://roadtostudy.com",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "alternateName": "Road to Study in Turkey",
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "inLanguage": "en-US"
+                  },
+                  {
+                    "@type": "WebPage",
+                    "@id": "https://roadtostudy.com/en/banking-with-a-student-residence-permit/#webpage",
+                    "url": "https://roadtostudy.com/en/banking-with-a-student-residence-permit/",
+                    "name": "Banking Transactions with Student Residence Permit in Turkey",
+                    "datePublished": "2026-03-22T10:00:00+03:00",
+                    "dateModified": "2026-03-22T15:25:16+03:00",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/#website"
+                    },
+                    "inLanguage": "en-US"
+                  },
+                  {
+                    "@type": "Person",
+                    "@id": "https://roadtostudy.com/en/author/murat/",
+                    "name": "Murat",
+                    "url": "https://roadtostudy.com/en/author/murat/",
+                    "image": {
+                      "@type": "ImageObject",
+                      "@id": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "url": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "caption": "Murat",
+                      "inLanguage": "en-US"
+                    }
+                  },
+                  {
+                    "@type": "BlogPosting",
+                    "headline": "Banking Transactions with Student Residence Permit in Turkey",
+                    "keywords": "Banking Transactions",
+                    "datePublished": "2026-03-22T10:00:00+03:00",
+                    "dateModified": "2026-03-22T15:25:16+03:00",
+                    "articleSection": "Visa and Immigration",
+                    "author": {
+                      "@id": "https://roadtostudy.com/en/author/murat/",
+                      "name": "Murat"
+                    },
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "description": "Is it possible to open a bank account in Turkey with a student residence permit? Learn about banking procedures, required documents, and tips right away!",
+                    "name": "Banking Transactions with Student Residence Permit in Turkey",
+                    "@id": "https://roadtostudy.com/en/banking-with-a-student-residence-permit/#richSnippet",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/en/banking-with-a-student-residence-permit/#webpage"
+                    },
+                    "inLanguage": "en-US",
+                    "mainEntityOfPage": {
+                      "@id": "https://roadtostudy.com/en/banking-with-a-student-residence-permit/#webpage"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
           "excerpt": "What is a Student Residence Permit in Turkey The student residence permit, which allows foreign students studying in Turkey to stay in the country legally, is required throughout their education period. To obtain this permit, you must first be registered in Turkey and have a student certificate from the university where you are studying. Applications&#8230;"
         },
         "taxonomies": {
@@ -20948,7 +22067,118 @@
               ],
               "_key": "b18"
             }
-          ]
+          ],
+          "source_seo": {
+            "title": "Balıkesir University - RoadtoStudy",
+            "description": "Balıkesir University was established in Balıkesir on July 11, 1992, under Law No. 3837. Its roots trace back to 1910 with the foundation of Karesi Teacher",
+            "robots": "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+            "ogTitle": "Balıkesir University - RoadtoStudy",
+            "ogDescription": "Balıkesir University was established in Balıkesir on July 11, 1992, under Law No. 3837. Its roots trace back to 1910 with the foundation of Karesi Teacher",
+            "ogImage": null,
+            "twitterCard": "summary_large_image",
+            "twitterTitle": "Balıkesir University - RoadtoStudy",
+            "twitterDescription": "Balıkesir University was established in Balıkesir on July 11, 1992, under Law No. 3837. Its roots trace back to 1910 with the foundation of Karesi Teacher",
+            "canonicalPath": "/en/balikesir-university/",
+            "hreflang": [
+              {
+                "hreflang": "tr",
+                "href": "/balikesir-universitesi-tanitim-rehberi/"
+              },
+              {
+                "hreflang": "en",
+                "href": "/en/balikesir-university/"
+              }
+            ],
+            "jsonLd": [
+              {
+                "@context": "https://schema.org",
+                "@graph": [
+                  {
+                    "@type": [
+                      "Organization",
+                      "Person"
+                    ],
+                    "@id": "https://roadtostudy.com/#person",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "url": "https://roadtostudy.com",
+                    "logo": {
+                      "@type": "ImageObject",
+                      "@id": "https://roadtostudy.com/#logo",
+                      "url": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "contentUrl": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "caption": "Road to Study - Turkey University Guide for Students",
+                      "inLanguage": "en-US",
+                      "width": "450",
+                      "height": "445"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/#logo"
+                    }
+                  },
+                  {
+                    "@type": "WebSite",
+                    "@id": "https://roadtostudy.com/#website",
+                    "url": "https://roadtostudy.com",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "alternateName": "Road to Study in Turkey",
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "inLanguage": "en-US"
+                  },
+                  {
+                    "@type": "WebPage",
+                    "@id": "https://roadtostudy.com/en/balikesir-university/#webpage",
+                    "url": "https://roadtostudy.com/en/balikesir-university/",
+                    "name": "Balıkesir University - RoadtoStudy",
+                    "datePublished": "2025-12-30T17:48:49+03:00",
+                    "dateModified": "2025-12-30T17:48:49+03:00",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/#website"
+                    },
+                    "inLanguage": "en-US"
+                  },
+                  {
+                    "@type": "Person",
+                    "@id": "https://roadtostudy.com/en/author/busra/",
+                    "name": "busra",
+                    "url": "https://roadtostudy.com/en/author/busra/",
+                    "image": {
+                      "@type": "ImageObject",
+                      "@id": "https://secure.gravatar.com/avatar/a3c0f700b03ed22f8ab3a40880c2b539035a9a6e21bb16550f65e22a0ff39809?s=96&amp;d=mm&amp;r=g",
+                      "url": "https://secure.gravatar.com/avatar/a3c0f700b03ed22f8ab3a40880c2b539035a9a6e21bb16550f65e22a0ff39809?s=96&amp;d=mm&amp;r=g",
+                      "caption": "busra",
+                      "inLanguage": "en-US"
+                    }
+                  },
+                  {
+                    "@type": "Article",
+                    "headline": "Balıkesir University - RoadtoStudy",
+                    "keywords": "Balıkesir University",
+                    "datePublished": "2025-12-30T17:48:49+03:00",
+                    "dateModified": "2025-12-30T17:48:49+03:00",
+                    "author": {
+                      "@id": "https://roadtostudy.com/en/author/busra/",
+                      "name": "busra"
+                    },
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "description": "Balıkesir University was established in Balıkesir on July 11, 1992, under Law No. 3837. Its roots trace back to 1910 with the foundation of Karesi Teacher",
+                    "name": "Balıkesir University - RoadtoStudy",
+                    "@id": "https://roadtostudy.com/en/balikesir-university/#richSnippet",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/en/balikesir-university/#webpage"
+                    },
+                    "inLanguage": "en-US",
+                    "mainEntityOfPage": {
+                      "@id": "https://roadtostudy.com/en/balikesir-university/#webpage"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
         }
       },
       {
@@ -21187,7 +22417,118 @@
               ],
               "_key": "b18"
             }
-          ]
+          ],
+          "source_seo": {
+            "title": "Balıkesir Üniversitesi - RoadtoStudy",
+            "description": "Balıkesir Üniversitesi: Balıkesir’deki devlet üniversitesinde eğitim, kampüs ve sosyal yaşamı keşfedin; bilimde öncü bir deneyim!",
+            "robots": "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+            "ogTitle": "Balıkesir Üniversitesi - RoadtoStudy",
+            "ogDescription": "Balıkesir Üniversitesi: Balıkesir’deki devlet üniversitesinde eğitim, kampüs ve sosyal yaşamı keşfedin; bilimde öncü bir deneyim!",
+            "ogImage": null,
+            "twitterCard": "summary_large_image",
+            "twitterTitle": "Balıkesir Üniversitesi - RoadtoStudy",
+            "twitterDescription": "Balıkesir Üniversitesi: Balıkesir’deki devlet üniversitesinde eğitim, kampüs ve sosyal yaşamı keşfedin; bilimde öncü bir deneyim!",
+            "canonicalPath": "/balikesir-universitesi-tanitim-rehberi/",
+            "hreflang": [
+              {
+                "hreflang": "tr",
+                "href": "/balikesir-universitesi-tanitim-rehberi/"
+              },
+              {
+                "hreflang": "en",
+                "href": "/en/balikesir-university/"
+              }
+            ],
+            "jsonLd": [
+              {
+                "@context": "https://schema.org",
+                "@graph": [
+                  {
+                    "@type": [
+                      "Organization",
+                      "Person"
+                    ],
+                    "@id": "https://roadtostudy.com/#person",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "url": "https://roadtostudy.com",
+                    "logo": {
+                      "@type": "ImageObject",
+                      "@id": "https://roadtostudy.com/#logo",
+                      "url": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "contentUrl": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "caption": "Road to Study - Turkey University Guide for Students",
+                      "inLanguage": "tr",
+                      "width": "450",
+                      "height": "445"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/#logo"
+                    }
+                  },
+                  {
+                    "@type": "WebSite",
+                    "@id": "https://roadtostudy.com/#website",
+                    "url": "https://roadtostudy.com",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "alternateName": "Road to Study in Turkey",
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "WebPage",
+                    "@id": "https://roadtostudy.com/balikesir-universitesi-tanitim-rehberi/#webpage",
+                    "url": "https://roadtostudy.com/balikesir-universitesi-tanitim-rehberi/",
+                    "name": "Balıkesir Üniversitesi - RoadtoStudy",
+                    "datePublished": "2025-03-28T13:54:30+03:00",
+                    "dateModified": "2025-11-04T17:49:16+03:00",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/#website"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "Person",
+                    "@id": "https://roadtostudy.com/author/murat/",
+                    "name": "Murat",
+                    "url": "https://roadtostudy.com/author/murat/",
+                    "image": {
+                      "@type": "ImageObject",
+                      "@id": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "url": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "caption": "Murat",
+                      "inLanguage": "tr"
+                    }
+                  },
+                  {
+                    "@type": "Article",
+                    "headline": "Balıkesir Üniversitesi - RoadtoStudy",
+                    "keywords": "Balıkesir Üniversitesi",
+                    "datePublished": "2025-03-28T13:54:30+03:00",
+                    "dateModified": "2025-11-04T17:49:16+03:00",
+                    "author": {
+                      "@id": "https://roadtostudy.com/author/murat/",
+                      "name": "Murat"
+                    },
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "description": "Balıkesir Üniversitesi: Balıkesir’deki devlet üniversitesinde eğitim, kampüs ve sosyal yaşamı keşfedin; bilimde öncü bir deneyim!",
+                    "name": "Balıkesir Üniversitesi - RoadtoStudy",
+                    "@id": "https://roadtostudy.com/balikesir-universitesi-tanitim-rehberi/#richSnippet",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/balikesir-universitesi-tanitim-rehberi/#webpage"
+                    },
+                    "inLanguage": "tr",
+                    "mainEntityOfPage": {
+                      "@id": "https://roadtostudy.com/balikesir-universitesi-tanitim-rehberi/#webpage"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
         },
         "translationOf": "wp-page-11128"
       },
@@ -21427,7 +22768,132 @@
               ],
               "_key": "b18"
             }
-          ]
+          ],
+          "source_seo": {
+            "title": "Bahçeşehir University - RoadtoStudy",
+            "description": "Bahçeşehir University was established in Istanbul on January 18, 1998, by the Bahçeşehir Uğur Educational Foundation and was officially recognized under Law",
+            "robots": "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+            "ogTitle": "Bahçeşehir University - RoadtoStudy",
+            "ogDescription": "Bahçeşehir University was established in Istanbul on January 18, 1998, by the Bahçeşehir Uğur Educational Foundation and was officially recognized under Law",
+            "ogImage": "/wp-content/uploads/2025/11/bahcesehir-university.webp",
+            "twitterCard": "summary_large_image",
+            "twitterTitle": "Bahçeşehir University - RoadtoStudy",
+            "twitterDescription": "Bahçeşehir University was established in Istanbul on January 18, 1998, by the Bahçeşehir Uğur Educational Foundation and was officially recognized under Law",
+            "canonicalPath": "/en/bahcesehir-university/",
+            "hreflang": [
+              {
+                "hreflang": "tr",
+                "href": "/bahcesehir-universitesi-tanitim-rehberi/"
+              },
+              {
+                "hreflang": "en",
+                "href": "/en/bahcesehir-university/"
+              }
+            ],
+            "jsonLd": [
+              {
+                "@context": "https://schema.org",
+                "@graph": [
+                  {
+                    "@type": [
+                      "Organization",
+                      "Person"
+                    ],
+                    "@id": "https://roadtostudy.com/#person",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "url": "https://roadtostudy.com",
+                    "logo": {
+                      "@type": "ImageObject",
+                      "@id": "https://roadtostudy.com/#logo",
+                      "url": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "contentUrl": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "caption": "Road to Study - Turkey University Guide for Students",
+                      "inLanguage": "en-US",
+                      "width": "450",
+                      "height": "445"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/#logo"
+                    }
+                  },
+                  {
+                    "@type": "WebSite",
+                    "@id": "https://roadtostudy.com/#website",
+                    "url": "https://roadtostudy.com",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "alternateName": "Road to Study in Turkey",
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "inLanguage": "en-US"
+                  },
+                  {
+                    "@type": "ImageObject",
+                    "@id": "https://roadtostudy.com/wp-content/uploads/2025/11/bahcesehir-university.webp",
+                    "url": "https://roadtostudy.com/wp-content/uploads/2025/11/bahcesehir-university.webp",
+                    "width": "700",
+                    "height": "500",
+                    "inLanguage": "en-US"
+                  },
+                  {
+                    "@type": "WebPage",
+                    "@id": "https://roadtostudy.com/en/bahcesehir-university/#webpage",
+                    "url": "https://roadtostudy.com/en/bahcesehir-university/",
+                    "name": "Bahçeşehir University - RoadtoStudy",
+                    "datePublished": "2025-11-08T17:28:07+03:00",
+                    "dateModified": "2025-11-08T17:28:07+03:00",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/#website"
+                    },
+                    "primaryImageOfPage": {
+                      "@id": "https://roadtostudy.com/wp-content/uploads/2025/11/bahcesehir-university.webp"
+                    },
+                    "inLanguage": "en-US"
+                  },
+                  {
+                    "@type": "Person",
+                    "@id": "https://roadtostudy.com/en/author/busra/",
+                    "name": "busra",
+                    "url": "https://roadtostudy.com/en/author/busra/",
+                    "image": {
+                      "@type": "ImageObject",
+                      "@id": "https://secure.gravatar.com/avatar/a3c0f700b03ed22f8ab3a40880c2b539035a9a6e21bb16550f65e22a0ff39809?s=96&amp;d=mm&amp;r=g",
+                      "url": "https://secure.gravatar.com/avatar/a3c0f700b03ed22f8ab3a40880c2b539035a9a6e21bb16550f65e22a0ff39809?s=96&amp;d=mm&amp;r=g",
+                      "caption": "busra",
+                      "inLanguage": "en-US"
+                    }
+                  },
+                  {
+                    "@type": "Article",
+                    "headline": "Bahçeşehir University - RoadtoStudy",
+                    "keywords": "Bahçeşehir University",
+                    "datePublished": "2025-11-08T17:28:07+03:00",
+                    "dateModified": "2025-11-08T17:28:07+03:00",
+                    "author": {
+                      "@id": "https://roadtostudy.com/en/author/busra/",
+                      "name": "busra"
+                    },
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "description": "Bahçeşehir University was established in Istanbul on January 18, 1998, by the Bahçeşehir Uğur Educational Foundation and was officially recognized under Law",
+                    "name": "Bahçeşehir University - RoadtoStudy",
+                    "@id": "https://roadtostudy.com/en/bahcesehir-university/#richSnippet",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/en/bahcesehir-university/#webpage"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/wp-content/uploads/2025/11/bahcesehir-university.webp"
+                    },
+                    "inLanguage": "en-US",
+                    "mainEntityOfPage": {
+                      "@id": "https://roadtostudy.com/en/bahcesehir-university/#webpage"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
         }
       },
       {
@@ -21666,7 +23132,132 @@
               ],
               "_key": "b18"
             }
-          ]
+          ],
+          "source_seo": {
+            "title": "Bahçeşehir Üniversitesi - RoadtoStudy",
+            "description": "Bahçeşehir Üniversitesi: İstanbul’daki vakıf üniversitesinde eğitim, kampüs yaşamı ve sosyal imkanları keşfedin!",
+            "robots": "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+            "ogTitle": "Bahçeşehir Üniversitesi - RoadtoStudy",
+            "ogDescription": "Bahçeşehir Üniversitesi: İstanbul’daki vakıf üniversitesinde eğitim, kampüs yaşamı ve sosyal imkanları keşfedin!",
+            "ogImage": "/wp-content/uploads/2025/11/bahcesehir-university-1.webp",
+            "twitterCard": "summary_large_image",
+            "twitterTitle": "Bahçeşehir Üniversitesi - RoadtoStudy",
+            "twitterDescription": "Bahçeşehir Üniversitesi: İstanbul’daki vakıf üniversitesinde eğitim, kampüs yaşamı ve sosyal imkanları keşfedin!",
+            "canonicalPath": "/bahcesehir-universitesi-tanitim-rehberi/",
+            "hreflang": [
+              {
+                "hreflang": "tr",
+                "href": "/bahcesehir-universitesi-tanitim-rehberi/"
+              },
+              {
+                "hreflang": "en",
+                "href": "/en/bahcesehir-university/"
+              }
+            ],
+            "jsonLd": [
+              {
+                "@context": "https://schema.org",
+                "@graph": [
+                  {
+                    "@type": [
+                      "Organization",
+                      "Person"
+                    ],
+                    "@id": "https://roadtostudy.com/#person",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "url": "https://roadtostudy.com",
+                    "logo": {
+                      "@type": "ImageObject",
+                      "@id": "https://roadtostudy.com/#logo",
+                      "url": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "contentUrl": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "caption": "Road to Study - Turkey University Guide for Students",
+                      "inLanguage": "tr",
+                      "width": "450",
+                      "height": "445"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/#logo"
+                    }
+                  },
+                  {
+                    "@type": "WebSite",
+                    "@id": "https://roadtostudy.com/#website",
+                    "url": "https://roadtostudy.com",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "alternateName": "Road to Study in Turkey",
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "ImageObject",
+                    "@id": "https://roadtostudy.com/wp-content/uploads/2025/11/bahcesehir-university-1.webp",
+                    "url": "https://roadtostudy.com/wp-content/uploads/2025/11/bahcesehir-university-1.webp",
+                    "width": "700",
+                    "height": "500",
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "WebPage",
+                    "@id": "https://roadtostudy.com/bahcesehir-universitesi-tanitim-rehberi/#webpage",
+                    "url": "https://roadtostudy.com/bahcesehir-universitesi-tanitim-rehberi/",
+                    "name": "Bahçeşehir Üniversitesi - RoadtoStudy",
+                    "datePublished": "2025-03-28T13:54:30+03:00",
+                    "dateModified": "2025-11-04T17:30:43+03:00",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/#website"
+                    },
+                    "primaryImageOfPage": {
+                      "@id": "https://roadtostudy.com/wp-content/uploads/2025/11/bahcesehir-university-1.webp"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "Person",
+                    "@id": "https://roadtostudy.com/author/murat/",
+                    "name": "Murat",
+                    "url": "https://roadtostudy.com/author/murat/",
+                    "image": {
+                      "@type": "ImageObject",
+                      "@id": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "url": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "caption": "Murat",
+                      "inLanguage": "tr"
+                    }
+                  },
+                  {
+                    "@type": "Article",
+                    "headline": "Bahçeşehir Üniversitesi - RoadtoStudy",
+                    "keywords": "Bahçeşehir Üniversitesi",
+                    "datePublished": "2025-03-28T13:54:30+03:00",
+                    "dateModified": "2025-11-04T17:30:43+03:00",
+                    "author": {
+                      "@id": "https://roadtostudy.com/author/murat/",
+                      "name": "Murat"
+                    },
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "description": "Bahçeşehir Üniversitesi: İstanbul’daki vakıf üniversitesinde eğitim, kampüs yaşamı ve sosyal imkanları keşfedin!",
+                    "name": "Bahçeşehir Üniversitesi - RoadtoStudy",
+                    "@id": "https://roadtostudy.com/bahcesehir-universitesi-tanitim-rehberi/#richSnippet",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/bahcesehir-universitesi-tanitim-rehberi/#webpage"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/wp-content/uploads/2025/11/bahcesehir-university-1.webp"
+                    },
+                    "inLanguage": "tr",
+                    "mainEntityOfPage": {
+                      "@id": "https://roadtostudy.com/bahcesehir-universitesi-tanitim-rehberi/#webpage"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
         },
         "translationOf": "wp-page-11122"
       },
@@ -21906,7 +23497,132 @@
               ],
               "_key": "b18"
             }
-          ]
+          ],
+          "source_seo": {
+            "title": "Aydın Adnan Menderes University - RoadtoStudy",
+            "description": "Aydın Adnan Menderes University was established on July 3, 1992, in Aydın under Law No. 3837. It began education with five faculties (Science and Literature,",
+            "robots": "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+            "ogTitle": "Aydın Adnan Menderes University - RoadtoStudy",
+            "ogDescription": "Aydın Adnan Menderes University was established on July 3, 1992, in Aydın under Law No. 3837. It began education with five faculties (Science and Literature,",
+            "ogImage": "/wp-content/uploads/2025/11/aydin-adnan-menderes-universitesi-tanitim-rehberi-1-1024x483.webp",
+            "twitterCard": "summary_large_image",
+            "twitterTitle": "Aydın Adnan Menderes University - RoadtoStudy",
+            "twitterDescription": "Aydın Adnan Menderes University was established on July 3, 1992, in Aydın under Law No. 3837. It began education with five faculties (Science and Literature,",
+            "canonicalPath": "/en/aydin-adnan-menderes-university/",
+            "hreflang": [
+              {
+                "hreflang": "tr",
+                "href": "/aydin-adnan-menderes-universitesi-tanitim-rehberi/"
+              },
+              {
+                "hreflang": "en",
+                "href": "/en/aydin-adnan-menderes-university/"
+              }
+            ],
+            "jsonLd": [
+              {
+                "@context": "https://schema.org",
+                "@graph": [
+                  {
+                    "@type": [
+                      "Organization",
+                      "Person"
+                    ],
+                    "@id": "https://roadtostudy.com/#person",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "url": "https://roadtostudy.com",
+                    "logo": {
+                      "@type": "ImageObject",
+                      "@id": "https://roadtostudy.com/#logo",
+                      "url": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "contentUrl": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "caption": "Road to Study - Turkey University Guide for Students",
+                      "inLanguage": "en-US",
+                      "width": "450",
+                      "height": "445"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/#logo"
+                    }
+                  },
+                  {
+                    "@type": "WebSite",
+                    "@id": "https://roadtostudy.com/#website",
+                    "url": "https://roadtostudy.com",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "alternateName": "Road to Study in Turkey",
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "inLanguage": "en-US"
+                  },
+                  {
+                    "@type": "ImageObject",
+                    "@id": "https://roadtostudy.com/wp-content/uploads/2025/11/aydin-adnan-menderes-universitesi-tanitim-rehberi-1.webp",
+                    "url": "https://roadtostudy.com/wp-content/uploads/2025/11/aydin-adnan-menderes-universitesi-tanitim-rehberi-1.webp",
+                    "width": "2035",
+                    "height": "960",
+                    "inLanguage": "en-US"
+                  },
+                  {
+                    "@type": "WebPage",
+                    "@id": "https://roadtostudy.com/en/aydin-adnan-menderes-university/#webpage",
+                    "url": "https://roadtostudy.com/en/aydin-adnan-menderes-university/",
+                    "name": "Aydın Adnan Menderes University - RoadtoStudy",
+                    "datePublished": "2025-11-07T17:19:13+03:00",
+                    "dateModified": "2025-11-07T17:19:13+03:00",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/#website"
+                    },
+                    "primaryImageOfPage": {
+                      "@id": "https://roadtostudy.com/wp-content/uploads/2025/11/aydin-adnan-menderes-universitesi-tanitim-rehberi-1.webp"
+                    },
+                    "inLanguage": "en-US"
+                  },
+                  {
+                    "@type": "Person",
+                    "@id": "https://roadtostudy.com/en/author/busra/",
+                    "name": "busra",
+                    "url": "https://roadtostudy.com/en/author/busra/",
+                    "image": {
+                      "@type": "ImageObject",
+                      "@id": "https://secure.gravatar.com/avatar/a3c0f700b03ed22f8ab3a40880c2b539035a9a6e21bb16550f65e22a0ff39809?s=96&amp;d=mm&amp;r=g",
+                      "url": "https://secure.gravatar.com/avatar/a3c0f700b03ed22f8ab3a40880c2b539035a9a6e21bb16550f65e22a0ff39809?s=96&amp;d=mm&amp;r=g",
+                      "caption": "busra",
+                      "inLanguage": "en-US"
+                    }
+                  },
+                  {
+                    "@type": "Article",
+                    "headline": "Aydın Adnan Menderes University - RoadtoStudy",
+                    "keywords": "Aydın Adnan Menderes University",
+                    "datePublished": "2025-11-07T17:19:13+03:00",
+                    "dateModified": "2025-11-07T17:19:13+03:00",
+                    "author": {
+                      "@id": "https://roadtostudy.com/en/author/busra/",
+                      "name": "busra"
+                    },
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "description": "Aydın Adnan Menderes University was established on July 3, 1992, in Aydın under Law No. 3837. It began education with five faculties (Science and Literature,",
+                    "name": "Aydın Adnan Menderes University - RoadtoStudy",
+                    "@id": "https://roadtostudy.com/en/aydin-adnan-menderes-university/#richSnippet",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/en/aydin-adnan-menderes-university/#webpage"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/wp-content/uploads/2025/11/aydin-adnan-menderes-universitesi-tanitim-rehberi-1.webp"
+                    },
+                    "inLanguage": "en-US",
+                    "mainEntityOfPage": {
+                      "@id": "https://roadtostudy.com/en/aydin-adnan-menderes-university/#webpage"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
         }
       },
       {
@@ -22145,7 +23861,132 @@
               ],
               "_key": "b18"
             }
-          ]
+          ],
+          "source_seo": {
+            "title": "Aydın Adnan Menderes Üniversitesi - RoadtoStudy",
+            "description": "Aydın Adnan Menderes Üniversitesi: Aydın’daki devlet üniversitesinde eğitim, kampüs yaşamı ve sosyal imkanları keşfedin; bilimde öncü bir deneyim",
+            "robots": "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+            "ogTitle": "Aydın Adnan Menderes Üniversitesi - RoadtoStudy",
+            "ogDescription": "Aydın Adnan Menderes Üniversitesi: Aydın’daki devlet üniversitesinde eğitim, kampüs yaşamı ve sosyal imkanları keşfedin; bilimde öncü bir deneyim",
+            "ogImage": "/wp-content/uploads/2025/11/aydin-adnan-menderes-universitesi-tanitim-rehberi-1024x483.webp",
+            "twitterCard": "summary_large_image",
+            "twitterTitle": "Aydın Adnan Menderes Üniversitesi - RoadtoStudy",
+            "twitterDescription": "Aydın Adnan Menderes Üniversitesi: Aydın’daki devlet üniversitesinde eğitim, kampüs yaşamı ve sosyal imkanları keşfedin; bilimde öncü bir deneyim",
+            "canonicalPath": "/aydin-adnan-menderes-universitesi-tanitim-rehberi/",
+            "hreflang": [
+              {
+                "hreflang": "tr",
+                "href": "/aydin-adnan-menderes-universitesi-tanitim-rehberi/"
+              },
+              {
+                "hreflang": "en",
+                "href": "/en/aydin-adnan-menderes-university/"
+              }
+            ],
+            "jsonLd": [
+              {
+                "@context": "https://schema.org",
+                "@graph": [
+                  {
+                    "@type": [
+                      "Organization",
+                      "Person"
+                    ],
+                    "@id": "https://roadtostudy.com/#person",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "url": "https://roadtostudy.com",
+                    "logo": {
+                      "@type": "ImageObject",
+                      "@id": "https://roadtostudy.com/#logo",
+                      "url": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "contentUrl": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "caption": "Road to Study - Turkey University Guide for Students",
+                      "inLanguage": "tr",
+                      "width": "450",
+                      "height": "445"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/#logo"
+                    }
+                  },
+                  {
+                    "@type": "WebSite",
+                    "@id": "https://roadtostudy.com/#website",
+                    "url": "https://roadtostudy.com",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "alternateName": "Road to Study in Turkey",
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "ImageObject",
+                    "@id": "https://roadtostudy.com/wp-content/uploads/2025/11/aydin-adnan-menderes-universitesi-tanitim-rehberi.webp",
+                    "url": "https://roadtostudy.com/wp-content/uploads/2025/11/aydin-adnan-menderes-universitesi-tanitim-rehberi.webp",
+                    "width": "2035",
+                    "height": "960",
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "WebPage",
+                    "@id": "https://roadtostudy.com/aydin-adnan-menderes-universitesi-tanitim-rehberi/#webpage",
+                    "url": "https://roadtostudy.com/aydin-adnan-menderes-universitesi-tanitim-rehberi/",
+                    "name": "Aydın Adnan Menderes Üniversitesi - RoadtoStudy",
+                    "datePublished": "2025-03-28T13:54:29+03:00",
+                    "dateModified": "2025-11-04T17:21:44+03:00",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/#website"
+                    },
+                    "primaryImageOfPage": {
+                      "@id": "https://roadtostudy.com/wp-content/uploads/2025/11/aydin-adnan-menderes-universitesi-tanitim-rehberi.webp"
+                    },
+                    "inLanguage": "tr"
+                  },
+                  {
+                    "@type": "Person",
+                    "@id": "https://roadtostudy.com/author/murat/",
+                    "name": "Murat",
+                    "url": "https://roadtostudy.com/author/murat/",
+                    "image": {
+                      "@type": "ImageObject",
+                      "@id": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "url": "https://secure.gravatar.com/avatar/9f5b866231ae7aed7a61015846c1f0ab6c5797b065ec200b93c5e9daa87897af?s=96&amp;d=mm&amp;r=g",
+                      "caption": "Murat",
+                      "inLanguage": "tr"
+                    }
+                  },
+                  {
+                    "@type": "Article",
+                    "headline": "Aydın Adnan Menderes Üniversitesi - RoadtoStudy",
+                    "keywords": "Aydın Adnan Menderes Üniversitesi",
+                    "datePublished": "2025-03-28T13:54:29+03:00",
+                    "dateModified": "2025-11-04T17:21:44+03:00",
+                    "author": {
+                      "@id": "https://roadtostudy.com/author/murat/",
+                      "name": "Murat"
+                    },
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "description": "Aydın Adnan Menderes Üniversitesi: Aydın’daki devlet üniversitesinde eğitim, kampüs yaşamı ve sosyal imkanları keşfedin; bilimde öncü bir deneyim",
+                    "name": "Aydın Adnan Menderes Üniversitesi - RoadtoStudy",
+                    "@id": "https://roadtostudy.com/aydin-adnan-menderes-universitesi-tanitim-rehberi/#richSnippet",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/aydin-adnan-menderes-universitesi-tanitim-rehberi/#webpage"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/wp-content/uploads/2025/11/aydin-adnan-menderes-universitesi-tanitim-rehberi.webp"
+                    },
+                    "inLanguage": "tr",
+                    "mainEntityOfPage": {
+                      "@id": "https://roadtostudy.com/aydin-adnan-menderes-universitesi-tanitim-rehberi/#webpage"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
         },
         "translationOf": "wp-page-11116"
       },
@@ -22601,7 +24442,132 @@
               ],
               "_key": "b36"
             }
-          ]
+          ],
+          "source_seo": {
+            "title": "Avrasya University - RoadtoStudy",
+            "description": "Avrasya University was founded in 2010 in Trabzon as a foundation (vakıf) university. Established by the Trabzon Education, Culture and Health Foundation, it",
+            "robots": "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large",
+            "ogTitle": "Avrasya University - RoadtoStudy",
+            "ogDescription": "Avrasya University was founded in 2010 in Trabzon as a foundation (vakıf) university. Established by the Trabzon Education, Culture and Health Foundation, it",
+            "ogImage": "/wp-content/uploads/2025/11/avrasya-universitesi-1.webp",
+            "twitterCard": "summary_large_image",
+            "twitterTitle": "Avrasya University - RoadtoStudy",
+            "twitterDescription": "Avrasya University was founded in 2010 in Trabzon as a foundation (vakıf) university. Established by the Trabzon Education, Culture and Health Foundation, it",
+            "canonicalPath": "/en/avrasya-university/",
+            "hreflang": [
+              {
+                "hreflang": "tr",
+                "href": "/universiteler-avrasya-universitesi/"
+              },
+              {
+                "hreflang": "en",
+                "href": "/en/avrasya-university/"
+              }
+            ],
+            "jsonLd": [
+              {
+                "@context": "https://schema.org",
+                "@graph": [
+                  {
+                    "@type": [
+                      "Organization",
+                      "Person"
+                    ],
+                    "@id": "https://roadtostudy.com/#person",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "url": "https://roadtostudy.com",
+                    "logo": {
+                      "@type": "ImageObject",
+                      "@id": "https://roadtostudy.com/#logo",
+                      "url": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "contentUrl": "https://roadtostudy.com/wp-content/uploads/2025/02/Kare-Logo-e1740739634958.png",
+                      "caption": "Road to Study - Turkey University Guide for Students",
+                      "inLanguage": "en-US",
+                      "width": "450",
+                      "height": "445"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/#logo"
+                    }
+                  },
+                  {
+                    "@type": "WebSite",
+                    "@id": "https://roadtostudy.com/#website",
+                    "url": "https://roadtostudy.com",
+                    "name": "Road to Study - Turkey University Guide for Students",
+                    "alternateName": "Road to Study in Turkey",
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "inLanguage": "en-US"
+                  },
+                  {
+                    "@type": "ImageObject",
+                    "@id": "https://roadtostudy.com/wp-content/uploads/2025/11/avrasya-universitesi-1.webp",
+                    "url": "https://roadtostudy.com/wp-content/uploads/2025/11/avrasya-universitesi-1.webp",
+                    "width": "1600",
+                    "height": "900",
+                    "inLanguage": "en-US"
+                  },
+                  {
+                    "@type": "WebPage",
+                    "@id": "https://roadtostudy.com/en/avrasya-university/#webpage",
+                    "url": "https://roadtostudy.com/en/avrasya-university/",
+                    "name": "Avrasya University - RoadtoStudy",
+                    "datePublished": "2025-11-05T17:08:20+03:00",
+                    "dateModified": "2025-11-05T17:08:20+03:00",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/#website"
+                    },
+                    "primaryImageOfPage": {
+                      "@id": "https://roadtostudy.com/wp-content/uploads/2025/11/avrasya-universitesi-1.webp"
+                    },
+                    "inLanguage": "en-US"
+                  },
+                  {
+                    "@type": "Person",
+                    "@id": "https://roadtostudy.com/en/author/busra/",
+                    "name": "busra",
+                    "url": "https://roadtostudy.com/en/author/busra/",
+                    "image": {
+                      "@type": "ImageObject",
+                      "@id": "https://secure.gravatar.com/avatar/a3c0f700b03ed22f8ab3a40880c2b539035a9a6e21bb16550f65e22a0ff39809?s=96&amp;d=mm&amp;r=g",
+                      "url": "https://secure.gravatar.com/avatar/a3c0f700b03ed22f8ab3a40880c2b539035a9a6e21bb16550f65e22a0ff39809?s=96&amp;d=mm&amp;r=g",
+                      "caption": "busra",
+                      "inLanguage": "en-US"
+                    }
+                  },
+                  {
+                    "@type": "Article",
+                    "headline": "Avrasya University - RoadtoStudy",
+                    "keywords": "Avrasya University",
+                    "datePublished": "2025-11-05T17:08:20+03:00",
+                    "dateModified": "2025-11-05T17:08:20+03:00",
+                    "author": {
+                      "@id": "https://roadtostudy.com/en/author/busra/",
+                      "name": "busra"
+                    },
+                    "publisher": {
+                      "@id": "https://roadtostudy.com/#person"
+                    },
+                    "description": "Avrasya University was founded in 2010 in Trabzon as a foundation (vakıf) university. Established by the Trabzon Education, Culture and Health Foundation, it",
+                    "name": "Avrasya University - RoadtoStudy",
+                    "@id": "https://roadtostudy.com/en/avrasya-university/#richSnippet",
+                    "isPartOf": {
+                      "@id": "https://roadtostudy.com/en/avrasya-university/#webpage"
+                    },
+                    "image": {
+                      "@id": "https://roadtostudy.com/wp-content/uploads/2025/11/avrasya-universitesi-1.webp"
+                    },
+                    "inLanguage": "en-US",
+                    "mainEntityOfPage": {
+                      "@id": "https://roadtostudy.com/en/avrasya-university/#webpage"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
         }
       },
       {
