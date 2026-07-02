@@ -50,6 +50,7 @@ for (const [collection, entries] of [
 		seedByKey.set(`${collection}|${e.locale || "tr"}|${e.slug}`, {
 			featured_image: e.data.featured_image ? { ...e.data.featured_image, provider: "external" } : null,
 			source_seo: e.data.source_seo || null,
+			content_html: e.data.content_html || null,
 		});
 	}
 }
@@ -69,7 +70,7 @@ const plan = [];
 for (const collection of ["posts", "pages"]) {
 	for (const e of await listPublished(collection)) {
 		const seedData = seedByKey.get(`${collection}|${e.locale || "tr"}|${e.slug}`);
-		if (!seedData || (!seedData.featured_image && !seedData.source_seo)) continue;
+		if (!seedData || (!seedData.featured_image && !seedData.source_seo && !seedData.content_html)) continue;
 		plan.push({ collection, id: e.id, slug: e.slug, locale: e.locale, ...seedData });
 	}
 }
@@ -91,6 +92,7 @@ for (const it of plan) {
 		const payload = { ...item.data };
 		if (it.featured_image) payload.featured_image = it.featured_image;
 		if (it.source_seo) payload.source_seo = it.source_seo;
+		if (it.content_html) payload.content_html = it.content_html;
 		tmp = join(tmpdir(), `push-seo-${randomUUID()}.json`);
 		await writeFile(tmp, JSON.stringify(payload));
 		await cli(["content", "update", it.collection, it.id, "--rev", item._rev, "--file", tmp]);
