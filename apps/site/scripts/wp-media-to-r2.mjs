@@ -49,7 +49,7 @@ async function exists(key) {
 // invisible to an immediate GET on a different edge. The verify pass runs right
 // after upload, so retry a few times before declaring a key missing (a genuinely
 // missing key still costs only attempts*delay once).
-async function existsWithRetry(key, attempts = 5, delayMs = 2000) {
+async function existsWithRetry(key, attempts = 8, delayMs = 3000) {
 	for (let i = 0; i < attempts; i++) {
 		if (await exists(key)) return true;
 		if (i < attempts - 1) await new Promise((resolve) => setTimeout(resolve, delayMs));

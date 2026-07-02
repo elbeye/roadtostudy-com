@@ -52,7 +52,14 @@ export function collectMediaUrls(source, { baseUrl = DEFAULT_BASE_URL } = {}) {
 		byKey.set(key, new URL(url, baseUrl).href);
 	};
 
-	for (const item of source.content?.media || []) add(item.source_url);
+	for (const item of source.content?.media || []) {
+		add(item.source_url);
+		// WordPress generates resized variants (…-150x150.jpg, …-scaled.jpg). Google
+		// Images indexes those URLs too, so they must be uploaded or they 404 at cutover.
+		for (const size of Object.values(item.media_details?.sizes || {})) {
+			add(size?.source_url);
+		}
+	}
 
 	let baseOrigin;
 	try {

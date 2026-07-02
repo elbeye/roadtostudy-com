@@ -239,3 +239,30 @@ test("collectMediaUrls includes _embedded featured media not in the media array"
 		"wp-content/uploads/lib.jpg",
 	]);
 });
+
+test("collectMediaUrls includes media_details.sizes variants (srcset)", () => {
+	const source = {
+		content: {
+			media: [
+				{
+					id: 1,
+					source_url: "https://roadtostudy.com/wp-content/uploads/a.jpg",
+					media_details: {
+						sizes: {
+							thumbnail: { source_url: "https://roadtostudy.com/wp-content/uploads/a-150x150.jpg" },
+							medium: { source_url: "https://roadtostudy.com/wp-content/uploads/a-300x200.jpg" },
+						},
+					},
+				},
+			],
+			posts: [],
+			pages: [],
+		},
+	};
+	const keys = collectMediaUrls(source, OPTS).map((u) => r2KeyFromUrl(u, OPTS)).sort();
+	assert.deepEqual(keys, [
+		"wp-content/uploads/a-150x150.jpg",
+		"wp-content/uploads/a-300x200.jpg",
+		"wp-content/uploads/a.jpg",
+	]);
+});
