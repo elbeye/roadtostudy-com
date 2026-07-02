@@ -115,6 +115,11 @@ const sourceSeo: any =
 	view === "post" ? currentPost.data.source_seo : view === "page" ? currentPage.data.source_seo : null;
 const absoluteOg = (path: string | null | undefined) =>
 	path ? new URL(path, Astro.url.origin).href : undefined;
+// Body HTML is stored verbatim; rewrite the source host to the current origin so
+// in-body image/link URLs resolve here (pre-cutover) and stay identical at cutover
+// (origin === roadtostudy.com then). Media loads via the /wp-content/uploads/ route.
+const bodyHtml = (html: string | null | undefined) =>
+	(html || "").replaceAll("https://roadtostudy.com", Astro.url.origin);
 const alternates =
 	view === "post"
 		? await contentAlternates("posts", currentPost.data.id, Astro.url.origin, {
@@ -158,9 +163,13 @@ const alternates =
 					<h1>{currentPost.data.title}</h1>
 					{currentPost.data.excerpt && <p class="wp-excerpt">{currentPost.data.excerpt}</p>}
 				</header>
-				<div class="wp-body">
-					<PortableText value={currentPost.data.content} />
-				</div>
+				{currentPost.data.content_html ? (
+					<div class="wp-body" set:html={bodyHtml(currentPost.data.content_html)} />
+				) : (
+					<div class="wp-body">
+						<PortableText value={currentPost.data.content} />
+					</div>
+				)}
 			</article>
 		</Base>
 	)
@@ -185,9 +194,13 @@ const alternates =
 				<header class="wp-header">
 					<h1>{currentPage.data.title}</h1>
 				</header>
-				<div class="wp-body">
-					<PortableText value={currentPage.data.content} />
-				</div>
+				{currentPage.data.content_html ? (
+					<div class="wp-body" set:html={bodyHtml(currentPage.data.content_html)} />
+				) : (
+					<div class="wp-body">
+						<PortableText value={currentPage.data.content} />
+					</div>
+				)}
 			</article>
 		</Base>
 	)

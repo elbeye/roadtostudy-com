@@ -11,6 +11,9 @@ const includeMediaReferences = process.env.WP_SEED_MEDIA_REFERENCES === "1";
 // Store the verbatim source (Rank Math) head per entry so the template can replay
 // title/description/robots/og/twitter/canonical/hreflang/JSON-LD exactly (SEO §6.3).
 const includeSourceSeo = process.env.WP_SEED_SEO !== "0";
+// Store the rendered WordPress body HTML verbatim (preservation-first, §7.2) so the
+// template renders it exactly — images, links, tables, heading anchors, FAQ preserved.
+const includeContentHtml = process.env.WP_SEED_CONTENT_HTML !== "0";
 
 const source = JSON.parse(await readFile(inputPath, "utf8"));
 const headByUrl = new Map(source.seo.headSnapshots.map((snapshot) => [snapshot.url, snapshot]));
@@ -82,6 +85,10 @@ function commonFields(includePostFields) {
 		fields.push({ slug: "source_seo", label: "Source SEO (verbatim head)", type: "json" });
 	}
 
+	if (includeContentHtml) {
+		fields.push({ slug: "content_html", label: "Body HTML (verbatim)", type: "text" });
+	}
+
 	if (includeAuditFields) {
 		fields.push(
 			{ slug: "content_html", label: "Source HTML", type: "text" },
@@ -118,6 +125,11 @@ function mapContent(item, isPost) {
 		title,
 		content: htmlToPortableText(contentHtml),
 	};
+
+	if (includeContentHtml) {
+		// Prefer rendered HTML (shortcodes expanded, final markup the live site serves).
+		data.content_html = cleanHtml(item.content?.rendered || item.content?.raw || "");
+	}
 
 	if (includeAuditFields) {
 		data.content_html = contentHtml;
@@ -199,6 +211,21 @@ function pickAnchorId(groupIds, wpItemsById) {
 		if (id) return id;
 	}
 	return groupIds[0];
+}
+
+// Preservation-first body cleanup (§7.2): keep ALL structure verbatim — headings,
+// anchors, tables, images, links, lists, FAQ — and only strip active/unsafe content
+// (scripts, styles, inline event handlers, javascript: URLs). Aggressive junk-<div>
+// removal is deferred: it needs the real corpus + per-pattern diff review, and blind
+// stripping risks removing real structure.
+function cleanHtml(html) {
+	if (!html) return "";
+	return String(html)
+		.replace(/<script[\s\S]*?<\/script>/gi, "")
+		.replace(/<style[\s\S]*?<\/style>/gi, "")
+		.replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+		.replace(/((?:href|src)\s*=\s*)("javascript:[^"]*"|'javascript:[^']*')/gi, '$1"#"')
+		.trim();
 }
 
 function buildSourceSeo(snap) {
