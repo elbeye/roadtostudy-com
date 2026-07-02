@@ -1,11 +1,17 @@
-import { readFile } from "node:fs/promises";
-import { AwsClient } from "aws4fetch";
+import { readFile, writeFile, unlink } from "node:fs/promises";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { randomUUID } from "node:crypto";
 import { collectMediaUrls, r2KeyFromUrl, contentTypeForKey } from "./wp-media-lib.mjs";
+
+const execFileAsync = promisify(execFile);
 
 const inputPath = process.env.WP_SAMPLE_INPUT || "data/wp-sample.json";
 const baseUrl = process.env.WP_BASE_URL || "https://roadtostudy.com";
 const bucket = process.env.R2_BUCKET || "roadtostudy-emdash-media-poc";
-const concurrency = Math.max(1, Number(process.env.WP_MEDIA_CONCURRENCY || 8));
+const concurrency = Math.max(1, Number(process.env.WP_MEDIA_CONCURRENCY || 4));
 const dryRun = process.argv.includes("--dry-run");
 
 const source = JSON.parse(await readFile(inputPath, "utf8"));
@@ -22,31 +28,38 @@ if (dryRun) {
 	process.exit(0);
 }
 
-const accountId = requireEnv("R2_ACCOUNT_ID");
-const accessKeyId = requireEnv("R2_ACCESS_KEY_ID");
-const secretAccessKey = requireEnv("R2_SECRET_ACCESS_KEY");
-const endpoint = `https://${accountId}.r2.cloudflarestorage.com/${bucket}`;
-const aws = new AwsClient({ accessKeyId, secretAccessKey, service: "s3", region: "auto" });
-
-function requireEnv(name) {
-	const value = process.env[name];
-	if (!value) throw new Error(`${name} must be set (see plan Prerequisites).`);
-	return value;
-}
-
-function objectUrl(key) {
-	return `${endpoint}/${key.split("/").map(encodeURIComponent).join("/")}`;
+// Run `wrangler r2 object ...` as a subprocess. Auth comes from CLOUDFLARE_API_TOKEN
+// in the environment (already loaded via `node --env-file=.env`) — never logged here.
+async function runWrangler(args) {
+	return execFileAsync("npx", ["wrangler", ...args], { maxBuffer: 1024 * 1024 * 64 });
 }
 
 async function exists(key) {
-	const res = await aws.fetch(objectUrl(key), { method: "HEAD" });
-	if (res.status === 200) return true;
-	if (res.status === 404) return false;
-	throw new Error(`HEAD ${key} -> ${res.status}`);
+	try {
+		await runWrangler(["r2", "object", "get", `${bucket}/${key}`, "--remote", "--pipe"]);
+		return true;
+	} catch (error) {
+		const stderr = String(error?.stderr || "");
+		if (/does not exist|not found|404/i.test(stderr)) return false;
+		throw new Error(`get ${key} -> ${error?.code ?? "error"}: ${stderr.trim() || error.message}`);
+	}
+}
+
+// R2 is read-after-write consistent, but a freshly-PUT object can briefly be
+// invisible to an immediate GET on a different edge. The verify pass runs right
+// after upload, so retry a few times before declaring a key missing (a genuinely
+// missing key still costs only attempts*delay once).
+async function existsWithRetry(key, attempts = 5, delayMs = 2000) {
+	for (let i = 0; i < attempts; i++) {
+		if (await exists(key)) return true;
+		if (i < attempts - 1) await new Promise((resolve) => setTimeout(resolve, delayMs));
+	}
+	return false;
 }
 
 async function upload(url) {
 	let key;
+	let tmpFile;
 	try {
 		key = r2KeyFromUrl(url, { baseUrl });
 		if (!key) return { key: url, status: "skipped-nonuploads" };
@@ -57,15 +70,34 @@ async function upload(url) {
 		if (!download.ok) return { key, status: "failed", error: `download ${download.status}` };
 		const bytes = new Uint8Array(await download.arrayBuffer());
 
-		const put = await aws.fetch(objectUrl(key), {
-			method: "PUT",
-			body: bytes,
-			headers: { "Content-Type": download.headers.get("content-type") || contentTypeForKey(key) },
-		});
-		if (!put.ok) return { key, status: "failed", error: `put ${put.status}` };
+		const contentType = download.headers.get("content-type") || contentTypeForKey(key);
+		tmpFile = join(tmpdir(), `wp-media-${randomUUID()}`);
+		await writeFile(tmpFile, bytes);
+
+		try {
+			await runWrangler([
+				"r2",
+				"object",
+				"put",
+				`${bucket}/${key}`,
+				"--remote",
+				"--file",
+				tmpFile,
+				"--content-type",
+				contentType,
+			]);
+		} catch (error) {
+			const stderr = String(error?.stderr || error.message).trim();
+			return { key, status: "failed", error: `put ${stderr}` };
+		}
+
 		return { key, status: "uploaded" };
 	} catch (error) {
 		return { key: key || url, status: "failed", error: String(error) };
+	} finally {
+		if (tmpFile) {
+			await unlink(tmpFile).catch(() => {});
+		}
 	}
 }
 
@@ -91,12 +123,12 @@ const summary = {
 	failed: results.filter((r) => r.status === "failed"),
 };
 
-// Verify: every intended key now returns 200 from R2.
+// Verify: every intended key now exists in R2.
 const verify = await runPool(urls, async (url) => {
 	const key = r2KeyFromUrl(url, { baseUrl });
 	if (!key) return { key: url, ok: true };
 	try {
-		return { key, ok: await exists(key) };
+		return { key, ok: await existsWithRetry(key) };
 	} catch (error) {
 		return { key, ok: false, error: String(error) };
 	}
