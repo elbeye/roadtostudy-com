@@ -145,6 +145,16 @@ Not: Bu smoke deploy D1 + KV session + R2 binding + sample content + public rout
 stabilitesini doğrular. Sıradaki PoC düzeltmeleri: Rank Math SEO meta/schema diff'i ve medya URL
 (`/wp-content/uploads/...`) koruma route'u.
 
+**SEO meta paritesi sağlandı (2026-07-02, verbatim head replay):** Kaynak Rank Math head'i
+post/page başına `source_seo` (json) alanında saklanıp template'te birebir render edilir
+(§6.3–6.4). Canlı diff (17 URL): title/description/robots/canonical/OG/Twitter/JSON-LD alanları
+**17/17 birebir**; hreflang bilinçli olarak kaynağı aşar (§6.5 x-default). `source_seo`/`featured_image`
+normal alan olduğu için content API'den yazılabiliyor (native `seo` store CLI'dan yazılamıyor).
+Bu, **§3.1'deki EmDash-vs-Payload sorusunu EmDash lehine çözer** — head kontrolü tamamen bizde,
+Payload fallback'ine gerek yok. PoC'nin iki açık maddesi (medya route + SEO diff) böylece kapandı.
+Tam göçte kalan: 3766 postun tamamı için per-post Rank Math head çıkarımı, migration-grade
+HTML→PortableText (görsel/link/tablo/anchor/FAQ), srcset varyantları, redirect/sitemap/robots.txt, cutover.
+
 **Medya route/upload implemente edildi ve canlı doğrulandı (2026-07-02, bkz. §7.5):** serve tarafı
 path=R2-key + Cache API; upload tarafı wrangler transport'u (mevcut `CLOUDFLARE_API_TOKEN` — ayrı S3
 token'ı gerekmedi). Canlı worker'da (version `e6472897`) örnek setin 41 medyası R2'ye yüklendi ve doğrulandı;
