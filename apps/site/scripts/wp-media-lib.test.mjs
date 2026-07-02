@@ -208,7 +208,7 @@ test("buildFeaturedImage returns plain object with alt fallback", () => {
 		"My Title",
 		OPTS,
 	);
-	assert.deepEqual(img, { src: "/wp-content/uploads/f.jpg", alt: "My Title" });
+	assert.deepEqual(img, { provider: "external", src: "/wp-content/uploads/f.jpg", alt: "My Title" });
 });
 
 test("buildFeaturedImage returns null without a source_url", () => {

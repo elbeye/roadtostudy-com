@@ -122,7 +122,10 @@ export function buildFeaturedImage(media, title, opts) {
 	if (!sourceUrl) return null;
 	const src = mediaPathFromUrl(sourceUrl, opts);
 	if (!src) return null;
-	const image = { src, alt: media.alt_text || title };
+	// provider:"external" is REQUIRED — EmDash's normalizeMediaValue deletes `src`
+	// for provider "local"; our images live at the preserved /wp-content/uploads/
+	// path (not the EmDash media library), so they must be external to keep `src`.
+	const image = { provider: "external", src, alt: media.alt_text || title };
 	const mediaTitle = media.title?.rendered || media.title?.raw;
 	if (mediaTitle) image.title = String(mediaTitle).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 	return image;
