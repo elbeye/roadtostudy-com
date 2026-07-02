@@ -110,6 +110,11 @@ const seo =
 				defaultOgImage: featuredImageUrl,
 			})
 		: null;
+// Verbatim source (Rank Math) head, when migrated. Rendered exactly to preserve SEO.
+const sourceSeo: any =
+	view === "post" ? currentPost.data.source_seo : view === "page" ? currentPage.data.source_seo : null;
+const absoluteOg = (path: string | null | undefined) =>
+	path ? new URL(path, Astro.url.origin).href : undefined;
 const alternates =
 	view === "post"
 		? await contentAlternates("posts", currentPost.data.id, Astro.url.origin, {
@@ -127,14 +132,16 @@ const alternates =
 {
 	view === "post" && (
 		<Base
-			title={seo?.title || currentPost.data.title}
-			pageTitle={seo?.ogTitle}
-			description={seo?.description}
-			image={seo?.ogImage}
+			title={sourceSeo?.title || seo?.title || currentPost.data.title}
+			exactTitle={!!sourceSeo?.title}
+			pageTitle={sourceSeo?.ogTitle || seo?.ogTitle}
+			description={sourceSeo?.description || seo?.description}
+			image={absoluteOg(sourceSeo?.ogImage) || seo?.ogImage}
 			canonical={seo?.canonical || canonical}
 			lang={locale}
 			alternates={alternates}
-			robots={seo?.robots || DEFAULT_ROBOTS}
+			robots={sourceSeo?.robots || seo?.robots || DEFAULT_ROBOTS}
+			jsonLd={sourceSeo?.jsonLd}
 			type="article"
 			publishedTime={currentPost.data.publishedAt?.toISOString() ?? null}
 			modifiedTime={currentPost.data.updatedAt.toISOString()}
@@ -162,11 +169,16 @@ const alternates =
 {
 	view === "page" && (
 		<Base
-			title={currentPage.data.title}
+			title={sourceSeo?.title || currentPage.data.title}
+			exactTitle={!!sourceSeo?.title}
+			pageTitle={sourceSeo?.ogTitle}
+			description={sourceSeo?.description}
+			image={absoluteOg(sourceSeo?.ogImage)}
 			canonical={canonical}
 			lang={locale}
 			alternates={alternates}
-			robots={DEFAULT_ROBOTS}
+			robots={sourceSeo?.robots || DEFAULT_ROBOTS}
+			jsonLd={sourceSeo?.jsonLd}
 			content={{ collection: "pages", id: currentPage.data.id, slug: resolvedSlug }}
 		>
 			<article class="wp-content">

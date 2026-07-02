@@ -1,20 +1,24 @@
-// Push migrated featured_image onto the LIVE EmDash instance via the authenticated
-// content API (emdash CLI stored login). NOTE: only featured_image is pushed — the
-// CLI content update rejects a `seo` key ("unknown field"), so per-post Rank Math
-// title/description parity is NOT handled here (see progress ledger for the plan).
+// Push migrated featured_image + verbatim source_seo (Rank Math head) onto the LIVE
+// EmDash instance via the authenticated content API (emdash CLI stored login).
+// Both are regular declared fields, so the CLI content update accepts them (unlike
+// EmDash's native `seo` store, which the CLI rejects). The template renders source_seo
+// verbatim (title/description/robots/og/twitter/JSON-LD) for exact SEO parity.
 //
 // SAFETY:
-// - Only PUBLISHED posts are touched (content update auto-publishes; we must not
+// - Only PUBLISHED entries are touched (content update auto-publishes; we must not
 //   accidentally publish future/draft posts). Drafts are skipped.
-// - The full existing data (title/content/excerpt) is re-sent alongside the
-//   additions so nothing is dropped, regardless of replace-vs-merge semantics.
-// - seo only carries { description } here (title/robots/JSON-LD are a later
-//   template phase; setting seo.title would double the site-title suffix).
+// - The full existing data (title/content/excerpt) is re-sent alongside the additions
+//   so nothing is dropped, regardless of replace-vs-merge semantics.
+// - featured_image carries provider:"external" so EmDash's normalizeMediaValue keeps
+//   `src` (it deletes src for provider "local").
+//
+// Prereq: the `source_seo` (json) field must exist on the live collections
+//   (`emdash schema add-field posts source_seo --type json`; same for pages).
 //
 // Usage:
-//   node scripts/push-seo-to-live.mjs --dry-run          # plan only, no writes
-//   node scripts/push-seo-to-live.mjs --limit 1          # do 1 post (careful test)
-//   node scripts/push-seo-to-live.mjs                    # all eligible published posts
+//   node scripts/push-seo-to-live.mjs --dry-run     # plan only
+//   node scripts/push-seo-to-live.mjs --limit 1     # one entry (careful test)
+//   node scripts/push-seo-to-live.mjs               # all eligible published entries
 import { readFile, writeFile, unlink } from "node:fs/promises";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
@@ -35,56 +39,44 @@ async function cli(args) {
 	return JSON.parse(stdout.match(/[[{][\s\S]*[\]}]/)[0]);
 }
 
-// --- source data: featured_image (seed) + description (head snapshot), keyed by slug|locale ---
+// --- source data from the generated seed, keyed by collection|locale|slug ---
 const seed = JSON.parse(await readFile("seed/seed.json", "utf8"));
-const wp = JSON.parse(await readFile("data/wp-sample.json", "utf8"));
-
-const featuredByKey = new Map();
-for (const p of seed.content.posts) {
-	if (p.data.featured_image) featuredByKey.set(`${p.locale}|${p.slug}`, p.data.featured_image);
+const seedByKey = new Map();
+for (const [collection, entries] of [
+	["posts", seed.content.posts],
+	["pages", seed.content.pages],
+]) {
+	for (const e of entries) {
+		seedByKey.set(`${collection}|${e.locale || "tr"}|${e.slug}`, {
+			featured_image: e.data.featured_image ? { ...e.data.featured_image, provider: "external" } : null,
+			source_seo: e.data.source_seo || null,
+		});
+	}
 }
 
-// description per source URL path (/slug/ or /locale/slug/)
-const descByPath = new Map();
-for (const snap of wp.seo?.headSnapshots || []) {
-	if (!snap?.url) continue;
-	const desc = (snap.meta || []).find((m) => m.name === "description" || m.property === "description")?.content;
-	if (!desc) continue;
-	try {
-		descByPath.set(new URL(snap.url).pathname, desc);
-	} catch {}
+async function listPublished(collection) {
+	const items = [];
+	let cursor;
+	do {
+		const page = await cli(["content", "list", collection, "--limit", "100", ...(cursor ? ["--cursor", cursor] : [])]);
+		items.push(...page.items);
+		cursor = page.nextCursor;
+	} while (cursor);
+	return items.filter((e) => e.status === "published");
 }
-function descFor(locale, slug) {
-	const path = locale && locale !== "tr" ? `/${locale}/${slug}/` : `/${slug}/`;
-	return descByPath.get(path) || null;
-}
-
-// --- list all published posts (paginate) ---
-const posts = [];
-let cursor;
-do {
-	const page = await cli(["content", "list", "posts", "--limit", "100", ...(cursor ? ["--cursor", cursor] : [])]);
-	posts.push(...page.items);
-	cursor = page.nextCursor;
-} while (cursor);
-
-const published = posts.filter((p) => p.status === "published");
 
 const plan = [];
-for (const p of published) {
-	const key = `${p.locale}|${p.slug}`;
-	const featured = featuredByKey.get(key) || null;
-	const description = descFor(p.locale, p.slug);
-	// NOTE: seo.description is NOT pushed here — the CLI content update rejects a
-	// `seo` key as an unknown field (seo writes need the API/plugin path, deferred).
-	// Only featured_image (a declared field) is applied, which fixes og:image.
-	if (!featured) continue;
-	plan.push({ id: p.id, slug: p.slug, locale: p.locale, featured: !!featured, description: !!description, _featured: featured, _description: description });
+for (const collection of ["posts", "pages"]) {
+	for (const e of await listPublished(collection)) {
+		const seedData = seedByKey.get(`${collection}|${e.locale || "tr"}|${e.slug}`);
+		if (!seedData || (!seedData.featured_image && !seedData.source_seo)) continue;
+		plan.push({ collection, id: e.id, slug: e.slug, locale: e.locale, ...seedData });
+	}
 }
 
-console.log(JSON.stringify({ W, totalPosts: posts.length, published: published.length, eligible: plan.length, dryRun }, null, 2));
+console.log(JSON.stringify({ W, eligible: plan.length, dryRun }, null, 2));
 if (dryRun) {
-	for (const it of plan.slice(0, 10)) console.log(`  ${it.locale}/${it.slug}  featured=${it.featured} desc=${it.description}`);
+	for (const it of plan) console.log(`  ${it.collection} ${it.locale}/${it.slug}  featured=${!!it.featured_image} seo=${!!it.source_seo}`);
 	process.exit(0);
 }
 
@@ -95,20 +87,18 @@ for (const it of plan) {
 	done++;
 	let tmp;
 	try {
-		const item = await cli(["content", "get", "posts", it.id]);
-		// provider:"external" is REQUIRED: EmDash's normalizeMediaValue deletes `src`
-		// for provider "local" (media-library refs), keeping it only for "external".
-		// Our images live at the preserved /wp-content/uploads/ path (not EmDash media),
-		// so they must be external to survive normalization.
-		const payload = { ...item.data, featured_image: { ...it._featured, provider: "external" } };
+		const item = await cli(["content", "get", it.collection, it.id]);
+		const payload = { ...item.data };
+		if (it.featured_image) payload.featured_image = it.featured_image;
+		if (it.source_seo) payload.source_seo = it.source_seo;
 		tmp = join(tmpdir(), `push-seo-${randomUUID()}.json`);
 		await writeFile(tmp, JSON.stringify(payload));
-		await cli(["content", "update", "posts", it.id, "--rev", item._rev, "--file", tmp]);
-		results.push({ slug: `${it.locale}/${it.slug}`, status: "updated" });
-		console.log(`  ✓ ${it.locale}/${it.slug}`);
+		await cli(["content", "update", it.collection, it.id, "--rev", item._rev, "--file", tmp]);
+		results.push({ entry: `${it.collection}:${it.locale}/${it.slug}`, status: "updated" });
+		console.log(`  ✓ ${it.collection} ${it.locale}/${it.slug}`);
 	} catch (error) {
-		results.push({ slug: `${it.locale}/${it.slug}`, status: "failed", error: String(error?.stderr || error).slice(0, 200) });
-		console.log(`  ✗ ${it.locale}/${it.slug}: ${String(error?.stderr || error).slice(0, 160)}`);
+		results.push({ entry: `${it.collection}:${it.locale}/${it.slug}`, status: "failed", error: String(error?.stderr || error).slice(0, 200) });
+		console.log(`  ✗ ${it.collection} ${it.locale}/${it.slug}: ${String(error?.stderr || error).slice(0, 160)}`);
 	} finally {
 		if (tmp) await unlink(tmp).catch(() => {});
 	}

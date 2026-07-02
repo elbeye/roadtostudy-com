@@ -29,6 +29,11 @@ interface Props {
 	author?: string | null;
 	/** Pass content reference for plugin page contributions on content pages */
 	content?: { collection: string; id: string; slug?: string | null };
+	/** Emit `title` verbatim as the <title> (no site-title suffix) — for migrated
+	 * pages that carry the exact source Rank Math title. */
+	exactTitle?: boolean;
+	/** Verbatim JSON-LD graph objects to emit as-is (source Rank Math schema). */
+	jsonLd?: unknown[] | null;
 }
 
 const {
@@ -46,10 +51,13 @@ const {
 	modifiedTime,
 	author,
 	content,
+	exactTitle = false,
+	jsonLd,
 } = Astro.props;
 const { siteTitle, siteTagline, siteLogo } = resolveBlogSiteIdentity(await getSiteSettings());
-// If title already includes site title (from getSeoMeta), use as-is
-const fullTitle = title.includes(siteTitle) ? title : `${title} — ${siteTitle}`;
+// exactTitle: emit the migrated source title verbatim. Otherwise, append the site
+// title unless it's already present (from getSeoMeta).
+const fullTitle = exactTitle ? title : title.includes(siteTitle) ? title : `${title} — ${siteTitle}`;
 
 // Fetch primary menu defined in seed
 const menu = await getMenu("primary");
@@ -96,6 +104,15 @@ const isLoggedIn = !!Astro.locals.user;
 		{
 			alternates.map((alternate) => (
 				<link rel="alternate" hreflang={alternate.hreflang} href={alternate.href} />
+			))
+		}
+		{
+			jsonLd?.map((graph) => (
+				<script
+					type="application/ld+json"
+					is:inline
+					set:html={JSON.stringify(graph).replaceAll("https://roadtostudy.com", Astro.url.origin)}
+				/>
 			))
 		}
 		<script is:inline>
