@@ -145,9 +145,14 @@ Not: Bu smoke deploy D1 + KV session + R2 binding + sample content + public rout
 stabilitesini doğrular. Sıradaki PoC düzeltmeleri: Rank Math SEO meta/schema diff'i ve medya URL
 (`/wp-content/uploads/...`) koruma route'u.
 
-**Medya route/upload tasarımı kararlaştı (bkz. §7.5):** serve tarafı path=R2-key + Cache API (R2/D1 free,
-Workers $5); upload tarafı bayt/metadata iki-track ayrımıyla Worker invocation limitini bypass eder.
-Bu, §3.3'teki açık medya maddesini tasarım düzeyinde kapatır; implementasyon writing-plans ile planlanır.
+**Medya route/upload implemente edildi ve canlı doğrulandı (2026-07-02, bkz. §7.5):** serve tarafı
+path=R2-key + Cache API; upload tarafı wrangler transport'u (mevcut `CLOUDFLARE_API_TOKEN` — ayrı S3
+token'ı gerekmedi). Canlı worker'da (version `e6472897`) örnek setin 41 medyası R2'ye yüklendi ve doğrulandı;
+`/wp-content/uploads/...` yolları 200 + `Cache-Control: public, max-age=31536000, immutable` + ETag döndürüyor,
+eksik yollar 404. Bu, §3.3'teki açık medya maddesini kapatır. Not: featured görsellerin bir kısmı
+`_embedded wp:featuredmedia`'dan geliyordu (media dizisinde değil); upload seti bunu kapsayacak şekilde
+düzeltildi. Tam migration'da bekleyen: (a) binlerce dosya için wrangler-per-file yerine S3-API hızlı yolu
+değerlendirmesi, (b) medya isteklerinin EmDash middleware'inden geçme maliyetinin ölçümü.
 
 ---
 
