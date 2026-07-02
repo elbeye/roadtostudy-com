@@ -76,7 +76,18 @@ export async function getAllPublished(collection: string): Promise<any[]> {
 }
 
 export function entryLastmod(entry: any): Date | null {
-	return entry?.data?.updatedAt ?? entry?.data?.publishedAt ?? null;
+	// Prefer the original WordPress modified date (§9) so <lastmod> reflects real
+	// content freshness, not the migration timestamp. Fields may come back as ISO
+	// strings or Date objects depending on the field type.
+	const raw =
+		entry?.data?.wp_modified_at ??
+		entry?.data?.wp_published_at ??
+		entry?.data?.updatedAt ??
+		entry?.data?.publishedAt ??
+		null;
+	if (!raw) return null;
+	const d = raw instanceof Date ? raw : new Date(raw);
+	return Number.isNaN(d.getTime()) ? null : d;
 }
 
 // Newest lastmod across a set of entries, in Rank Math's ISO format (or null).

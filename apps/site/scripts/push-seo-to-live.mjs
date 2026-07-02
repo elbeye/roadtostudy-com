@@ -51,6 +51,8 @@ for (const [collection, entries] of [
 			featured_image: e.data.featured_image ? { ...e.data.featured_image, provider: "external" } : null,
 			source_seo: e.data.source_seo || null,
 			content_html: e.data.content_html || null,
+			wp_published_at: e.data.wp_published_at || null,
+			wp_modified_at: e.data.wp_modified_at || null,
 		});
 	}
 }
@@ -93,6 +95,8 @@ for (const it of plan) {
 		if (it.featured_image) payload.featured_image = it.featured_image;
 		if (it.source_seo) payload.source_seo = it.source_seo;
 		if (it.content_html) payload.content_html = it.content_html;
+		if (it.wp_published_at) payload.wp_published_at = it.wp_published_at;
+		if (it.wp_modified_at) payload.wp_modified_at = it.wp_modified_at;
 		tmp = join(tmpdir(), `push-seo-${randomUUID()}.json`);
 		await writeFile(tmp, JSON.stringify(payload));
 		await cli(["content", "update", it.collection, it.id, "--rev", item._rev, "--file", tmp]);

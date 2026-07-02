@@ -14,6 +14,9 @@ const includeSourceSeo = process.env.WP_SEED_SEO !== "0";
 // Store the rendered WordPress body HTML verbatim (preservation-first, §7.2) so the
 // template renders it exactly — images, links, tables, heading anchors, FAQ preserved.
 const includeContentHtml = process.env.WP_SEED_CONTENT_HTML !== "0";
+// Preserve the original WordPress publish/modified dates (§9) for sitemap <lastmod>,
+// og:article times, and display — otherwise EmDash's migration timestamps leak out.
+const includeDates = process.env.WP_SEED_DATES !== "0";
 
 const source = JSON.parse(await readFile(inputPath, "utf8"));
 const headByUrl = new Map(source.seo.headSnapshots.map((snapshot) => [snapshot.url, snapshot]));
@@ -89,9 +92,15 @@ function commonFields(includePostFields) {
 		fields.push({ slug: "content_html", label: "Body HTML (verbatim)", type: "text" });
 	}
 
+	if (includeDates) {
+		fields.push(
+			{ slug: "wp_published_at", label: "Original Published", type: "datetime" },
+			{ slug: "wp_modified_at", label: "Original Modified", type: "datetime" },
+		);
+	}
+
 	if (includeAuditFields) {
 		fields.push(
-			{ slug: "content_html", label: "Source HTML", type: "text" },
 			{ slug: "wp_id", label: "WordPress ID", type: "integer" },
 			{ slug: "wp_lang", label: "WordPress Language", type: "string" },
 			{ slug: "wp_source_url", label: "WordPress URL", type: "url" },
@@ -131,8 +140,14 @@ function mapContent(item, isPost) {
 		data.content_html = cleanHtml(item.content?.rendered || item.content?.raw || "");
 	}
 
+	if (includeDates) {
+		// WP *_gmt is UTC without a trailing Z; append it for a valid ISO instant.
+		const toIso = (d) => (d ? (/[zZ]|[+-]\d\d:?\d\d$/.test(d) ? d : `${d}Z`) : null);
+		data.wp_published_at = toIso(item.date_gmt || item.date);
+		data.wp_modified_at = toIso(item.modified_gmt || item.modified);
+	}
+
 	if (includeAuditFields) {
-		data.content_html = contentHtml;
 		data.wp_id = item.id;
 		data.wp_lang = item.lang || null;
 		data.wp_source_url = item.link || null;

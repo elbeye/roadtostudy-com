@@ -120,6 +120,12 @@ const absoluteOg = (path: string | null | undefined) =>
 // (origin === roadtostudy.com then). Media loads via the /wp-content/uploads/ route.
 const bodyHtml = (html: string | null | undefined) =>
 	(html || "").replaceAll("https://roadtostudy.com", Astro.url.origin);
+// Original WP dates (§9) may arrive as ISO strings or Date objects.
+const toIsoDate = (v: unknown): string | null => {
+	if (!v) return null;
+	const d = v instanceof Date ? v : new Date(v as string);
+	return Number.isNaN(d.getTime()) ? null : d.toISOString();
+};
 const alternates =
 	view === "post"
 		? await contentAlternates("posts", currentPost.data.id, Astro.url.origin, {
@@ -148,8 +154,8 @@ const alternates =
 			robots={sourceSeo?.robots || seo?.robots || DEFAULT_ROBOTS}
 			jsonLd={sourceSeo?.jsonLd}
 			type="article"
-			publishedTime={currentPost.data.publishedAt?.toISOString() ?? null}
-			modifiedTime={currentPost.data.updatedAt.toISOString()}
+			publishedTime={toIsoDate(currentPost.data.wp_published_at) ?? currentPost.data.publishedAt?.toISOString() ?? null}
+			modifiedTime={toIsoDate(currentPost.data.wp_modified_at) ?? currentPost.data.updatedAt.toISOString()}
 			content={{ collection: "posts", id: currentPost.data.id, slug: resolvedSlug }}
 		>
 			<article class="wp-content article">
