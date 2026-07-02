@@ -17,6 +17,10 @@ import { resolveBlogSiteIdentity } from "../utils/site-identity";
 
 const LOCALES = new Set(["en", "fr", "id"]);
 
+// Rank Math emits this exact robots directive on every indexable page. Matching it
+// keeps the migrated pages' robots meta identical (SEO parity §6.3).
+const DEFAULT_ROBOTS = "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large";
+
 function parsePath(pathParam: string | undefined) {
 	const segments = (pathParam || "").split("/").filter(Boolean).map(decodeSlug);
 	if (segments.length === 0) return null;
@@ -130,7 +134,7 @@ const alternates =
 			canonical={seo?.canonical || canonical}
 			lang={locale}
 			alternates={alternates}
-			robots={seo?.robots}
+			robots={seo?.robots || DEFAULT_ROBOTS}
 			type="article"
 			publishedTime={currentPost.data.publishedAt?.toISOString() ?? null}
 			modifiedTime={currentPost.data.updatedAt.toISOString()}
@@ -162,6 +166,7 @@ const alternates =
 			canonical={canonical}
 			lang={locale}
 			alternates={alternates}
+			robots={DEFAULT_ROBOTS}
 			content={{ collection: "pages", id: currentPage.data.id, slug: resolvedSlug }}
 		>
 			<article class="wp-content">
@@ -183,6 +188,7 @@ const alternates =
 			description={`All posts in ${currentTerm.label}`}
 			canonical={`${Astro.url.origin}${categoryPath(locale, resolvedSlug)}`}
 			manualCanonical
+			robots={DEFAULT_ROBOTS}
 		>
 			<section class="wp-archive">
 				<header class="wp-header">
