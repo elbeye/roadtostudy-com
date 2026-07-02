@@ -6,6 +6,18 @@ import emdash from "emdash/astro";
 
 export default defineConfig({
 	output: "server",
+	// Enables EmDash localization (admin language UI + locale-aware content). EmDash
+	// reads this Astro i18n block. TR is the unprefixed default to match the preserved
+	// WordPress URL scheme (/{slug}/ for TR, /{locale}/{slug}/ for others); public
+	// routing stays handled by src/pages/[...path].astro.
+	i18n: {
+		defaultLocale: "tr",
+		locales: ["tr", "en", "fr", "id"],
+		routing: {
+			prefixDefaultLocale: false,
+			redirectToDefaultLocale: false,
+		},
+	},
 	adapter: cloudflare({
 		imageService: "passthrough",
 		prerenderEnvironment: "node",
