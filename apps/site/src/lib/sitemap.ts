@@ -3,10 +3,12 @@
 // with 200 URLs per sub-sitemap (numbered from 1). We replicate that exact structure so
 // the URLs Google already indexed keep resolving (spec §6.6).
 import { getEmDashCollection, getTaxonomyTerms } from "emdash";
+import { getDb } from "emdash/runtime";
 
 import { contentPath, categoryPath } from "../utils/content-url";
 
 export const SITEMAP_PAGE_SIZE = 200;
+export const SITEMAP_DEFAULT_LOCALE = "tr";
 
 const XML_ESCAPE: ReadonlyArray<readonly [RegExp, string]> = [
 	[/&/g, "&amp;"],
@@ -101,6 +103,55 @@ export function latestLastmod(entries: any[]): string | null {
 
 export function entryUrl(origin: string, entry: any): string {
 	return `${origin}${contentPath(entry.data?.locale, entry.data?.slug || entry.id)}`;
+}
+
+type SitemapCollection = "posts" | "pages";
+type PublishedStats = { count: number; lastmod: string | null };
+
+function tableForCollection(collection: SitemapCollection) {
+	return collection === "posts" ? "ec_posts" : "ec_pages";
+}
+
+export async function getPublishedStats(collection: SitemapCollection, locale = SITEMAP_DEFAULT_LOCALE): Promise<PublishedStats> {
+	const db = (await getDb()) as any;
+	const row = await db
+		.selectFrom(tableForCollection(collection))
+		.select((eb: any) => [eb.fn.count("id").as("count"), eb.fn.max("wp_modified_at").as("lastmod")])
+		.where("deleted_at", "is", null)
+		.where("status", "=", "published")
+		.where("locale", "=", locale)
+		.executeTakeFirst();
+
+	return {
+		count: Number(row?.count || 0),
+		lastmod: isoLastmod(row?.lastmod ? new Date(row.lastmod) : null),
+	};
+}
+
+export async function getPublishedSitemapEntries(collection: SitemapCollection, page: number, locale = SITEMAP_DEFAULT_LOCALE): Promise<any[]> {
+	const db = (await getDb()) as any;
+	const rows = await db
+		.selectFrom(tableForCollection(collection))
+		.select(["id", "slug", "locale", "wp_modified_at", "wp_published_at", "updated_at", "published_at"])
+		.where("deleted_at", "is", null)
+		.where("status", "=", "published")
+		.where("locale", "=", locale)
+		.orderBy("published_at", "desc")
+		.limit(SITEMAP_PAGE_SIZE)
+		.offset((page - 1) * SITEMAP_PAGE_SIZE)
+		.execute();
+
+	return rows.map((row: any) => ({
+		id: row.id,
+		data: {
+			slug: row.slug,
+			locale: row.locale,
+			wp_modified_at: row.wp_modified_at,
+			wp_published_at: row.wp_published_at,
+			updatedAt: row.updated_at,
+			publishedAt: row.published_at,
+		},
+	}));
 }
 
 // Slice a list into 1-indexed pages of SITEMAP_PAGE_SIZE.

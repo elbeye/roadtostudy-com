@@ -1,8 +1,7 @@
 import type { APIRoute } from "astro";
 
 import {
-	getAllPublished,
-	latestLastmod,
+	getPublishedStats,
 	renderUrlSet,
 	xmlResponse,
 	getTaxonomyTerms,
@@ -17,7 +16,7 @@ export const GET: APIRoute = async ({ url }) => {
 
 	// Approximate category lastmod with the newest published post overall (Rank Math
 	// uses the newest post per category; per-term queries are deferred for scale).
-	const lastmod = latestLastmod(await getAllPublished("posts"));
+	const { lastmod } = await getPublishedStats("posts");
 
 	const terms = await getTaxonomyTerms("category");
 	const urls: SitemapUrl[] = (terms || [])
