@@ -13,19 +13,75 @@ const baseUrl = process.env.WP_BASE_URL || "https://roadtostudy.com";
 const bucket = process.env.R2_BUCKET || "roadtostudy-emdash-media-poc";
 const concurrency = Math.max(1, Number(process.env.WP_MEDIA_CONCURRENCY || 4));
 const dryRun = process.argv.includes("--dry-run");
+const confirmCost = process.argv.includes("--confirm-cost") || process.env.WP_COST_GUARD_ACK === "1";
+const maxObjects = Math.max(1, Number(process.env.WP_MEDIA_MAX_OBJECTS || 1000));
+const maxEstimatedClassA = Math.max(1, Number(process.env.WP_MEDIA_MAX_CLASS_A_OPS || 100000));
+const maxEstimatedClassB = Math.max(1, Number(process.env.WP_MEDIA_MAX_CLASS_B_OPS || 1000000));
 
 const source = JSON.parse(await readFile(inputPath, "utf8"));
 const urls = collectMediaUrls(source, { baseUrl });
+const estimatedClassAOps = urls.length;
+const estimatedClassBOps = urls.length * 10;
+const guard = {
+	maxObjects,
+	maxEstimatedClassA,
+	maxEstimatedClassB,
+	estimatedClassAOps,
+	estimatedClassBOps,
+	requiresConfirmation: urls.length > maxObjects,
+	confirmed: confirmCost,
+};
 
 if (dryRun) {
 	console.log(
 		JSON.stringify(
-			{ dryRun: true, total: urls.length, sampleKeys: urls.slice(0, 5).map((u) => r2KeyFromUrl(u, { baseUrl })) },
+			{
+				dryRun: true,
+				total: urls.length,
+				bucket,
+				guard,
+				sampleKeys: urls.slice(0, 5).map((u) => r2KeyFromUrl(u, { baseUrl })),
+			},
 			null,
 			2,
 		),
 	);
 	process.exit(0);
+}
+
+if (urls.length > maxObjects && !confirmCost) {
+	console.error(
+		JSON.stringify(
+			{
+				error: "COST_GUARD_CONFIRMATION_REQUIRED",
+				message:
+					"Upload set exceeds WP_MEDIA_MAX_OBJECTS. Re-run with --confirm-cost or WP_COST_GUARD_ACK=1 after checking R2 Standard storage stays under the free 10 GB-month tier.",
+				total: urls.length,
+				bucket,
+				guard,
+			},
+			null,
+			2,
+		),
+	);
+	process.exit(2);
+}
+
+if (estimatedClassAOps > maxEstimatedClassA || estimatedClassBOps > maxEstimatedClassB) {
+	console.error(
+		JSON.stringify(
+			{
+				error: "COST_GUARD_OPERATION_LIMIT",
+				message: "Estimated R2 operations exceed configured guardrail limits.",
+				total: urls.length,
+				bucket,
+				guard,
+			},
+			null,
+			2,
+		),
+	);
+	process.exit(2);
 }
 
 // Run `wrangler r2 object ...` as a subprocess. Auth comes from CLOUDFLARE_API_TOKEN
