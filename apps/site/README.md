@@ -57,6 +57,7 @@ pnpm dev
 Full media upload is guarded so a large R2 write set cannot run by accident.
 
 ```bash
+WP_SEED_INPUT=/private/tmp/wp-full-seed.json npm run wp:seed:preflight
 npm run media:dry-run:full
 npm run media:upload:full              # stops if the set exceeds WP_MEDIA_MAX_OBJECTS
 npm run media:upload:full:confirmed    # only after confirming R2 Standard storage stays under 10 GB-month
@@ -67,6 +68,8 @@ Defaults:
 - `WP_MEDIA_MAX_OBJECTS=1000`
 - `WP_MEDIA_MAX_CLASS_A_OPS=100000`
 - `WP_MEDIA_MAX_CLASS_B_OPS=1000000`
+- `WP_SEED_MAX_BYTES=209715200` (200 MB)
+- `WP_D1_MAX_ESTIMATED_ROWS_WRITTEN=90000`
 
 The current full export dry-run finds 4496 R2 keys, so it requires explicit confirmation before upload.
 
