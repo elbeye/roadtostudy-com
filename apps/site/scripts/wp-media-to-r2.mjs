@@ -163,20 +163,25 @@ async function upload(url) {
 	}
 }
 
-async function runPool(items, worker) {
+async function runPool(items, worker, label = "items") {
 	const results = [];
 	let index = 0;
+	let completed = 0;
 	const runners = Array.from({ length: Math.min(concurrency, items.length) }, async () => {
 		while (index < items.length) {
 			const current = items[index++];
 			results.push(await worker(current));
+			completed++;
+			if (completed % 100 === 0 || completed === items.length) {
+				console.error(`${label}: ${completed}/${items.length}`);
+			}
 		}
 	});
 	await Promise.all(runners);
 	return results;
 }
 
-const results = await runPool(urls, upload);
+const results = await runPool(urls, upload, "upload");
 
 const summary = {
 	total: urls.length,
@@ -194,7 +199,7 @@ const verify = await runPool(urls, async (url) => {
 	} catch (error) {
 		return { key, ok: false, error: String(error) };
 	}
-});
+}, "verify");
 summary.verifiedOk = verify.filter((v) => v.ok).length;
 summary.verifyFailed = verify.filter((v) => !v.ok);
 
