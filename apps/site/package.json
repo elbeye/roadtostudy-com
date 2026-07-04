@@ -20,6 +20,7 @@
     "wp:seed:preflight": "node scripts/wp-seed-preflight.mjs",
     "media:upload": "node --env-file=.env scripts/wp-media-to-r2.mjs",
     "media:dry-run:full": "WP_SAMPLE_INPUT=data/wp-full.json node scripts/wp-media-to-r2.mjs --dry-run",
+    "media:size:full": "WP_SAMPLE_INPUT=data/wp-full.json node scripts/wp-media-size-report.mjs",
     "media:upload:full": "WP_SAMPLE_INPUT=data/wp-full.json node --env-file=.env scripts/wp-media-to-r2.mjs",
     "media:upload:full:confirmed": "WP_SAMPLE_INPUT=data/wp-full.json node --env-file=.env scripts/wp-media-to-r2.mjs --confirm-cost",
     "test": "node --test scripts/*.test.mjs && node --experimental-strip-types --test src/lib/*.test.ts",

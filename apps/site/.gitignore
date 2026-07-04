@@ -16,3 +16,4 @@ data.db
 data/full/
 data/wp-full.json
 data/wp-full-summary.json
+data/media-size-report.json
