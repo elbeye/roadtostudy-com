@@ -60,6 +60,7 @@ Full media upload is guarded so a large R2 write set cannot run by accident.
 WP_SEED_INPUT=/private/tmp/wp-full-seed.json npm run wp:seed:preflight
 npm run media:dry-run:full
 npm run media:size:full
+WP_MEDIA_LIMIT=25 npm run media:dry-run:full
 npm run media:upload:full              # stops if the set exceeds WP_MEDIA_MAX_OBJECTS
 npm run media:upload:full:confirmed    # only after confirming R2 Standard storage stays under 10 GB-month
 ```

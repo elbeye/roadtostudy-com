@@ -17,12 +17,18 @@ const confirmCost = process.argv.includes("--confirm-cost") || process.env.WP_CO
 const maxObjects = Math.max(1, Number(process.env.WP_MEDIA_MAX_OBJECTS || 1000));
 const maxEstimatedClassA = Math.max(1, Number(process.env.WP_MEDIA_MAX_CLASS_A_OPS || 100000));
 const maxEstimatedClassB = Math.max(1, Number(process.env.WP_MEDIA_MAX_CLASS_B_OPS || 1000000));
+const limit = Math.max(0, Number(process.env.WP_MEDIA_LIMIT || 0));
+const offset = Math.max(0, Number(process.env.WP_MEDIA_OFFSET || 0));
 
 const source = JSON.parse(await readFile(inputPath, "utf8"));
-const urls = collectMediaUrls(source, { baseUrl });
+const allUrls = collectMediaUrls(source, { baseUrl });
+const urls = limit > 0 ? allUrls.slice(offset, offset + limit) : allUrls.slice(offset);
 const estimatedClassAOps = urls.length;
 const estimatedClassBOps = urls.length * 10;
 const guard = {
+	originalTotal: allUrls.length,
+	offset,
+	limit: limit || null,
 	maxObjects,
 	maxEstimatedClassA,
 	maxEstimatedClassB,
