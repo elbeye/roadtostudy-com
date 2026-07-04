@@ -3,6 +3,7 @@ dist
 .astro
 /uploads
 data.db
+data.db-*
 
 # Environment / Wrangler secrets
 .env
@@ -17,3 +18,4 @@ data/full/
 data/wp-full.json
 data/wp-full-summary.json
 data/media-size-report.json
+data/d1-seed-sql/
