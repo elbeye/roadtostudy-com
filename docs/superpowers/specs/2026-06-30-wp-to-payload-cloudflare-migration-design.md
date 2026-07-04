@@ -152,8 +152,8 @@ post/page başına `source_seo` (json) alanında saklanıp template'te birebir r
 normal alan olduğu için content API'den yazılabiliyor (native `seo` store CLI'dan yazılamıyor).
 Bu, **§3.1'deki EmDash-vs-Payload sorusunu EmDash lehine çözer** — head kontrolü tamamen bizde,
 Payload fallback'ine gerek yok. PoC'nin iki açık maddesi (medya route + SEO diff) böylece kapandı.
-Tam göçte kalan: 3766 postun tamamı için per-post Rank Math head çıkarımı, migration-grade
-HTML→PortableText (görsel/link/tablo/anchor/FAQ), srcset varyantları, redirect/sitemap/robots.txt, cutover.
+Tam göçte kalan: migration-grade HTML→PortableText (görsel/link/tablo/anchor/FAQ), import kapasite
+doğrulaması, redirect/crawl doğrulaması ve cutover.
 
 **Medya route/upload implemente edildi ve canlı doğrulandı (2026-07-02, bkz. §7.5):** serve tarafı
 path=R2-key + Cache API; upload tarafı wrangler transport'u (mevcut `CLOUDFLARE_API_TOKEN` — ayrı S3
@@ -163,6 +163,13 @@ eksik yollar 404. Bu, §3.3'teki açık medya maddesini kapatır. Not: featured 
 `_embedded wp:featuredmedia`'dan geliyordu (media dizisinde değil); upload seti bunu kapsayacak şekilde
 düzeltildi. Tam migration'da bekleyen: (a) binlerce dosya için wrangler-per-file yerine S3-API hızlı yolu
 değerlendirmesi, (b) medya isteklerinin EmDash middleware'inden geçme maliyetinin ölçümü.
+
+**Full extraction pipeline çalıştı (2026-07-04, §7.1):** `scripts/wp-export-full.mjs --refresh` ile tüm
+REST içerik ve Rank Math head snapshot'ları çekildi. Çıktı: 3766 post (`publish=2195`, `future=1553`,
+`draft=18`), 236 page, 40 category, 858 media, 3 user ve 2430 head snapshot; head snapshot durumları
+`200=2430`. Locale dağılımı dengeli: `en=942`, `tr=942`, `fr=941`, `id=941`. Full export'tan geçici seed
+üretimi doğrulandı: 3766 post, 235 slug'lı page, 40 kategori terimi, 2202 featured image, 2430 `source_seo`,
+4001 `content_html`, malformed featured image = 0. Full medya dry-run 4496 R2 key'i buluyor.
 
 ---
 

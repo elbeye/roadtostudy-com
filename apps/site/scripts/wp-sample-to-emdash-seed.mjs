@@ -44,8 +44,12 @@ const seed = {
 	$schema: "https://emdashcms.com/seed.schema.json",
 	version: "1",
 	meta: {
-		name: "RoadToStudy WordPress Sample",
-		description: "Small WordPress migration PoC export for RoadToStudy.",
+		name: source.meta?.limit && source.meta.limit !== "all"
+			? "RoadToStudy WordPress Limited Export"
+			: "RoadToStudy WordPress Export",
+		description: source.meta?.limit && source.meta.limit !== "all"
+			? `Limited WordPress migration export for RoadToStudy (limit=${source.meta.limit}).`
+			: "WordPress migration export for RoadToStudy.",
 		author: "RoadToStudy migration",
 	},
 	settings: {
@@ -385,14 +389,23 @@ function decodeHtml(value) {
 await mkdir(dirname(outputPath), { recursive: true });
 await writeFile(outputPath, `${JSON.stringify(seed, null, 2)}\n`);
 
+const postEntries = seed.content.posts;
+const pageEntries = seed.content.pages;
+const allEntries = [...postEntries, ...pageEntries];
+const allCategoryTerms = seed.taxonomies.flatMap((taxonomy) => taxonomy.terms || []);
+
 console.log(
 	JSON.stringify(
 		{
 			outputPath,
-			posts: seed.content.posts.length,
-			pages: seed.content.pages.length,
-			categories: seed.taxonomies[0].terms.length,
+			sourceLimit: source.meta?.limit ?? null,
+			posts: postEntries.length,
+			pages: pageEntries.length,
+			categories: allCategoryTerms.length,
 			bylines: seed.bylines.length,
+			featuredImages: postEntries.filter((entry) => entry.data.featured_image).length,
+			sourceSeoEntries: allEntries.filter((entry) => entry.data.source_seo).length,
+			contentHtmlEntries: allEntries.filter((entry) => entry.data.content_html).length,
 		},
 		null,
 		2,
