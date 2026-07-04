@@ -14,6 +14,8 @@ const bucket = process.env.R2_BUCKET || "roadtostudy-emdash-media-poc";
 const concurrency = Math.max(1, Number(process.env.WP_MEDIA_CONCURRENCY || 4));
 const dryRun = process.argv.includes("--dry-run");
 const confirmCost = process.argv.includes("--confirm-cost") || process.env.WP_COST_GUARD_ACK === "1";
+const forcePut = process.argv.includes("--force") || process.env.WP_MEDIA_FORCE_PUT === "1";
+const verifyUploads = !forcePut && process.env.WP_MEDIA_VERIFY !== "0";
 const maxObjects = Math.max(1, Number(process.env.WP_MEDIA_MAX_OBJECTS || 1000));
 const maxEstimatedClassA = Math.max(1, Number(process.env.WP_MEDIA_MAX_CLASS_A_OPS || 100000));
 const maxEstimatedClassB = Math.max(1, Number(process.env.WP_MEDIA_MAX_CLASS_B_OPS || 1000000));
@@ -29,6 +31,8 @@ const guard = {
 	originalTotal: allUrls.length,
 	offset,
 	limit: limit || null,
+	forcePut,
+	verifyUploads,
 	maxObjects,
 	maxEstimatedClassA,
 	maxEstimatedClassB,
@@ -126,7 +130,7 @@ async function upload(url) {
 		key = r2KeyFromUrl(url, { baseUrl });
 		if (!key) return { key: url, status: "skipped-nonuploads" };
 
-		if (await exists(key)) return { key, status: "skipped-exists" };
+		if (!forcePut && await exists(key)) return { key, status: "skipped-exists" };
 
 		const download = await fetch(url);
 		if (!download.ok) return { key, status: "failed", error: `download ${download.status}` };
@@ -190,18 +194,24 @@ const summary = {
 	failed: results.filter((r) => r.status === "failed"),
 };
 
-// Verify: every intended key now exists in R2.
-const verify = await runPool(urls, async (url) => {
-	const key = r2KeyFromUrl(url, { baseUrl });
-	if (!key) return { key: url, ok: true };
-	try {
-		return { key, ok: await existsWithRetry(key) };
-	} catch (error) {
-		return { key, ok: false, error: String(error) };
-	}
-}, "verify");
-summary.verifiedOk = verify.filter((v) => v.ok).length;
-summary.verifyFailed = verify.filter((v) => !v.ok);
+if (verifyUploads) {
+	// Verify: every intended key now exists in R2.
+	const verify = await runPool(urls, async (url) => {
+		const key = r2KeyFromUrl(url, { baseUrl });
+		if (!key) return { key: url, ok: true };
+		try {
+			return { key, ok: await existsWithRetry(key) };
+		} catch (error) {
+			return { key, ok: false, error: String(error) };
+		}
+	}, "verify");
+	summary.verifiedOk = verify.filter((v) => v.ok).length;
+	summary.verifyFailed = verify.filter((v) => !v.ok);
+} else {
+	summary.verifiedOk = null;
+	summary.verifyFailed = [];
+	summary.verifySkipped = true;
+}
 
 console.log(JSON.stringify(summary, null, 2));
 if (summary.failed.length > 0 || summary.verifyFailed.length > 0) process.exit(1);
