@@ -82,11 +82,11 @@ const filteredPosts = posts.map((post) => ({
 	.archive-section {
 		max-width: var(--wide-width);
 		margin: 0 auto;
-		padding: var(--spacing-12) var(--spacing-6);
+		padding: var(--spacing-10) var(--spacing-6) var(--spacing-16);
 	}
 
 	.archive-header {
-		margin-bottom: var(--spacing-12);
+		margin-bottom: var(--spacing-10);
 		padding-bottom: var(--spacing-8);
 		border-bottom: 1px solid var(--color-border-subtle);
 	}
@@ -104,7 +104,7 @@ const filteredPosts = posts.map((post) => ({
 	.archive-title {
 		font-size: var(--font-size-4xl);
 		font-weight: 700;
-		letter-spacing: var(--tracking-tight);
+		letter-spacing: 0;
 		margin-bottom: var(--spacing-2);
 	}
 
@@ -130,8 +130,22 @@ const filteredPosts = posts.map((post) => ({
 	}
 
 	@media (max-width: 600px) {
+		.archive-section {
+			padding: var(--spacing-6) var(--spacing-4) var(--spacing-12);
+		}
+
+		.archive-header {
+			padding-bottom: var(--spacing-5);
+			margin-bottom: var(--spacing-8);
+		}
+
+		.archive-title {
+			font-size: var(--font-size-3xl);
+		}
+
 		.posts-grid {
 			grid-template-columns: 1fr;
+			gap: var(--spacing-8);
 		}
 	}
 </style>

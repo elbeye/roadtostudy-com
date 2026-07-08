@@ -89,6 +89,13 @@ const pageCtx = createPublicPageContext({
 
 // Check if user is logged in (for showing admin link)
 const isLoggedIn = !!Astro.locals.user;
+const isTurkish = (lang || "en").toLowerCase().startsWith("tr");
+const searchPlaceholder = isTurkish ? "Konu, universite, sehir ara..." : "Search topics, universities, cities...";
+const footerHomeLabel = isTurkish ? "Ana sayfa" : "Home";
+const footerPostsLabel = isTurkish ? "Tum yazilar" : "All Posts";
+const footerNavigateLabel = isTurkish ? "Kesfet" : "Navigate";
+const footerConnectLabel = isTurkish ? "Baglantilar" : "Connect";
+const rssLabel = isTurkish ? "RSS akisi" : "RSS Feed";
 ---
 
 <!doctype html>
@@ -141,7 +148,7 @@ const isLoggedIn = !!Astro.locals.user;
 				</a>
 				<div class="nav-right">
 					<LiveSearch
-						placeholder="Search..."
+						placeholder={searchPlaceholder}
 						class="site-search"
 						inputClass="site-search-input"
 						resultsClass="site-search-results"
@@ -185,10 +192,10 @@ const isLoggedIn = !!Astro.locals.user;
 						<p class="footer-tagline">{siteTagline}</p>
 					</div>
 					<div class="footer-nav">
-						<h4 class="footer-heading">Navigate</h4>
+						<h4 class="footer-heading">{footerNavigateLabel}</h4>
 						<ul class="footer-links">
-							<li><a href="/">Home</a></li>
-							<li><a href="/posts">All Posts</a></li>
+							<li><a href="/">{footerHomeLabel}</a></li>
+							<li><a href="/posts">{footerPostsLabel}</a></li>
 							{
 								pages.slice(0, 3).map((page) => (
 									<li>
@@ -201,7 +208,7 @@ const isLoggedIn = !!Astro.locals.user;
 						</ul>
 					</div>
 					<div class="footer-nav">
-						<h4 class="footer-heading">Connect</h4>
+						<h4 class="footer-heading">{footerConnectLabel}</h4>
 						<ul class="footer-links">
 							{
 								socialMenu?.items.map((item) => (
@@ -220,7 +227,7 @@ const isLoggedIn = !!Astro.locals.user;
 									</li>
 								))
 							}
-							<li><a href="/rss.xml">RSS Feed</a></li>
+							<li><a href="/rss.xml">{rssLabel}</a></li>
 						</ul>
 					</div>
 					<div class="footer-widgets-section">
@@ -611,10 +618,10 @@ const isLoggedIn = !!Astro.locals.user;
 				position: sticky;
 				top: 0;
 				z-index: 100;
-				background: color-mix(in srgb, var(--color-bg) 65%, transparent);
-				backdrop-filter: blur(12px);
-				-webkit-backdrop-filter: blur(12px);
-				border-bottom: 1px solid var(--color-border-subtle);
+				background: color-mix(in srgb, var(--color-bg) 88%, transparent);
+				backdrop-filter: blur(18px);
+				-webkit-backdrop-filter: blur(18px);
+				border-bottom: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
 			}
 
 			.nav {
@@ -623,16 +630,16 @@ const isLoggedIn = !!Astro.locals.user;
 				align-items: center;
 				max-width: var(--wide-width);
 				margin: 0 auto;
-				padding: var(--spacing-4) var(--spacing-6);
+				padding: var(--spacing-3) var(--spacing-6);
 				height: var(--nav-height);
 			}
 
 			.site-title {
 				font-size: var(--font-size-lg);
-				font-weight: 600;
+				font-weight: 750;
 				color: var(--color-text);
 				text-decoration: none;
-				letter-spacing: var(--tracking-snug);
+				letter-spacing: 0;
 			}
 
 			.site-title:hover {
@@ -649,24 +656,32 @@ const isLoggedIn = !!Astro.locals.user;
 			.nav-right {
 				display: flex;
 				align-items: center;
-				gap: var(--spacing-6);
+				gap: var(--spacing-5);
 				margin-inline-start: auto;
 			}
 
 			.nav-links {
 				display: flex;
-				gap: var(--spacing-5);
+				gap: var(--spacing-2);
 				font-size: var(--font-size-sm);
 			}
 
 			.nav-links a {
+				display: inline-flex;
+				align-items: center;
+				min-height: 36px;
+				padding: 0 var(--spacing-3);
+				border-radius: 999px;
 				text-decoration: none;
 				color: var(--color-text);
-				transition: color var(--transition-fast);
+				transition:
+					color var(--transition-fast),
+					background var(--transition-fast);
 			}
 
 			.nav-links a:hover {
 				color: var(--color-accent);
+				background: var(--color-surface);
 			}
 
 			.nav-admin {
@@ -693,9 +708,10 @@ const isLoggedIn = !!Astro.locals.user;
 				font-family: var(--font-sans);
 				font-size: var(--font-size-sm);
 				border: 1px solid var(--color-border);
-				border-radius: var(--radius);
+				border-radius: 999px;
 				background: var(--color-bg);
 				color: var(--color-text);
+				min-height: 40px;
 				transition:
 					border-color var(--transition-fast),
 					box-shadow var(--transition-fast);
@@ -954,8 +970,7 @@ const isLoggedIn = !!Astro.locals.user;
 
 			@media (max-width: 640px) {
 				.site-header {
-					position: relative;
-					border-bottom: none;
+					position: sticky;
 				}
 
 				.nav {
@@ -964,7 +979,7 @@ const isLoggedIn = !!Astro.locals.user;
 					align-items: center;
 					height: auto;
 					column-gap: var(--spacing-3);
-					row-gap: var(--spacing-2);
+					row-gap: var(--spacing-3);
 					padding: var(--spacing-3) var(--spacing-4);
 				}
 
@@ -990,8 +1005,15 @@ const isLoggedIn = !!Astro.locals.user;
 
 				:global(.site-search-input) {
 					width: 100% !important;
-					padding: var(--spacing-1) var(--spacing-2) !important;
+					padding: var(--spacing-3) var(--spacing-4) !important;
 					font-size: var(--font-size-sm) !important;
+					min-height: 46px;
+				}
+
+				:global(.site-search-results) {
+					left: 0;
+					right: 0;
+					max-height: min(55vh, 420px);
 				}
 
 				.nav-links {
@@ -1001,6 +1023,15 @@ const isLoggedIn = !!Astro.locals.user;
 					row-gap: var(--spacing-1);
 					flex-wrap: wrap;
 					justify-content: flex-start;
+					overflow-x: auto;
+					padding-bottom: 2px;
+				}
+
+				.nav-links a {
+					flex: 0 0 auto;
+					min-height: 34px;
+					padding: 0 var(--spacing-3);
+					background: var(--color-surface);
 				}
 
 				.nav-admin {

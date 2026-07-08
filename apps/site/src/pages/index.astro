@@ -86,6 +86,31 @@ function formatDate(date: Date | null | undefined) {
 			</section>
 		) : (
 			<div class="home-content">
+				<section class="student-hero">
+					<div class="student-hero-copy">
+						<p class="hero-kicker">RoadToStudy</p>
+						<h1>{siteTagline || siteTitle}</h1>
+						<p class="hero-summary">
+							Yurt disinda egitim, universite secimi ve ogrenci yasami icin guncel rehberler.
+						</p>
+					</div>
+					<form class="hero-search" action="/search" method="get">
+						<input
+							type="search"
+							name="q"
+							placeholder="Universite, sehir, burs veya vize ara"
+							aria-label="Site icinde ara"
+						/>
+						<button type="submit">Ara</button>
+					</form>
+					<nav class="hero-links" aria-label="Hizli erisim">
+						<a href="/category/universite-ve-programlar/">Universiteler</a>
+						<a href="/category/burslar-ve-finansman/">Burslar</a>
+						<a href="/category/kulturel-adaptasyon/">Uyum</a>
+						<a href="/posts">Tum yazilar</a>
+					</nav>
+				</section>
+
 				{/* Featured Post - Side by side */}
 				{featuredPost && (
 					<section class="featured-section">
@@ -138,7 +163,7 @@ function formatDate(date: Date | null | undefined) {
 									href={contentPath((featuredPost.data as any).locale, featuredPost.data.slug || featuredPost.id)}
 									class="featured-title-link"
 								>
-									<h1 class="featured-title">{featuredPost.data.title}</h1>
+									<h2 class="featured-title">{featuredPost.data.title}</h2>
 								</a>
 								{featuredPost.data.excerpt && (
 									<p class="featured-excerpt">{featuredPost.data.excerpt}</p>
@@ -193,19 +218,116 @@ function formatDate(date: Date | null | undefined) {
 	.home-content {
 		max-width: var(--wide-width);
 		margin: 0 auto;
-		padding: var(--spacing-16) var(--spacing-6);
+		padding: var(--spacing-8) var(--spacing-6) var(--spacing-16);
+	}
+
+	.student-hero {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: var(--spacing-5);
+		padding: var(--spacing-8) 0 var(--spacing-10);
+		margin-bottom: var(--spacing-12);
+		border-bottom: 1px solid var(--color-border-subtle);
+	}
+
+	.student-hero-copy {
+		max-width: 760px;
+	}
+
+	.hero-kicker {
+		margin-bottom: var(--spacing-2);
+		color: var(--color-accent);
+		font-size: var(--font-size-sm);
+		font-weight: 700;
+	}
+
+	.student-hero h1 {
+		font-size: var(--font-size-4xl);
+		line-height: var(--leading-tight);
+		letter-spacing: 0;
+		max-width: 860px;
+	}
+
+	.hero-summary {
+		max-width: 640px;
+		margin-top: var(--spacing-4);
+		color: var(--color-text-secondary);
+		font-size: var(--font-size-lg);
+		line-height: var(--leading-relaxed);
+	}
+
+	.hero-search {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: var(--spacing-2);
+		max-width: 680px;
+	}
+
+	.hero-search input {
+		min-height: 52px;
+		width: 100%;
+		padding: 0 var(--spacing-5);
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font: inherit;
+		box-shadow: 0 10px 26px color-mix(in srgb, var(--color-text) 8%, transparent);
+	}
+
+	.hero-search input:focus {
+		outline: none;
+		border-color: var(--color-accent);
+		box-shadow: 0 0 0 3px var(--color-accent-ring);
+	}
+
+	.hero-search button {
+		min-height: 52px;
+		padding: 0 var(--spacing-6);
+		border: none;
+		border-radius: 999px;
+		background: var(--color-accent);
+		color: var(--color-on-accent);
+		font: inherit;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.hero-links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--spacing-2);
+	}
+
+	.hero-links a {
+		display: inline-flex;
+		align-items: center;
+		min-height: 38px;
+		padding: 0 var(--spacing-4);
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--color-bg) 82%, transparent);
+		color: var(--color-text-secondary);
+		text-decoration: none;
+		font-size: var(--font-size-sm);
+		font-weight: 600;
+	}
+
+	.hero-links a:hover {
+		border-color: var(--color-accent);
+		color: var(--color-accent);
 	}
 
 	/* Featured Section - Side by side */
 	.featured-section {
-		margin-bottom: var(--spacing-16);
+		margin-bottom: var(--spacing-12);
 	}
 
 	.featured-grid {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
 		gap: var(--spacing-8);
-		align-items: center;
+		align-items: stretch;
 	}
 
 	.featured-image-link {
@@ -222,11 +344,12 @@ function formatDate(date: Date | null | undefined) {
 		overflow: hidden;
 		border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
 		background: var(--color-surface);
+		height: 100%;
 	}
 
 	.featured-image img {
 		width: 100%;
-		height: auto;
+		height: 100%;
 		aspect-ratio: 4 / 3;
 		object-fit: cover;
 		transition: transform 0.4s ease;
@@ -241,6 +364,7 @@ function formatDate(date: Date | null | undefined) {
 		display: flex;
 		flex-direction: column;
 		gap: var(--spacing-4);
+		justify-content: center;
 	}
 
 	.featured-meta {
@@ -302,7 +426,7 @@ function formatDate(date: Date | null | undefined) {
 	}
 
 	.featured-title {
-		font-size: clamp(var(--font-size-2xl), 4vw, var(--font-size-4xl));
+		font-size: var(--font-size-4xl);
 		font-weight: 700;
 		line-height: var(--leading-tight);
 		letter-spacing: var(--tracking-tight);
@@ -428,6 +552,15 @@ function formatDate(date: Date | null | undefined) {
 			padding: var(--spacing-6) var(--spacing-4) var(--spacing-12);
 		}
 
+		.student-hero {
+			padding: var(--spacing-4) 0 var(--spacing-8);
+			margin-bottom: var(--spacing-8);
+		}
+
+		.student-hero h1 {
+			font-size: var(--font-size-3xl);
+		}
+
 		.featured-image-link {
 			margin-left: 0;
 		}
@@ -452,6 +585,26 @@ function formatDate(date: Date | null | undefined) {
 	}
 
 	@media (max-width: 600px) {
+		.student-hero {
+			padding-top: var(--spacing-2);
+		}
+
+		.student-hero h1 {
+			font-size: var(--font-size-2xl);
+		}
+
+		.hero-summary {
+			font-size: var(--font-size-base);
+		}
+
+		.hero-search {
+			grid-template-columns: 1fr;
+		}
+
+		.hero-search button {
+			width: 100%;
+		}
+
 		.featured-title {
 			font-size: var(--font-size-2xl);
 		}

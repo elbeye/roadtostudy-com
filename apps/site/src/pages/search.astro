@@ -3,6 +3,7 @@ export const prerender = false;
 
 import { search } from "emdash";
 import Base from "../layouts/Base.astro";
+import { contentPath } from "../utils/content-url";
 
 const query = Astro.url.searchParams.get("q")?.trim() || "";
 
@@ -50,7 +51,7 @@ const { items: results } = query
 					{results.map((result) => (
 						<li class="search-result">
 							<a
-								href={`/posts/${result.slug ?? result.id}`}
+								href={contentPath((result as any).locale, result.slug ?? result.id)}
 								class="result-link"
 							>
 								<h2 class="result-title">
@@ -72,28 +73,35 @@ const { items: results } = query
 
 <style>
 	.search-page {
-		max-width: var(--max-width);
+		max-width: var(--content-width);
 		margin: 0 auto;
-		padding: var(--spacing-8) var(--spacing-6) var(--spacing-16);
+		padding: var(--spacing-10) var(--spacing-6) var(--spacing-16);
 	}
 
 	.search-title {
-		font-size: var(--font-size-2xl);
+		font-size: var(--font-size-4xl);
+		letter-spacing: 0;
 		margin-bottom: var(--spacing-6);
 	}
 
 	.search-form {
-		display: flex;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
 		gap: var(--spacing-2);
 		margin-bottom: var(--spacing-8);
+		padding: var(--spacing-2);
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		background: var(--color-bg-subtle);
 	}
 
 	.search-input {
 		flex: 1;
-		padding: var(--spacing-2) var(--spacing-4);
+		min-height: 46px;
+		padding: 0 var(--spacing-4);
 		font-size: var(--font-size-base);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius);
+		border: 0;
+		border-radius: 999px;
 		background: var(--color-bg);
 		color: var(--color-text);
 	}
@@ -104,14 +112,15 @@ const { items: results } = query
 	}
 
 	.search-button {
-		padding: var(--spacing-2) var(--spacing-6);
+		min-height: 46px;
+		padding: 0 var(--spacing-6);
 		font-size: var(--font-size-base);
 		background: var(--color-accent);
 		color: var(--color-on-accent);
 		border: none;
-		border-radius: var(--radius);
+		border-radius: 999px;
 		cursor: pointer;
-		font-weight: 500;
+		font-weight: 700;
 	}
 
 	.search-button:hover {
@@ -136,7 +145,7 @@ const { items: results } = query
 	}
 
 	.search-result {
-		padding: var(--spacing-6) 0;
+		padding: var(--spacing-5) 0;
 		border-bottom: 1px solid var(--color-border-subtle);
 	}
 
@@ -152,6 +161,14 @@ const { items: results } = query
 		display: block;
 		text-decoration: none;
 		color: inherit;
+		padding: var(--spacing-3);
+		margin: calc(-1 * var(--spacing-3));
+		border-radius: var(--radius-lg);
+		transition: background var(--transition-fast);
+	}
+
+	.result-link:hover {
+		background: var(--color-bg-subtle);
 	}
 
 	.result-title {
@@ -178,5 +195,20 @@ const { items: results } = query
 		color: inherit;
 		padding: 0 0.1em;
 		border-radius: 2px;
+	}
+
+	@media (max-width: 600px) {
+		.search-page {
+			padding: var(--spacing-6) var(--spacing-4) var(--spacing-12);
+		}
+
+		.search-title {
+			font-size: var(--font-size-3xl);
+		}
+
+		.search-form {
+			grid-template-columns: 1fr;
+			border-radius: var(--radius-lg);
+		}
 	}
 </style>

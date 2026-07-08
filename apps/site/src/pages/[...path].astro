@@ -255,7 +255,17 @@ const alternates =
 
 	.wp-hero {
 		margin: 0 auto var(--spacing-8);
-		max-width: var(--wide-width);
+		max-width: min(var(--wide-width), calc(100vw - (var(--spacing-6) * 2)));
+		overflow: hidden;
+		border-radius: var(--radius-lg);
+		background: var(--color-surface);
+		border: 1px solid var(--color-border-subtle);
+	}
+
+	.wp-hero :global(img) {
+		width: 100%;
+		aspect-ratio: 16 / 9;
+		object-fit: cover;
 	}
 
 	.wp-header {
@@ -265,6 +275,7 @@ const alternates =
 	.wp-header h1 {
 		font-size: var(--font-size-4xl);
 		line-height: var(--leading-tight);
+		letter-spacing: 0;
 		margin: 0;
 	}
 
@@ -278,6 +289,12 @@ const alternates =
 		color: var(--color-muted);
 		font-size: var(--font-size-lg);
 		margin-top: var(--spacing-4);
+		line-height: var(--leading-relaxed);
+	}
+
+	.wp-body {
+		font-size: var(--font-size-lg);
+		line-height: 1.75;
 	}
 
 	.wp-body :global(p),
@@ -286,10 +303,52 @@ const alternates =
 		margin-bottom: 1.35em;
 	}
 
+	.wp-body :global(a) {
+		text-decoration: underline;
+		text-decoration-thickness: 1px;
+		text-underline-offset: 0.18em;
+	}
+
 	.wp-body :global(h2),
 	.wp-body :global(h3) {
 		margin-top: 1.8em;
 		margin-bottom: 0.7em;
+		letter-spacing: 0;
+	}
+
+	.wp-body :global(h2) {
+		font-size: var(--font-size-2xl);
+	}
+
+	.wp-body :global(h3) {
+		font-size: var(--font-size-xl);
+	}
+
+	.wp-body :global(img),
+	.wp-body :global(video),
+	.wp-body :global(iframe) {
+		max-width: 100%;
+		border-radius: var(--radius-lg);
+	}
+
+	.wp-body :global(figure) {
+		margin: var(--spacing-8) 0;
+	}
+
+	.wp-body :global(table) {
+		display: block;
+		width: 100%;
+		overflow-x: auto;
+		border-collapse: collapse;
+	}
+
+	.wp-body :global(blockquote) {
+		margin: var(--spacing-8) 0;
+		padding: var(--spacing-4) var(--spacing-5);
+		border-left: 4px solid var(--color-accent);
+		background: var(--color-bg-subtle);
+		color: var(--color-text-secondary);
+		border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
 	}
 
 	.wp-archive {
@@ -311,8 +370,37 @@ const alternates =
 	}
 
 	@media (max-width: 640px) {
+		.wp-content,
+		.wp-archive {
+			padding: var(--spacing-6) var(--spacing-4) var(--spacing-12);
+		}
+
+		.wp-hero {
+			max-width: none;
+			margin-bottom: var(--spacing-6);
+			border-radius: var(--radius-lg);
+		}
+
+		.wp-header h1 {
+			font-size: var(--font-size-3xl);
+		}
+
+		.wp-excerpt,
+		.wp-body {
+			font-size: var(--font-size-base);
+		}
+
+		.wp-body :global(h2) {
+			font-size: var(--font-size-xl);
+		}
+
+		.wp-body :global(h3) {
+			font-size: var(--font-size-lg);
+		}
+
 		.wp-grid {
 			grid-template-columns: 1fr;
+			gap: var(--spacing-8);
 		}
 	}
 </style>
