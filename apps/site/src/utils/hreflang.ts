@@ -27,6 +27,8 @@ export async function contentAlternates(
 		}));
 
 	const translations = ensureCurrent(published, current);
+	if (dedupeLocales(translations).length < 2) return [];
+
 	const alternates = sortByLocale(translations).map((translation) => ({
 		hreflang: translation.locale,
 		href: `${origin}${contentPath(translation.locale, translation.slug)}`,
@@ -59,6 +61,15 @@ function sortByLocale(translations: TranslationSummary[]) {
 		const aIndex = LOCALE_ORDER.indexOf(a.locale);
 		const bIndex = LOCALE_ORDER.indexOf(b.locale);
 		return (aIndex === -1 ? 99 : aIndex) - (bIndex === -1 ? 99 : bIndex);
+	});
+}
+
+function dedupeLocales(translations: TranslationSummary[]) {
+	const seen = new Set<string>();
+	return translations.filter((translation) => {
+		if (seen.has(translation.locale)) return false;
+		seen.add(translation.locale);
+		return true;
 	});
 }
 
