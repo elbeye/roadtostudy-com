@@ -96,6 +96,19 @@ const footerPostsLabel = isTurkish ? "Tum yazilar" : "All Posts";
 const footerNavigateLabel = isTurkish ? "Kesfet" : "Navigate";
 const footerConnectLabel = isTurkish ? "Baglantilar" : "Connect";
 const rssLabel = isTurkish ? "RSS akisi" : "RSS Feed";
+const languageLabels: Record<string, string> = {
+	tr: "TR",
+	en: "EN",
+	fr: "FR",
+	id: "ID",
+};
+const languageLinks = alternates
+	.filter((alternate) => alternate.hreflang !== "x-default")
+	.map((alternate) => ({
+		...alternate,
+		label: languageLabels[alternate.hreflang] || alternate.hreflang.toUpperCase(),
+		active: alternate.hreflang === lang,
+	}));
 ---
 
 <!doctype html>
@@ -164,6 +177,22 @@ const rssLabel = isTurkish ? "RSS akisi" : "RSS Feed";
 							))
 						}
 					</div>
+					{
+						languageLinks.length > 1 && (
+							<div class="language-switcher" aria-label={isTurkish ? "Dil secimi" : "Language selection"}>
+								{languageLinks.map((language) => (
+									<a
+										href={language.href}
+										class:list={["language-link", { active: language.active }]}
+										aria-current={language.active ? "page" : undefined}
+										hreflang={language.hreflang}
+									>
+										{language.label}
+									</a>
+								))}
+							</div>
+						)
+					}
 				</div>
 				{
 					isLoggedIn && (
@@ -684,6 +713,43 @@ const rssLabel = isTurkish ? "RSS akisi" : "RSS Feed";
 				background: var(--color-surface);
 			}
 
+			.language-switcher {
+				display: flex;
+				align-items: center;
+				gap: var(--spacing-1);
+				padding: var(--spacing-1);
+				border: 1px solid var(--color-border);
+				border-radius: 999px;
+				background: color-mix(in srgb, var(--color-bg) 82%, transparent);
+			}
+
+			.language-link {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				min-width: 34px;
+				height: 30px;
+				padding: 0 var(--spacing-2);
+				border-radius: 999px;
+				color: var(--color-text-secondary);
+				font-size: var(--font-size-xs);
+				font-weight: 700;
+				text-decoration: none;
+				transition:
+					color var(--transition-fast),
+					background var(--transition-fast);
+			}
+
+			.language-link:hover {
+				color: var(--color-accent);
+				background: var(--color-surface);
+			}
+
+			.language-link.active {
+				background: var(--color-accent);
+				color: var(--color-on-accent);
+			}
+
 			.nav-admin {
 				font-size: var(--font-size-sm);
 				color: var(--color-text-secondary);
@@ -1032,6 +1098,18 @@ const rssLabel = isTurkish ? "RSS akisi" : "RSS Feed";
 					min-height: 34px;
 					padding: 0 var(--spacing-3);
 					background: var(--color-surface);
+				}
+
+				.language-switcher {
+					width: max-content;
+					max-width: 100%;
+					overflow-x: auto;
+				}
+
+				.language-link {
+					flex: 0 0 auto;
+					min-width: 38px;
+					height: 34px;
 				}
 
 				.nav-admin {
