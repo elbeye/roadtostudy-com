@@ -23,6 +23,26 @@ const LOCALES = new Set(["en", "fr", "id"]);
 // keeps the migrated pages' robots meta identical (SEO parity §6.3).
 const DEFAULT_ROBOTS = "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large";
 
+// WordPress archive pagination (§6.1: /page/N/ must resolve). 10 is the WordPress
+// default posts_per_page; the source theme's value is unconfirmed in the export, so
+// keep it a single knob to correct once verified against the live archives.
+const CATEGORY_PAGE_SIZE = 10;
+// Number of latest posts shown on a localized language home (/en/, /fr/, /id/).
+const LOCALE_HOME_LIMIT = 12;
+// hreflang ordering for the language-home cluster; x-default points at EN (§6.5).
+const HOME_LOCALE_ORDER = ["en", "tr", "fr", "id"] as const;
+// Minimal localized landing copy for the language homes. TR is included for
+// completeness even though the unprefixed root (/) is served by index.astro.
+const HOME_COPY: Record<string, { heading: string; summary: string }> = {
+	tr: { heading: "Türkiye'de Eğitim", summary: "Uluslararası öğrenciler için üniversite, burs ve öğrenci yaşamı rehberleri." },
+	en: { heading: "Study in Turkey", summary: "Guides on universities, scholarships, and student life for international students." },
+	fr: { heading: "Étudier en Turquie", summary: "Guides sur les universités, les bourses et la vie étudiante pour les étudiants internationaux." },
+	id: { heading: "Kuliah di Turki", summary: "Panduan universitas, beasiswa, dan kehidupan mahasiswa untuk mahasiswa internasional." },
+};
+
+// Language-home path: TR is unprefixed (/), other locales are /{locale}/.
+const localeHomePath = (l: string) => (l === "tr" ? "/" : `/${l}/`);
+
 function parsePath(pathParam: string | undefined) {
 	const segments = (pathParam || "").split("/").filter(Boolean).map(decodeSlug);
 	if (segments.length === 0) return null;
@@ -46,25 +66,54 @@ function getImageUrl(img: unknown): string | undefined {
 }
 
 const parsed = parsePath(Astro.params.path);
-if (!parsed || parsed.segments.length === 0) return Astro.redirect("/404");
+if (!parsed) return Astro.redirect("/404");
 
 const locale: string = parsed.locale || "tr";
-const segments: string[] = parsed.segments.filter((segment): segment is string => !!segment);
+const hasLocalePrefix = parsed.prefix !== "";
+let segments: string[] = parsed.segments.filter((segment): segment is string => !!segment);
+
+// Strip a trailing /page/N/ archive pagination suffix (§6.1) so the resolver sees
+// the base path; N drives the slice. A non-numeric or <1 page is not a valid URL.
+let pageNum = 1;
+if (segments.length >= 2 && segments[segments.length - 2] === "page") {
+	const n = Number(segments[segments.length - 1]);
+	if (!Number.isInteger(n) || n < 1) return Astro.redirect("/404");
+	pageNum = n;
+	segments = segments.slice(0, -2);
+}
+
 const [first, second] = segments;
-let view: "post" | "page" | "category" | "tag" | null = null;
+let view: "home" | "post" | "page" | "category" | "tag" | null = null;
 let slug = "";
 let post: any = null;
 let page: any = null;
 let term: any = null;
 let termPosts: any[] = [];
+let termPostCount = 0;
+let termTotalPages = 1;
 let termTagsByEntry = new Map<string, Array<{ slug: string; label: string }>>();
+let homePosts: any[] = [];
 
 // `/category/{slug}` and `/tag/{slug}` (plus their /{locale}/ prefixed forms) are
 // both taxonomy archives; the taxonomy name matches the query key exactly (seed
 // "name" field) per the taxonomy-naming rule.
 const taxonomyView = first === "category" ? "category" : first === "tag" ? "tag" : null;
 
-if (taxonomyView && second && segments.length === 2) {
+if (segments.length === 0) {
+	// Localized language home (/en/, /fr/, /id/). The unprefixed root (/) is served
+	// by index.astro, so only locale-prefixed homes reach the catch-all. The home is
+	// a bespoke landing layout and isn't paginated, so /{locale}/page/N/ is not valid.
+	if (hasLocalePrefix && pageNum === 1) {
+		const result = await getEmDashCollection("posts", {
+			orderBy: { published_at: "desc" },
+			limit: LOCALE_HOME_LIMIT,
+			locale,
+		});
+		if (Astro.cache?.enabled) Astro.cache.set(result.cacheHint);
+		homePosts = result.entries;
+		view = "home";
+	}
+} else if (taxonomyView && second && segments.length === 2) {
 	slug = second;
 	term = await getTerm(taxonomyView, slug, { locale });
 	if (term) {
@@ -74,7 +123,12 @@ if (taxonomyView && second && segments.length === 2) {
 			locale,
 		});
 		if (Astro.cache?.enabled) Astro.cache.set(result.cacheHint);
-		termPosts = result.entries;
+		const allTermPosts = result.entries;
+		termPostCount = allTermPosts.length;
+		termTotalPages = Math.max(1, Math.ceil(termPostCount / CATEGORY_PAGE_SIZE));
+		// Out-of-range archive page → 404 (an empty archive still has a valid page 1).
+		if (pageNum > termTotalPages) return Astro.redirect("/404");
+		termPosts = allTermPosts.slice((pageNum - 1) * CATEGORY_PAGE_SIZE, pageNum * CATEGORY_PAGE_SIZE);
 		// Restore the per-card tag chips the standalone archive routes rendered:
 		// one batched query rather than getEntryTerms() per post.
 		const tags = await getTermsForEntries(
@@ -90,7 +144,8 @@ if (taxonomyView && second && segments.length === 2) {
 		);
 		view = taxonomyView;
 	}
-} else if (first && segments.length === 1) {
+} else if (first && segments.length === 1 && pageNum === 1) {
+	// Posts and pages are single URLs, never paginated: /{slug}/page/N/ is not valid.
 	slug = first;
 	const postResult = await getEmDashEntry("posts", slug, { locale });
 	post = postResult.entry;
@@ -120,9 +175,23 @@ const pageTitle =
 		? currentPost.data.title
 		: view === "page"
 			? currentPage.data.title
-			: view === "tag"
-				? `Posts tagged "${currentTerm.label}"`
-				: `${currentTerm.label} posts`;
+			: view === "home"
+				? (HOME_COPY[locale]?.heading ?? siteTitle)
+				: view === "tag"
+					? `Posts tagged "${currentTerm.label}"`
+					: `${currentTerm.label} posts`;
+// Rank Math appends " – Page N" to paginated archive titles.
+const pagedTitle = pageNum > 1 ? `${pageTitle} – Page ${pageNum}` : pageTitle;
+// Self-referential canonical for the current archive page (§6.1). Page 1 keeps the
+// bare /category/{slug}/ form; deeper pages append /page/N/.
+const categoryPagePath = (n: number) =>
+	`${Astro.url.origin}${categoryPath(locale, resolvedSlug)}${n > 1 ? `page/${n}/` : ""}`;
+const homeCanonical = `${Astro.url.origin}${localeHomePath(locale)}`;
+// hreflang cluster across the four language homes (+ x-default → EN, §6.5).
+const homeAlternates = [
+	...HOME_LOCALE_ORDER.map((l) => ({ hreflang: l, href: `${Astro.url.origin}${localeHomePath(l)}` })),
+	{ hreflang: "x-default", href: `${Astro.url.origin}${localeHomePath("en")}` },
+];
 const featuredImageUrl = view === "post" ? getImageUrl(currentPost.data.featured_image) : undefined;
 const seo =
 	view === "post"
@@ -159,7 +228,9 @@ const alternates =
 					locale,
 					slug: resolvedSlug,
 				})
-			: [];
+			: view === "home"
+				? homeAlternates
+				: [];
 ---
 
 {
@@ -237,13 +308,13 @@ const alternates =
 {
 	(view === "category" || view === "tag") && (
 		<Base
-			title={pageTitle}
+			title={pagedTitle}
 			description={
 				view === "tag"
 					? `All posts tagged with ${currentTerm.label}`
 					: `All posts in ${currentTerm.label}`
 			}
-			canonical={view === "category" ? `${Astro.url.origin}${categoryPath(locale, resolvedSlug)}` : undefined}
+			canonical={view === "category" ? categoryPagePath(pageNum) : undefined}
 			manualCanonical={view === "category"}
 			lang={locale}
 			robots={DEFAULT_ROBOTS}
@@ -253,7 +324,7 @@ const alternates =
 					<p class="wp-meta">{view === "tag" ? "Tag" : "Category"}</p>
 					<h1>{currentTerm.label}</h1>
 					<p class="wp-excerpt">
-						{termPosts.length} {termPosts.length === 1 ? "post" : "posts"}
+						{termPostCount} {termPostCount === 1 ? "post" : "posts"}
 					</p>
 				</header>
 				<div class="wp-grid">
@@ -269,10 +340,96 @@ const alternates =
 						/>
 					))}
 				</div>
+				{termTotalPages > 1 && (
+					<nav class="wp-pagination" aria-label="Archive pagination">
+						{pageNum > 1 ? (
+							<a rel="prev" href={categoryPagePath(pageNum - 1)}>
+								← Newer
+							</a>
+						) : (
+							<span class="wp-pagination-spacer" />
+						)}
+						<span class="wp-pagination-status">
+							Page {pageNum} of {termTotalPages}
+						</span>
+						{pageNum < termTotalPages ? (
+							<a rel="next" href={categoryPagePath(pageNum + 1)}>
+								Older →
+							</a>
+						) : (
+							<span class="wp-pagination-spacer" />
+						)}
+					</nav>
+				)}
 			</section>
 		</Base>
 	)
 }
+
+{
+	view === "home" && (
+		<Base
+			title={pageTitle}
+			description={HOME_COPY[locale]?.summary}
+			canonical={homeCanonical}
+			manualCanonical
+			lang={locale}
+			alternates={alternates}
+			robots={DEFAULT_ROBOTS}
+		>
+			<section class="wp-archive">
+				<header class="wp-header">
+					<p class="wp-meta">RoadToStudy</p>
+					<h1>{HOME_COPY[locale]?.heading ?? siteTitle}</h1>
+					{HOME_COPY[locale]?.summary && <p class="wp-excerpt">{HOME_COPY[locale]?.summary}</p>}
+				</header>
+				<div class="wp-grid">
+					{homePosts.map((entry) => (
+						<PostCard
+							title={entry.data.title}
+							excerpt={entry.data.excerpt}
+							featuredImage={entry.data.featured_image}
+							href={contentPath(entry.data.locale || locale, entry.data.slug || entry.id)}
+							date={entry.data.publishedAt ?? undefined}
+							readingTime={getReadingTime(entry.data.content)}
+						/>
+					))}
+				</div>
+			</section>
+		</Base>
+	)
+}
+
+<style>
+	.wp-pagination {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--spacing-4);
+		margin-top: var(--spacing-12);
+		padding-top: var(--spacing-6);
+		border-top: 1px solid var(--color-border-subtle);
+	}
+
+	.wp-pagination a {
+		font-weight: 600;
+		text-decoration: none;
+		color: var(--color-accent);
+	}
+
+	.wp-pagination a:hover {
+		color: var(--color-accent-hover);
+	}
+
+	.wp-pagination-status {
+		color: var(--color-muted);
+		font-size: var(--font-size-sm);
+	}
+
+	.wp-pagination-spacer {
+		width: 1px;
+	}
+</style>
 
 <style>
 	.wp-content {
