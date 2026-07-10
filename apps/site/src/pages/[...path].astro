@@ -162,6 +162,8 @@ if (segments.length === 0) {
 	}
 }
 
+// Migrated Rank Math redirects (§6.2) are handled earlier in src/middleware.ts;
+// an unresolved content path that no rule matched renders the 404 page.
 if (!view) return Astro.redirect("/404");
 
 const { siteTitle } = resolveBlogSiteIdentity(await getSiteSettings());
