@@ -8,7 +8,32 @@ import { getDb } from "emdash/runtime";
 import { contentPath, categoryPath } from "../utils/content-url";
 
 export const SITEMAP_PAGE_SIZE = 200;
-export const SITEMAP_DEFAULT_LOCALE = "tr";
+
+// Rank Math omits these published posts from the source post sitemaps even though
+// their page robots meta is indexable. Preserve sitemap membership exactly; the
+// pages still render normally and can be linked/crawled outside the sitemap.
+const SOURCE_SITEMAP_EXCLUDED_PATHS = new Set([
+	"/en/academic-writing-in-turkish-a-guide-to-writing-articles-and-theses/",
+	"/en/language-psychology-and-methods-for-learning-turkish/",
+	"/en/methods-for-boosting-motivation-in-turkish-language-learning/",
+	"/en/turkish-learning-tips-for-arabic-speakers/",
+	"/en/turkish-learning-tips-for-english-speakers/",
+	"/fr/apprenez-le-turc-avec-les-reseaux-sociaux/",
+	"/fr/debouches-professionnels-en-architecture-et-design-en-turquie/",
+	"/fr/guide-du-respect-dans-la-societe-turque-manieres-et-importance/",
+	"/fr/la-culture-du-cadeau-en-turquie-traditions-et-suggestions/",
+	"/fr/la-structure-familiale-et-les-relations-sociales-en-turquie/",
+	"/fr/limportance-du-langage-corporel-et-des-gestes-en-turquie/",
+	"/fr/quelles-sont-les-traditions-du-ramadan-et-des-fetes-religieuses-en-turquie/",
+	"/fr/sensibilites-religieuses-et-regles-de-respect-en-turquie/",
+	"/fr/shabiller-en-turquie-au-quotidien-et-pour-les-occasions-speciales/",
+	"/id/cara-mengembangkan-keterampilan-membaca-dalam-bahasa-turki/",
+	"/id/idiom-dan-peribahasa-dalam-bahasa-turki-makna-dan-penggunaannya/",
+	"/id/metode-untuk-meningkatkan-keterampilan-menulis-dalam-bahasa-turki/",
+	"/id/panduan-penilaian-level-dan-sertifikasi-bahasa-turki/",
+	"/id/slang-dan-penggunaan-bahasa-sehari-hari-dalam-bahasa-turki/",
+	"/id/ungkapan-sopan-santun-dan-penggunaan-bahasa-formal-dalam-bahasa-turki/",
+]);
 
 const XML_ESCAPE: ReadonlyArray<readonly [RegExp, string]> = [
 	[/&/g, "&amp;"],
@@ -112,34 +137,43 @@ function tableForCollection(collection: SitemapCollection) {
 	return collection === "posts" ? "ec_posts" : "ec_pages";
 }
 
-export async function getPublishedStats(collection: SitemapCollection, locale = SITEMAP_DEFAULT_LOCALE): Promise<PublishedStats> {
+function isSourceSitemapExcluded(collection: SitemapCollection, row: { locale?: string | null; slug?: string | null }) {
+	return collection === "posts" && SOURCE_SITEMAP_EXCLUDED_PATHS.has(contentPath(row.locale, row.slug));
+}
+
+export async function getPublishedStats(collection: SitemapCollection, locale?: string | null): Promise<PublishedStats> {
 	const db = (await getDb()) as any;
-	const row = await db
+	let query = db
 		.selectFrom(tableForCollection(collection))
-		.select((eb: any) => [eb.fn.count("id").as("count"), eb.fn.max("wp_modified_at").as("lastmod")])
+		.select(["slug", "locale", "wp_modified_at", "wp_published_at", "updated_at", "published_at"])
 		.where("deleted_at", "is", null)
-		.where("status", "=", "published")
-		.where("locale", "=", locale)
-		.executeTakeFirst();
+		.where("status", "=", "published");
+	if (locale) query = query.where("locale", "=", locale);
+	const rows = (await query.execute()).filter((row: any) => !isSourceSitemapExcluded(collection, row));
+	const times = rows
+		.map((row: any) => row.wp_modified_at ?? row.wp_published_at ?? row.updated_at ?? row.published_at)
+		.map((value: any) => (value ? new Date(value).getTime() : NaN))
+		.filter((time: number) => Number.isFinite(time));
 
 	return {
-		count: Number(row?.count || 0),
-		lastmod: isoLastmod(row?.lastmod ? new Date(row.lastmod) : null),
+		count: rows.length,
+		lastmod: times.length ? isoLastmod(new Date(Math.max(...times))) : null,
 	};
 }
 
-export async function getPublishedSitemapEntries(collection: SitemapCollection, page: number, locale = SITEMAP_DEFAULT_LOCALE): Promise<any[]> {
+export async function getPublishedSitemapEntries(collection: SitemapCollection, page: number, locale?: string | null): Promise<any[]> {
 	const db = (await getDb()) as any;
-	const rows = await db
+	let query = db
 		.selectFrom(tableForCollection(collection))
 		.select(["id", "slug", "locale", "wp_modified_at", "wp_published_at", "updated_at", "published_at"])
 		.where("deleted_at", "is", null)
 		.where("status", "=", "published")
-		.where("locale", "=", locale)
 		.orderBy("published_at", "desc")
-		.limit(SITEMAP_PAGE_SIZE)
-		.offset((page - 1) * SITEMAP_PAGE_SIZE)
-		.execute();
+		.orderBy("id", "desc");
+	if (locale) query = query.where("locale", "=", locale);
+	const rows = (await query.execute())
+		.filter((row: any) => !isSourceSitemapExcluded(collection, row))
+		.slice((page - 1) * SITEMAP_PAGE_SIZE, page * SITEMAP_PAGE_SIZE);
 
 	return rows.map((row: any) => ({
 		id: row.id,

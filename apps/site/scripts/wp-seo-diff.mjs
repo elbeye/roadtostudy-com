@@ -11,6 +11,8 @@ import { readFile } from "node:fs/promises";
 const inputPath = process.env.WP_SAMPLE_INPUT || "data/wp-sample.json";
 const targetBase = (process.env.WP_TARGET_BASE || "https://roadtostudy-emdash-poc.murat-elbeye.workers.dev").replace(/\/$/, "");
 const asJson = process.argv.includes("--json");
+const concurrency = Math.max(1, Number(process.env.WP_SEO_DIFF_CONCURRENCY || 8));
+const timeoutMs = Math.max(1000, Number(process.env.WP_SEO_DIFF_TIMEOUT_MS || 15000));
 
 const source = JSON.parse(await readFile(inputPath, "utf8"));
 const snapshots = (source.seo?.headSnapshots || []).filter((h) => h && h.status === 200 && h.url);
@@ -129,16 +131,22 @@ function eq(a, b) {
 	return a === b;
 }
 
-const results = [];
-for (const snap of snapshots) {
+const results = await mapLimit(snapshots, concurrency, async (snap) => {
 	const path = pathOf(snap.url) || snap.url;
 	const targetUrl = `${targetBase}${path}`;
 	let targetHead = null;
 	let error = null;
 	try {
-		const res = await fetch(targetUrl, { headers: { Accept: "text/html" } });
+		const res = await fetch(targetUrl, {
+			headers: { Accept: "text/html" },
+			signal: AbortSignal.timeout(timeoutMs),
+		});
 		if (!res.ok) error = `target ${res.status}`;
-		else targetHead = extractHead(await res.text());
+		else {
+			const html = await res.text();
+			if (!/<(?:head|title|meta)\b/i.test(html)) error = `target ${res.status} non-html-or-empty`;
+			else targetHead = extractHead(html);
+		}
 	} catch (e) {
 		error = String(e);
 	}
@@ -155,8 +163,8 @@ for (const snap of snapshots) {
 			}
 		}
 	}
-	results.push({ path, targetUrl, error, source: sourceFields, target: targetFields, diffs: fieldDiffs });
-}
+	return { path, targetUrl, error, source: sourceFields, target: targetFields, diffs: fieldDiffs };
+});
 
 // --- summary: per-field match/mismatch across pages that were fetched ---
 const fetched = results.filter((r) => r.target);
@@ -193,4 +201,17 @@ if (asJson) {
 		console.log("\ntarget errors:");
 		for (const r of results.filter((x) => x.error)) console.log(`  ${r.path} -> ${r.error}`);
 	}
+}
+
+async function mapLimit(items, limit, fn) {
+	const out = new Array(items.length);
+	let next = 0;
+	async function worker() {
+		while (next < items.length) {
+			const index = next++;
+			out[index] = await fn(items[index], index);
+		}
+	}
+	await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+	return out;
 }

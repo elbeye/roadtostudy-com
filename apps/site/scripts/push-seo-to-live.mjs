@@ -28,9 +28,11 @@ import { randomUUID } from "node:crypto";
 
 const execFileAsync = promisify(execFile);
 const W = process.env.WP_TARGET_BASE || "https://roadtostudy-emdash-poc.murat-elbeye.workers.dev";
+const seedInput = process.env.WP_SEED_INPUT || "seed/seed.json";
 const dryRun = process.argv.includes("--dry-run");
 const limitArg = process.argv.indexOf("--limit");
 const limit = limitArg >= 0 ? Number(process.argv[limitArg + 1]) : Infinity;
+const concurrency = Math.max(1, Number(process.env.WP_PUSH_CONCURRENCY || 4));
 
 async function cli(args) {
 	const { stdout } = await execFileAsync("npx", ["emdash", ...args, "-u", W, "--json"], {
@@ -40,7 +42,7 @@ async function cli(args) {
 }
 
 // --- source data from the generated seed, keyed by collection|locale|slug ---
-const seed = JSON.parse(await readFile("seed/seed.json", "utf8"));
+const seed = JSON.parse(await readFile(seedInput, "utf8"));
 const seedByKey = new Map();
 for (const [collection, entries] of [
 	["posts", seed.content.posts],
@@ -77,17 +79,13 @@ for (const collection of ["posts", "pages"]) {
 	}
 }
 
-console.log(JSON.stringify({ W, eligible: plan.length, dryRun }, null, 2));
+console.log(JSON.stringify({ W, seedInput, eligible: plan.length, dryRun, concurrency }, null, 2));
 if (dryRun) {
 	for (const it of plan) console.log(`  ${it.collection} ${it.locale}/${it.slug}  featured=${!!it.featured_image} seo=${!!it.source_seo}`);
 	process.exit(0);
 }
 
-const results = [];
-let done = 0;
-for (const it of plan) {
-	if (done >= limit) break;
-	done++;
+const results = await mapLimit(plan.slice(0, limit), concurrency, async (it) => {
 	let tmp;
 	try {
 		const item = await cli(["content", "get", it.collection, it.id]);
@@ -100,14 +98,27 @@ for (const it of plan) {
 		tmp = join(tmpdir(), `push-seo-${randomUUID()}.json`);
 		await writeFile(tmp, JSON.stringify(payload));
 		await cli(["content", "update", it.collection, it.id, "--rev", item._rev, "--file", tmp]);
-		results.push({ entry: `${it.collection}:${it.locale}/${it.slug}`, status: "updated" });
 		console.log(`  ✓ ${it.collection} ${it.locale}/${it.slug}`);
+		return { entry: `${it.collection}:${it.locale}/${it.slug}`, status: "updated" };
 	} catch (error) {
-		results.push({ entry: `${it.collection}:${it.locale}/${it.slug}`, status: "failed", error: String(error?.stderr || error).slice(0, 200) });
 		console.log(`  ✗ ${it.collection} ${it.locale}/${it.slug}: ${String(error?.stderr || error).slice(0, 160)}`);
+		return { entry: `${it.collection}:${it.locale}/${it.slug}`, status: "failed", error: String(error?.stderr || error).slice(0, 200) };
 	} finally {
 		if (tmp) await unlink(tmp).catch(() => {});
 	}
-}
+});
 
 console.log(JSON.stringify({ attempted: results.length, updated: results.filter((r) => r.status === "updated").length, failed: results.filter((r) => r.status === "failed") }, null, 2));
+
+async function mapLimit(items, limit, fn) {
+	const out = new Array(items.length);
+	let next = 0;
+	async function worker() {
+		while (next < items.length) {
+			const index = next++;
+			out[index] = await fn(items[index], index);
+		}
+	}
+	await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+	return out;
+}
