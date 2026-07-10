@@ -11,6 +11,7 @@ import LiveSearch from "emdash/ui/search";
 import { Font } from "astro:assets";
 import { contentPath } from "../utils/content-url";
 import { resolveBlogSiteIdentity } from "../utils/site-identity";
+import { rewriteSourceHost } from "../utils/source-host";
 import "../styles/theme.css";
 
 interface Props {
@@ -43,7 +44,10 @@ const {
 	image,
 	canonical,
 	manualCanonical = false,
-	lang = "en",
+	// Unprefixed default locale is TR (see astro.config.mjs i18n). Pages that don't
+	// pass an explicit lang (home, listings, search, 404) are TR-primary, so default
+	// html lang / UI copy to Turkish rather than English.
+	lang = "tr",
 	alternates = [],
 	robots,
 	type = "website",
@@ -89,7 +93,7 @@ const pageCtx = createPublicPageContext({
 
 // Check if user is logged in (for showing admin link)
 const isLoggedIn = !!Astro.locals.user;
-const isTurkish = (lang || "en").toLowerCase().startsWith("tr");
+const isTurkish = (lang || "tr").toLowerCase().startsWith("tr");
 const searchPlaceholder = isTurkish ? "Konu, universite, sehir ara..." : "Search topics, universities, cities...";
 const footerHomeLabel = isTurkish ? "Ana sayfa" : "Home";
 const footerPostsLabel = isTurkish ? "Tum yazilar" : "All Posts";
@@ -112,7 +116,7 @@ const languageLinks = alternates
 ---
 
 <!doctype html>
-<html lang={lang || "en"}>
+<html lang={lang || "tr"}>
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -131,7 +135,7 @@ const languageLinks = alternates
 				<script
 					type="application/ld+json"
 					is:inline
-					set:html={JSON.stringify(graph).replaceAll("https://roadtostudy.com", Astro.url.origin)}
+					set:html={rewriteSourceHost(JSON.stringify(graph), Astro.url.origin)}
 				/>
 			))
 		}

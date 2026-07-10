@@ -21,7 +21,9 @@ export async function contentAlternates(
 	const published = (result.translations || [])
 		.filter((translation) => translation.status === "published" && !!translation.slug)
 		.map((translation) => ({
-			locale: translation.locale || "en",
+			// Unprefixed default locale is TR (astro.config.mjs), so a record with no
+			// explicit locale is Turkish, not English.
+			locale: translation.locale || "tr",
 			slug: translation.slug || "",
 			status: translation.status,
 		}));

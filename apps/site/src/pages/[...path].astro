@@ -6,6 +6,7 @@ import {
 	getSeoMeta,
 	getSiteSettings,
 	getTerm,
+	getTermsForEntries,
 } from "emdash";
 import { Image, PortableText } from "emdash/ui";
 import Base from "../layouts/Base.astro";
@@ -14,6 +15,7 @@ import { categoryPath, contentPath } from "../utils/content-url";
 import { contentAlternates } from "../utils/hreflang";
 import { getReadingTime } from "../utils/reading-time";
 import { resolveBlogSiteIdentity } from "../utils/site-identity";
+import { rewriteSourceHost } from "../utils/source-host";
 
 const LOCALES = new Set(["en", "fr", "id"]);
 
@@ -49,25 +51,44 @@ if (!parsed || parsed.segments.length === 0) return Astro.redirect("/404");
 const locale: string = parsed.locale || "tr";
 const segments: string[] = parsed.segments.filter((segment): segment is string => !!segment);
 const [first, second] = segments;
-let view: "post" | "page" | "category" | null = null;
+let view: "post" | "page" | "category" | "tag" | null = null;
 let slug = "";
 let post: any = null;
 let page: any = null;
 let term: any = null;
-let categoryPosts: any[] = [];
+let termPosts: any[] = [];
+let termTagsByEntry = new Map<string, Array<{ slug: string; label: string }>>();
 
-if (first === "category" && second && segments.length === 2) {
+// `/category/{slug}` and `/tag/{slug}` (plus their /{locale}/ prefixed forms) are
+// both taxonomy archives; the taxonomy name matches the query key exactly (seed
+// "name" field) per the taxonomy-naming rule.
+const taxonomyView = first === "category" ? "category" : first === "tag" ? "tag" : null;
+
+if (taxonomyView && second && segments.length === 2) {
 	slug = second;
-	term = await getTerm("category", slug, { locale });
+	term = await getTerm(taxonomyView, slug, { locale });
 	if (term) {
 		const result = await getEmDashCollection("posts", {
-			where: { category: term.slug },
+			where: { [taxonomyView]: term.slug },
 			orderBy: { published_at: "desc" },
 			locale,
 		});
 		if (Astro.cache?.enabled) Astro.cache.set(result.cacheHint);
-		categoryPosts = result.entries;
-		view = "category";
+		termPosts = result.entries;
+		// Restore the per-card tag chips the standalone archive routes rendered:
+		// one batched query rather than getEntryTerms() per post.
+		const tags = await getTermsForEntries(
+			"posts",
+			termPosts.map((entry: any) => entry.data.id),
+			"tag",
+		);
+		termTagsByEntry = new Map(
+			termPosts.map((entry: any) => [
+				entry.data.id,
+				(tags.get(entry.data.id) ?? []).map((t: any) => ({ slug: t.slug, label: t.label })),
+			]),
+		);
+		view = taxonomyView;
 	}
 } else if (first && segments.length === 1) {
 	slug = first;
@@ -99,7 +120,9 @@ const pageTitle =
 		? currentPost.data.title
 		: view === "page"
 			? currentPage.data.title
-			: `${currentTerm.label} posts`;
+			: view === "tag"
+				? `Posts tagged "${currentTerm.label}"`
+				: `${currentTerm.label} posts`;
 const featuredImageUrl = view === "post" ? getImageUrl(currentPost.data.featured_image) : undefined;
 const seo =
 	view === "post"
@@ -118,8 +141,7 @@ const absoluteOg = (path: string | null | undefined) =>
 // Body HTML is stored verbatim; rewrite the source host to the current origin so
 // in-body image/link URLs resolve here (pre-cutover) and stay identical at cutover
 // (origin === roadtostudy.com then). Media loads via the /wp-content/uploads/ route.
-const bodyHtml = (html: string | null | undefined) =>
-	(html || "").replaceAll("https://roadtostudy.com", Astro.url.origin);
+const bodyHtml = (html: string | null | undefined) => rewriteSourceHost(html, Astro.url.origin);
 // Original WP dates (§9) may arrive as ISO strings or Date objects.
 const toIsoDate = (v: unknown): string | null => {
 	if (!v) return null;
@@ -213,24 +235,29 @@ const alternates =
 }
 
 {
-	view === "category" && (
+	(view === "category" || view === "tag") && (
 		<Base
 			title={pageTitle}
-			description={`All posts in ${currentTerm.label}`}
-			canonical={`${Astro.url.origin}${categoryPath(locale, resolvedSlug)}`}
-			manualCanonical
+			description={
+				view === "tag"
+					? `All posts tagged with ${currentTerm.label}`
+					: `All posts in ${currentTerm.label}`
+			}
+			canonical={view === "category" ? `${Astro.url.origin}${categoryPath(locale, resolvedSlug)}` : undefined}
+			manualCanonical={view === "category"}
+			lang={locale}
 			robots={DEFAULT_ROBOTS}
 		>
 			<section class="wp-archive">
 				<header class="wp-header">
-					<p class="wp-meta">Category</p>
+					<p class="wp-meta">{view === "tag" ? "Tag" : "Category"}</p>
 					<h1>{currentTerm.label}</h1>
 					<p class="wp-excerpt">
-						{categoryPosts.length} {categoryPosts.length === 1 ? "post" : "posts"}
+						{termPosts.length} {termPosts.length === 1 ? "post" : "posts"}
 					</p>
 				</header>
 				<div class="wp-grid">
-					{categoryPosts.map((entry) => (
+					{termPosts.map((entry) => (
 						<PostCard
 							title={entry.data.title}
 							excerpt={entry.data.excerpt}
@@ -238,6 +265,7 @@ const alternates =
 							href={contentPath(entry.data.locale || locale, entry.data.slug || entry.id)}
 							date={entry.data.publishedAt ?? undefined}
 							readingTime={getReadingTime(entry.data.content)}
+							tags={termTagsByEntry.get(entry.data.id)}
 						/>
 					))}
 				</div>

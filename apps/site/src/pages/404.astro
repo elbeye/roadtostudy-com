@@ -1,5 +1,10 @@
 ---
 import Base from "../layouts/Base.astro";
+
+// Return a real 404 status. Without this the page renders 200, so the
+// `Astro.redirect("/404")` used across content routes ends in a soft-404
+// (a 200 body at /404) that search engines may index instead of dropping.
+Astro.response.status = 404;
 ---
 
 <Base title="Page not found">
