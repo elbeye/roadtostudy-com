@@ -6,6 +6,7 @@ import { getEmDashCollection, getTaxonomyTerms } from "emdash";
 import { getDb } from "emdash/runtime";
 
 import { contentPath, categoryPath } from "../utils/content-url";
+import { escapeXml } from "../utils/xml";
 
 export const SITEMAP_PAGE_SIZE = 200;
 
@@ -35,19 +36,7 @@ const SOURCE_SITEMAP_EXCLUDED_PATHS = new Set([
 	"/id/ungkapan-sopan-santun-dan-penggunaan-bahasa-formal-dalam-bahasa-turki/",
 ]);
 
-const XML_ESCAPE: ReadonlyArray<readonly [RegExp, string]> = [
-	[/&/g, "&amp;"],
-	[/</g, "&lt;"],
-	[/>/g, "&gt;"],
-	[/"/g, "&quot;"],
-	[/'/g, "&apos;"],
-];
-
-export function escapeXml(str: string): string {
-	let out = str;
-	for (const [re, rep] of XML_ESCAPE) out = out.replace(re, rep);
-	return out;
-}
+export { escapeXml };
 
 // Rank Math lastmod format: 2026-04-17T09:44:00+00:00 (no milliseconds, +00:00 offset).
 export function isoLastmod(date: Date | null | undefined): string | null {
@@ -196,6 +185,17 @@ export function pageSlice<T>(items: T[], page: number): T[] {
 
 export function pageCount(total: number): number {
 	return Math.max(1, Math.ceil(total / SITEMAP_PAGE_SIZE));
+}
+
+// Rank Math's category sitemap lists only terms that actually have posts. Cheap
+// existence probe (limit 1) per term so empty categories stay out of the sitemap.
+export async function categoryHasPosts(slug: string, locale?: string | null): Promise<boolean> {
+	const { entries } = await getEmDashCollection("posts", {
+		where: { category: slug },
+		limit: 1,
+		locale: locale ?? undefined,
+	});
+	return entries.length > 0;
 }
 
 export { getTaxonomyTerms, categoryPath };
