@@ -19,3 +19,7 @@ data/wp-full.json
 data/wp-full-summary.json
 data/media-size-report.json
 data/d1-seed-sql/
+
+# generated crawl verification artifacts
+data/crawl-inventory.json
+data/crawl-report.json
