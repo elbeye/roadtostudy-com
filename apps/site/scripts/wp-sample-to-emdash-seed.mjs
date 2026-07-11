@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { buildFeaturedImage } from "./wp-media-lib.mjs";
-import { htmlToPortableText, decodeHtml } from "./html-to-portable-text.mjs";
+import { htmlToPortableText, decodeHtml, normalizeHtmlHrefs } from "./html-to-portable-text.mjs";
 
 const inputPath = process.env.WP_SAMPLE_INPUT || "data/wp-sample.json";
 // Default to the seed the worker actually loads (package.json emdash.seed), so
@@ -238,14 +238,18 @@ function pickAnchorId(groupIds, wpItemsById) {
 // (scripts, styles, inline event handlers, javascript: URLs). Aggressive junk-<div>
 // removal is deferred: it needs the real corpus + per-pattern diff review, and blind
 // stripping risks removing real structure.
+// One exception to "verbatim": unambiguously malformed hrefs from the source
+// (§6.10 — stacked schemes like `https://https://…`, doubled slash after the
+// internal host) are repaired via normalizeHtmlHrefs; valid URLs are untouched.
 function cleanHtml(html) {
 	if (!html) return "";
-	return String(html)
-		.replace(/<script[\s\S]*?<\/script>/gi, "")
-		.replace(/<style[\s\S]*?<\/style>/gi, "")
-		.replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "")
-		.replace(/((?:href|src)\s*=\s*)("javascript:[^"]*"|'javascript:[^']*')/gi, '$1"#"')
-		.trim();
+	return normalizeHtmlHrefs(
+		String(html)
+			.replace(/<script[\s\S]*?<\/script>/gi, "")
+			.replace(/<style[\s\S]*?<\/style>/gi, "")
+			.replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+			.replace(/((?:href|src)\s*=\s*)("javascript:[^"]*"|'javascript:[^']*')/gi, '$1"#"'),
+	).trim();
 }
 
 function buildSourceSeo(snap) {

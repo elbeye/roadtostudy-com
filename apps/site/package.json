@@ -18,6 +18,7 @@
     "wp:seed": "node scripts/wp-sample-to-emdash-seed.mjs",
     "wp:seed:full": "WP_SAMPLE_INPUT=data/wp-full.json WP_SEED_MEDIA_REFERENCES=1 node scripts/wp-sample-to-emdash-seed.mjs",
     "wp:seed:preflight": "node scripts/wp-seed-preflight.mjs",
+    "wp:link-audit": "node scripts/wp-link-audit.mjs",
     "wp:d1:seed-sql": "node scripts/wp-sqlite-to-d1-seed-sql.mjs",
     "media:upload": "node --env-file=.env scripts/wp-media-to-r2.mjs",
     "media:dry-run:full": "WP_SAMPLE_INPUT=data/wp-full.json node scripts/wp-media-to-r2.mjs --dry-run",

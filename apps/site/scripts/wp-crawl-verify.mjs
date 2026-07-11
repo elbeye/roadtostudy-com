@@ -1,6 +1,11 @@
 // Cutover crawl gate (§7.4): every URL in the SOURCE Rank Math sitemap must return
 // 200 (or an expected 301) on the TARGET before DNS cutover. Any unexpected 404/5xx
-// is a cutover blocker. Read-only.
+// is a cutover blocker. Redirects covered by the intentional-redirect table
+// (src/lib/redirects-data.mjs, served by src/middleware.ts) pass as
+// "expected-redirect" when the Location matches the configured target; a wrong
+// Location means the redirect layer is misconfigured and is a blocker. Redirects
+// NOT covered by the table stay a "redirect" warning (reported, non-blocking).
+// Read-only.
 //
 // Two modes:
 //   --inventory                       Enumerate the source sitemap URL set only
@@ -14,6 +19,8 @@
 //     node scripts/wp-crawl-verify.mjs
 //   WP_SOURCE_BASE=https://roadtostudy.com node scripts/wp-crawl-verify.mjs --json
 import { mkdir, writeFile } from "node:fs/promises";
+
+import { REDIRECTS, normalizePath } from "../src/lib/redirects-data.mjs";
 
 const XML_ENTITIES = [
 	[/&amp;/g, "&"],
@@ -47,6 +54,25 @@ export function sitemapType(url) {
 export function mapToTarget(sourceUrl, sourceBase, targetBase) {
 	const path = sourceUrl.startsWith(sourceBase) ? sourceUrl.slice(sourceBase.length) : new URL(sourceUrl).pathname;
 	return `${targetBase.replace(/\/$/, "")}${path.startsWith("/") ? "" : "/"}${path}`;
+}
+
+// Map an observed status + Location header onto a verdict:
+//   200                                          -> "ok"
+//   3xx covered by a rule, Location matches `to` -> "expected-redirect" (passes the gate)
+//   3xx covered by a rule, Location differs      -> "redirect-mismatch" (blocker: the
+//                                                   redirect layer is misconfigured)
+//   3xx not covered by any rule                  -> "redirect" (warning, non-blocking)
+//   anything else                                -> "blocker"
+// Rule paths and Location are compared trailing-slash-insensitively on the pathname
+// (Location may be relative or absolute; it's resolved against the checked URL).
+export function classifyResult(targetUrl, status, location, rules = REDIRECTS) {
+	if (status === 200) return "ok";
+	if (status !== 301 && status !== 308 && status !== 302 && status !== 307) return "blocker";
+	const pathname = normalizePath(new URL(targetUrl).pathname);
+	const rule = rules.find((r) => normalizePath(r.from) === pathname);
+	if (!rule) return "redirect";
+	const got = location ? normalizePath(new URL(location, targetUrl).pathname) : "";
+	return got === normalizePath(rule.to) ? "expected-redirect" : "redirect-mismatch";
 }
 
 const SOURCE_BASE = (process.env.WP_SOURCE_BASE || "https://roadtostudy.com").replace(/\/$/, "");
@@ -138,18 +164,19 @@ async function main() {
 	const results = await mapWithConcurrency(urls, CONCURRENCY, async ({ url, type }) => {
 		const target = mapToTarget(url, SOURCE_BASE, TARGET_BASE);
 		const { status, location, error } = await checkStatus(target);
-		const ok = status === 200;
-		const redirect = status === 301 || status === 308 || status === 302 || status === 307;
-		return { source: url, target, type, status, location, error, verdict: ok ? "ok" : redirect ? "redirect" : "blocker" };
+		return { source: url, target, type, status, location, error, verdict: classifyResult(target, status, location) };
 	});
 
-	const blockers = results.filter((r) => r.verdict === "blocker");
+	// A redirect-mismatch is a blocker too: the URL is covered by an intentional
+	// rule but the layer sends it to the wrong place.
+	const blockers = results.filter((r) => r.verdict === "blocker" || r.verdict === "redirect-mismatch");
 	const redirects = results.filter((r) => r.verdict === "redirect");
 	const report = {
 		source: SOURCE_BASE,
 		target: TARGET_BASE,
 		total: results.length,
 		ok: results.filter((r) => r.verdict === "ok").length,
+		expectedRedirects: results.filter((r) => r.verdict === "expected-redirect").length,
 		redirects: redirects.length,
 		blockers: blockers.length,
 		byType,
@@ -168,9 +195,11 @@ function renderInventory(s) {
 }
 
 function renderReport(r, blockers) {
-	const head = `Crawl parity: ${r.source} -> ${r.target}\n  total ${r.total} | 200 ${r.ok} | redirect ${r.redirects} | BLOCKERS ${r.blockers}`;
-	if (!blockers.length) return `${head}\n  ✓ every source URL resolves (200/redirect).`;
-	const lines = blockers.slice(0, 20).map((b) => `    [${b.status || b.error}] ${b.target}`);
+	const head = `Crawl parity: ${r.source} -> ${r.target}\n  total ${r.total} | 200 ${r.ok} | expected-301 ${r.expectedRedirects} | redirect ${r.redirects} | BLOCKERS ${r.blockers}`;
+	if (!blockers.length) return `${head}\n  ✓ every source URL resolves (200/expected/redirect).`;
+	const lines = blockers
+		.slice(0, 20)
+		.map((b) => `    [${b.verdict === "redirect-mismatch" ? `${b.status} -> ${b.location || "(no Location)"}` : b.status || b.error}] ${b.target}`);
 	return `${head}\n  ✗ blockers (first 20):\n${lines.join("\n")}`;
 }
 

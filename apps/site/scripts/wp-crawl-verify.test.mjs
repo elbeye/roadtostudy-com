@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { decodeXml, parseLocs, sitemapType, mapToTarget } from "./wp-crawl-verify.mjs";
+import { decodeXml, parseLocs, sitemapType, mapToTarget, classifyResult } from "./wp-crawl-verify.mjs";
 
 test("parseLocs extracts and decodes every loc", () => {
 	const xml = `<?xml version="1.0"?><urlset>
@@ -47,4 +47,37 @@ test("mapToTarget preserves path across origins", () => {
 		mapToTarget("https://www.roadtostudy.com/bar/", "https://roadtostudy.com", "https://t.dev"),
 		"https://t.dev/bar/",
 	);
+});
+
+// Rules are passed explicitly: the live table (src/lib/redirects-data.mjs) may be
+// empty or mid-population, so tests never depend on its contents.
+const RULES = [{ from: "/eski-yazi/", to: "/yeni-yazi/", status: 301 }];
+
+test("classifyResult: 200 is ok, non-redirect non-200 is a blocker", () => {
+	assert.equal(classifyResult("https://t.dev/eski-yazi/", 200, undefined, RULES), "ok");
+	assert.equal(classifyResult("https://t.dev/eski-yazi/", 404, undefined, RULES), "blocker");
+	assert.equal(classifyResult("https://t.dev/x/", 500, undefined, RULES), "blocker");
+	assert.equal(classifyResult("https://t.dev/x/", 0, undefined, RULES), "blocker");
+});
+
+test("classifyResult: intentional redirect with matching Location passes", () => {
+	// relative Location
+	assert.equal(classifyResult("https://t.dev/eski-yazi/", 301, "/yeni-yazi/", RULES), "expected-redirect");
+	// absolute Location on the target origin
+	assert.equal(classifyResult("https://t.dev/eski-yazi/", 301, "https://t.dev/yeni-yazi/", RULES), "expected-redirect");
+	// trailing-slash difference on either side is tolerated
+	assert.equal(classifyResult("https://t.dev/eski-yazi", 308, "/yeni-yazi", RULES), "expected-redirect");
+});
+
+test("classifyResult: intentional redirect with wrong Location is a blocker (mismatch)", () => {
+	assert.equal(classifyResult("https://t.dev/eski-yazi/", 301, "/baska-yere/", RULES), "redirect-mismatch");
+	// a redirect with no Location header at all can't match the configured target
+	assert.equal(classifyResult("https://t.dev/eski-yazi/", 301, undefined, RULES), "redirect-mismatch");
+});
+
+test("classifyResult: uncovered redirect stays the 'redirect' warning", () => {
+	assert.equal(classifyResult("https://t.dev/bilinmeyen/", 301, "/nereye/", RULES), "redirect");
+	assert.equal(classifyResult("https://t.dev/bilinmeyen/", 302, "/nereye/", RULES), "redirect");
+	// empty rule table (the pre-extraction state) is a no-op: every redirect is uncovered
+	assert.equal(classifyResult("https://t.dev/eski-yazi/", 301, "/yeni-yazi/", []), "redirect");
 });

@@ -1,6 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { htmlToPortableText, inlineToSpans, decodeHtml } from "./html-to-portable-text.mjs";
+import {
+	htmlToPortableText,
+	inlineToSpans,
+	decodeHtml,
+	normalizeHref,
+	normalizeHtmlHrefs,
+} from "./html-to-portable-text.mjs";
 
 const text = (block) => block.children.map((c) => c.text).join("");
 
@@ -83,6 +89,58 @@ test("content with no block tags falls back to a single normal block", () => {
 test("empty input yields no blocks", () => {
 	assert.deepEqual(htmlToPortableText(""), []);
 	assert.deepEqual(htmlToPortableText(null), []);
+});
+
+test("normalizeHref collapses stacked schemes, keeping the innermost scheme", () => {
+	assert.equal(
+		normalizeHref("https://https://roadtostudy.com//taksitle-alisveris-odeme-planlamasi/"),
+		"https://roadtostudy.com/taksitle-alisveris-odeme-planlamasi/",
+	);
+	assert.equal(normalizeHref("http://https://roadtostudy.com/x"), "https://roadtostudy.com/x");
+	assert.equal(normalizeHref("https://http://roadtostudy.com/x"), "http://roadtostudy.com/x");
+	// triple stack still resolves to the innermost
+	assert.equal(normalizeHref("https://https://https://roadtostudy.com/x"), "https://roadtostudy.com/x");
+});
+
+test("normalizeHref collapses a doubled slash after the internal host only", () => {
+	assert.equal(normalizeHref("https://roadtostudy.com//guide/"), "https://roadtostudy.com/guide/");
+	assert.equal(normalizeHref("https://www.roadtostudy.com///guide/"), "https://www.roadtostudy.com/guide/");
+	// external hosts: `//` in the path could be meaningful — untouched
+	assert.equal(normalizeHref("https://example.com//guide/"), "https://example.com//guide/");
+});
+
+test("normalizeHref never touches valid URLs", () => {
+	for (const url of [
+		"https://roadtostudy.com/turkiyede-universite/",
+		"https://example.com/a?b=https://roadtostudy.com/c", // scheme in query, not stacked
+		"/relative/path/",
+		"#anchor",
+		"mailto:hi@roadtostudy.com",
+		"",
+	]) {
+		assert.equal(normalizeHref(url), url);
+	}
+});
+
+test("normalizeHtmlHrefs rewrites only malformed href attributes, byte-for-byte otherwise", () => {
+	const html =
+		'<p>Bu konuda <a href="https://https://roadtostudy.com//pazarlar/">yazı</a> ve ' +
+		"<a href='https://https://roadtostudy.com//sim/'>diğeri</a> ile " +
+		'<a href="https://example.com/ok">dış</a>, <img src="https://https://roadtostudy.com//x.jpg"></p>';
+	assert.equal(
+		normalizeHtmlHrefs(html),
+		'<p>Bu konuda <a href="https://roadtostudy.com/pazarlar/">yazı</a> ve ' +
+			"<a href='https://roadtostudy.com/sim/'>diğeri</a> ile " +
+			// src is intentionally left alone (only hrefs are audited/fixed)
+			'<a href="https://example.com/ok">dış</a>, <img src="https://https://roadtostudy.com//x.jpg"></p>',
+	);
+	const clean = '<p><a href="https://roadtostudy.com/a/">a</a></p>';
+	assert.equal(normalizeHtmlHrefs(clean), clean);
+});
+
+test("portable-text link markDefs get normalized hrefs", () => {
+	const [b] = htmlToPortableText('<p>see <a href="https://https://roadtostudy.com//guide/">guide</a></p>');
+	assert.equal(b.markDefs[0].href, "https://roadtostudy.com/guide/");
 });
 
 test("reading-time shape: blocks are _type block with span children carrying text", () => {
