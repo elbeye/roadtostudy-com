@@ -87,9 +87,35 @@ Hedef geçici domainde ayaktayken:
 | Google Search Console | Faz 5 izleme | Kullanıcı (GSC zaten bağlı, §2) |
 
 ## Sıradaki repo-içi işler (kimlik-bilgisi beklemeden yapılabilir) 🟢
-1. Migration-grade HTML→PortableText (§7.2) + testler.
-2. `wp-crawl-verify` için beklenen-301 haritası (bilinçli redirect'lerde 301'i "ok" say).
+1. ~~Migration-grade HTML→PortableText (§7.2) + testler.~~ **Bitti.**
+2. ~~`wp-crawl-verify` için beklenen-301 haritası.~~ **Bitti** — REDIRECTS kapsamındaki 301'ler "expected-redirect" sayılır; yanlış Location blocker'dır.
 3. ~~Attachment page URL davranışı kararı (§10 açık) — kaynak crawl'ıyla tespit.~~ **Çözüldü** — bkz. aşağıdaki "Attachment page URL kararı" bölümü.
+
+---
+
+## Canlıya geçiş durumu (2026-07-11 bulut oturumu — Faz 1/2/4 yürütüldü)
+
+Kullanıcının sağladığı WP application password + Cloudflare API token ile bulut oturumunda koşulanlar:
+
+| Adım | Sonuç |
+|---|---|
+| Faz 1.1 Tam çıkarım | ✅ 3766 post (2246 publish + 1502 future + 18 draft) · 236 page · 40 kategori · 858 medya · 2481 head snapshot (hepsi 200). Runbook'taki 2195/1553 dağılımından fark: aradan geçen sürede 51 zamanlanmış post yayınlandı; toplam birebir. |
+| Faz 1.2 Tam seed | ✅ `contentHtmlEntries=4001`, `sourceSeoEntries=2481`, preflight `issues: []`. İç-link temizliği dahil (1114 href onarıldı, 20 düz-metin href unlink edildi). |
+| Faz 1.3–1.4 D1 | ✅ Prod D1 = lokal birebir (revisions 2481 / posts 3766 / pages 235 / taxonomies 40 / content_tax 3773). Not: 5 satır D1'in ~100KB statement sınırını aştı (`SQLITE_TOOBIG`) → parametreli `/query` API ile eklendi. |
+| Faz 2 Medya → R2 | ✅ 4496 anahtar yüklendi (bucket 4513 obje / 349 MB); worker `/wp-content/uploads/...` 200 servis ediyor. |
+| Worker deploy | ✅ Branch kodu `roadtostudy-emdash-poc` üzerinde (853 attachment redirect'i canlıda doğrulandı). |
+| Faz 4.1 Crawl parite | ⚠️ İçerik paritesi **2421/2421** — her URL hedefte mevcut ve tek tek 200 döndürüldüğü doğrulandı. Ancak eşzamanlı crawl'da ~%4-6 istek **503 (Cloudflare error 1102 — Worker CPU/kaynak sınırı)** alıyor; başarısız set koşudan koşuya değişiyor ve hepsi solo istekte 200. |
+| Faz 4.2 SEO diff | ✅ Tek fark bilinçli hreflang `x-default` (beklenen). Diğer raporlanan farklar 503 artefaktı. |
+| Faz 4.4 Yük testi | ❌ Yük altında ana sayfa ~%20, `/posts` ~%90 503 (1102). `/posts`'un sınırsız 2200+ post render etmesi düzeltildi (100 kap); kalan 503'ler kapasite. |
+
+### Kapasite bulgusu ve cutover öncesi şart
+- 1102 örüntüsü (solo 200, eşzamanlıda 503, sayfa render ~400ms wall) **Workers Free planının 10 ms CPU sınırıyla** tutarlı. **Cutover'dan önce Workers Paid'e (5$/ay) geçilmeli**, sonrasında Faz 4 yük testi tekrarlanmalı.
+- Cache API `*.workers.dev` üzerinde çalışmaz — mevcut ölçümler **önbelleksiz en kötü durum**. Gerçek zone'a (roadtostudy.com) bağlanınca sayfa önbelleği devreye girer; 503 oranı ayrıca düşer.
+
+### Kalan adımlar
+1. 🌐 **Workers Paid upgrade** (kullanıcı, dash) → Faz 4 yük testi tekrar (bulut oturumu koşabilir).
+2. 🔑 **Rank Math Redirections dökümü** — REST'te listeleme endpoint'i yok (yalnız `updateRedirection`); wp-admin → Rank Math → Redirections'tan export gerekir (veya kural yoksa adım kapanır).
+3. 🌐 Faz 5: DNS + Managed Content + GSC (runbook yukarıdaki bölüm).
 
 ---
 
