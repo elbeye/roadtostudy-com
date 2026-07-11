@@ -6,8 +6,12 @@ import { getReadingTime } from "../../utils/reading-time";
 
 // Sort in the database rather than in JS — lets the DB use its index on
 // published_at and avoids a full-table scan on the client.
+// Capped: with the full migrated corpus (2200+ published posts) an unbounded
+// render exceeds the Worker CPU limit (Cloudflare error 1102).
+const POSTS_PAGE_LIMIT = 100;
 const { entries: posts, cacheHint } = await getEmDashCollection("posts", {
 	orderBy: { published_at: "desc" },
+	limit: POSTS_PAGE_LIMIT,
 });
 
 if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
@@ -40,7 +44,7 @@ const formatDate = (date: Date) =>
 		<header class="page-header">
 			<h1 class="page-title">All Posts</h1>
 			<p class="page-description">
-				{posts.length}
+				Latest {posts.length}
 				{posts.length === 1 ? "article" : "articles"}
 			</p>
 		</header>
