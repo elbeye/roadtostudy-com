@@ -23,9 +23,9 @@ const LOCALES = new Set(["en", "fr", "id"]);
 // keeps the migrated pages' robots meta identical (SEO parity §6.3).
 const DEFAULT_ROBOTS = "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large";
 
-// WordPress archive pagination (§6.1: /page/N/ must resolve). 10 is the WordPress
-// default posts_per_page; the source theme's value is unconfirmed in the export, so
-// keep it a single knob to correct once verified against the live archives.
+// WordPress archive pagination (§6.1: /page/N/ must resolve). Confirmed against the
+// live source: roadtostudy.com category archives list 10 posts per page and use the
+// exact /category/{slug}/page/N/ URL scheme.
 const CATEGORY_PAGE_SIZE = 10;
 // Number of latest posts shown on a localized language home (/en/, /fr/, /id/).
 const LOCALE_HOME_LIMIT = 12;
