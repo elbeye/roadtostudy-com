@@ -89,4 +89,35 @@ Hedef geçici domainde ayaktayken:
 ## Sıradaki repo-içi işler (kimlik-bilgisi beklemeden yapılabilir) 🟢
 1. Migration-grade HTML→PortableText (§7.2) + testler.
 2. `wp-crawl-verify` için beklenen-301 haritası (bilinçli redirect'lerde 301'i "ok" say).
-3. Attachment page URL davranışı kararı (§10 açık) — kaynak crawl'ıyla tespit.
+3. ~~Attachment page URL davranışı kararı (§10 açık) — kaynak crawl'ıyla tespit.~~ **Çözüldü** — bkz. aşağıdaki "Attachment page URL kararı" bölümü.
+
+---
+
+## Attachment page URL kararı (§10 açık → çözüldü, 2026-07-11)
+
+Kaynak site canlı crawl + public REST (`wp/v2/media`, auth gerekmez) ile ölçüldü.
+
+### Ampirik bulgular
+| Bulgu | Değer |
+|---|---|
+| Sitemap'te attachment | **Yok** — 14 alt-sitemap yalnız post/page/category; attachment sitemap'i kapalı |
+| Toplam attachment (media) | REST `X-WP-Total` 858; public olarak serialize edilen **853** (5'i public yanıt dışında → erişilebilir sayfası yok) |
+| Ebeveynli attachment (695) | Pretty URL **301 → ebeveyn post permalink'i** (= URL'nin son segmenti atılmış hali) |
+| Yetim attachment (158) | Pretty URL **301 → ana sayfa `/`** (locale-prefix'li olsa bile hedef kök `/`) |
+| HTML attachment sayfası | Hiç servis edilmiyor — Rank Math "attachment redirect" açık, yanıt anında 301; dolayısıyla indexlenebilir attachment sayfası **yok** |
+
+Canlıya karşı doğrulanan örnekler (redirect: manual):
+- `/erasmus-degisim-vize-islemleri/visa-procedures-for-erasmus-exchange-students-3/` → 301 `/erasmus-degisim-vize-islemleri/`
+- `/en/erasmus-opportunities-in-turkey/erasmus-scholarship-opportunities-for-international-students/` → 301 `/en/erasmus-opportunities-in-turkey/`
+- `/artvin-coruh-universitesi-tanitim/artvin-coruh-universitesi-tanitim-2/` → 301 `/artvin-coruh-universitesi-tanitim/`
+- `/kare-logo/kare-logo-2/` → 301 `/kare-logo/` (ebeveyn sitemap dışı olsa da kural aynı)
+- Yetimler: `/15800/`, `/how-do-turks-celebrate-the-new-year/`, `/en/ozyegin-university-of-architecture/`, `/en/visa-procedures-for-erasmus-exchange-students-2/` → hepsi 301 `https://roadtostudy.com/`
+
+### Karar
+Davranış deterministik → **birebir replike edildi**: 853 attachment URL'sinin tamamı `apps/site/src/lib/redirects-data.mjs` içindeki `REDIRECTS` tablosuna 301 kuralı olarak eklendi (ebeveynli → ebeveyn path'i, yetim → `/`). Mevcut middleware (`src/middleware.ts`) bu tabloyu zaten uyguladığı için **kod değişikliği gerekmedi**; `wp-crawl-verify` beklenen-301 sınıflandırması da aynı tablodan beslendiği için cutover kapısıyla otomatik uyumlu.
+
+Güvenlik kontrolleri:
+- 853 `from` path'i, sitemap'teki 2421 canlı içerik URL'sinin **hiçbiriyle çakışmıyor** (WP slug'ları post tipleri arasında tekilleştirdiği için beklenen sonuç; ölçülerek doğrulandı).
+- Kurallar `from`'a göre sıralı ve üretilmiş (generated) — elle düzenleme yerine yeniden üret.
+
+Kabul edilen boşluk: `/?attachment_id=<id>` query-string biçimi replike edilmedi (matcher pathname bazlı). Bu biçim WP'nin hiçbir zaman dışa yayınlamadığı dahili bir varyant; canlıda da wp-cron 302 gürültüsüne takılıyor. Yeni sitede `/` + query ana sayfayı 200 döndürür — kabul edilebilir.
