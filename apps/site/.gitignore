@@ -26,3 +26,6 @@ data/crawl-report.json
 
 # generated link audit artifact
 data/link-audit.json
+
+# full-migration seed (regenerable via npm run wp:seed:full; too large for git)
+data/seed-full.json

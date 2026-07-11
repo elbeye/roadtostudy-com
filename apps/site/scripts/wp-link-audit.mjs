@@ -11,6 +11,10 @@
 //   whitespace-in-url   absolute href containing literal whitespace
 //   unparseable         absolute-looking href that new URL() rejects
 //
+// Offenders that are both whitespace-in-url and unparseable are prose pasted into
+// href= — the pipeline unlinks those (drops the link, keeps the text) rather than
+// rewriting them; they count as handled.
+//
 // Usage:
 //   node scripts/wp-link-audit.mjs                    # data/wp-full.json, else data/wp-sample.json
 //   node scripts/wp-link-audit.mjs data/wp-sample.json
@@ -21,7 +25,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { dirname } from "node:path";
-import { decodeHtml, normalizeHref } from "./html-to-portable-text.mjs";
+import { decodeHtml, isProseHref, normalizeHref } from "./html-to-portable-text.mjs";
 
 const HREF_RE = /(?<![\w-])href\s*=\s*(?:"([^"]*)"|'([^']*)')/gi;
 const STACKED_SCHEME_RE = /^https?:\/\/https?:\/\//i;
@@ -75,6 +79,9 @@ export function auditExport(source) {
 					const issues = classifyHref(href);
 					if (!issues.length) continue;
 					const fixed = normalizeHref(href);
+					// A prose href (sentence pasted into href=) is handled by unlinking,
+					// not rewriting — the pipeline drops the link and keeps the text.
+					const unlinked = isProseHref(fixed);
 					offenders.push({
 						collection,
 						id: item.id,
@@ -82,8 +89,9 @@ export function auditExport(source) {
 						field,
 						href,
 						issues,
-						fixed,
-						fixedIsClean: classifyHref(fixed).length === 0,
+						fixed: unlinked ? null : fixed,
+						unlinked,
+						fixedIsClean: unlinked || classifyHref(fixed).length === 0,
 					});
 				}
 			}
@@ -143,11 +151,11 @@ function renderSummary(report, outputPath) {
 	const samples = report.offenders
 		.filter((o) => !seen.has(o.href) && seen.add(o.href))
 		.slice(0, 10)
-		.map((o) => `    [${o.collection}/${o.slug} ${o.field}] ${o.href}\n      -> ${o.fixed}`);
+		.map((o) => `    [${o.collection}/${o.slug} ${o.field}] ${o.href}\n      -> ${o.unlinked ? "(unlinked — prose href)" : o.fixed}`);
 	const fixNote =
 		report.unfixedByNormalizeHref === 0
-			? "  ✓ every offender is repaired by the pipeline's normalizeHref rule."
-			: `  ✗ ${report.unfixedByNormalizeHref} offender(s) NOT repaired by normalizeHref — needs a new rule.`;
+			? "  ✓ every offender is repaired (rewritten or unlinked) by the pipeline."
+			: `  ✗ ${report.unfixedByNormalizeHref} offender(s) NOT handled by the pipeline — needs a new rule.`;
 	return `${head}\n${types}\n  sample offenders (deduped, first 10):\n${samples.join("\n")}\n${fixNote}\n  Report: ${outputPath}`;
 }
 

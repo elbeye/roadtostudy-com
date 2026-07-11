@@ -4,6 +4,7 @@ import {
 	htmlToPortableText,
 	inlineToSpans,
 	decodeHtml,
+	isProseHref,
 	normalizeHref,
 	normalizeHtmlHrefs,
 } from "./html-to-portable-text.mjs";
@@ -153,4 +154,26 @@ test("reading-time shape: blocks are _type block with span children carrying tex
 			assert.equal(typeof c.text, "string");
 		}
 	}
+});
+
+test("isProseHref: only absolute hrefs with whitespace that fail URL parsing", () => {
+	assert.equal(isProseHref("http://Türkiye'nin UNESCO Dünya Mirası Alanları Rehberi"), true);
+	assert.equal(isProseHref("https://www.Funds provided by tubitak.gov.tr/"), true);
+	// valid URLs, relative paths, and non-absolute prose never match
+	assert.equal(isProseHref("https://roadtostudy.com/a/"), false);
+	assert.equal(isProseHref("/foo bar/"), false);
+	assert.equal(isProseHref("mailto:x@y.z"), false);
+	assert.equal(isProseHref("just some text"), false);
+});
+
+test("prose hrefs are unlinked: html loses the href attribute, portable text loses the mark", () => {
+	const html = '<p><a href="http://Türkiye bu rehberde anlatılan yerler">metin</a> ve <a href="https://roadtostudy.com/a/">gerçek link</a></p>';
+	const fixedHtml = normalizeHtmlHrefs(html);
+	assert.ok(!fixedHtml.includes("http://Türkiye"));
+	assert.ok(fixedHtml.includes('<a href="https://roadtostudy.com/a/">gerçek link</a>'));
+	const [b] = htmlToPortableText(html);
+	assert.equal(b.markDefs.length, 1);
+	assert.equal(b.markDefs[0].href, "https://roadtostudy.com/a/");
+	const prose = b.children.find((c) => c.text.includes("metin"));
+	assert.deepEqual(prose.marks, []);
 });
