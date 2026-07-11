@@ -5,12 +5,14 @@ import {
 	getEmDashEntry,
 	getSeoMeta,
 	getSiteSettings,
+	getTaxonomyTerms,
 	getTerm,
 	getTermsForEntries,
 } from "emdash";
 import { Image, PortableText } from "emdash/ui";
 import Base from "../layouts/Base.astro";
 import PostCard from "../components/PostCard.astro";
+import PortalHome from "../components/PortalHome.astro";
 import { categoryPath, contentPath } from "../utils/content-url";
 import { contentAlternates } from "../utils/hreflang";
 import { getReadingTime } from "../utils/reading-time";
@@ -93,6 +95,7 @@ let termPostCount = 0;
 let termTotalPages = 1;
 let termTagsByEntry = new Map<string, Array<{ slug: string; label: string }>>();
 let homePosts: any[] = [];
+let homeCategories: Array<{ href: string; label: string }> = [];
 
 // `/category/{slug}` and `/tag/{slug}` (plus their /{locale}/ prefixed forms) are
 // both taxonomy archives; the taxonomy name matches the query key exactly (seed
@@ -104,13 +107,19 @@ if (segments.length === 0) {
 	// by index.astro, so only locale-prefixed homes reach the catch-all. The home is
 	// a bespoke landing layout and isn't paginated, so /{locale}/page/N/ is not valid.
 	if (hasLocalePrefix && pageNum === 1) {
-		const result = await getEmDashCollection("posts", {
-			orderBy: { published_at: "desc" },
-			limit: LOCALE_HOME_LIMIT,
-			locale,
-		});
+		const [result, terms] = await Promise.all([
+			getEmDashCollection("posts", {
+				orderBy: { published_at: "desc" },
+				limit: LOCALE_HOME_LIMIT,
+				locale,
+			}),
+			getTaxonomyTerms("category", { locale }),
+		]);
 		if (Astro.cache?.enabled) Astro.cache.set(result.cacheHint);
 		homePosts = result.entries;
+		homeCategories = (terms || [])
+			.filter((t: any) => t.locale === locale && t.slug)
+			.map((t: any) => ({ href: categoryPath(locale, t.slug), label: t.label }));
 		view = "home";
 	}
 } else if (taxonomyView && second && segments.length === 2) {
@@ -379,25 +388,13 @@ const alternates =
 			alternates={alternates}
 			robots={DEFAULT_ROBOTS}
 		>
-			<section class="wp-archive">
-				<header class="wp-header">
-					<p class="wp-meta">RoadToStudy</p>
-					<h1>{HOME_COPY[locale]?.heading ?? siteTitle}</h1>
-					{HOME_COPY[locale]?.summary && <p class="wp-excerpt">{HOME_COPY[locale]?.summary}</p>}
-				</header>
-				<div class="wp-grid">
-					{homePosts.map((entry) => (
-						<PostCard
-							title={entry.data.title}
-							excerpt={entry.data.excerpt}
-							featuredImage={entry.data.featured_image}
-							href={contentPath(entry.data.locale || locale, entry.data.slug || entry.id)}
-							date={entry.data.publishedAt ?? undefined}
-							readingTime={getReadingTime(entry.data.content)}
-						/>
-					))}
-				</div>
-			</section>
+			<PortalHome
+				locale={locale}
+				heading={HOME_COPY[locale]?.heading ?? siteTitle}
+				summary={HOME_COPY[locale]?.summary}
+				categories={homeCategories}
+				posts={homePosts}
+			/>
 		</Base>
 	)
 }

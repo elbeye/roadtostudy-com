@@ -1,0 +1,322 @@
+---
+import PostCard from "./PostCard.astro";
+import { contentPath } from "../utils/content-url";
+import { getReadingTime } from "../utils/reading-time";
+
+interface Props {
+	locale: string;
+	heading: string;
+	summary?: string;
+	/** Topic cards — real taxonomy terms for this locale ({ href, label }). */
+	categories: Array<{ href: string; label: string }>;
+	/** Featured guides (already locale-filtered entries). */
+	posts: any[];
+	/** "See all posts" target. */
+	viewAllHref?: string;
+}
+
+const { locale, heading, summary, categories, posts, viewAllHref = "/posts" } = Astro.props;
+
+// Localized chrome. The search route itself is a single unprefixed /search page.
+const UI: Record<
+	string,
+	{ search: string; searchAria: string; button: string; topics: string; featured: string; all: string }
+> = {
+	tr: {
+		search: "Üniversite, şehir, burs veya vize ara",
+		searchAria: "Site içinde ara",
+		button: "Ara",
+		topics: "Konular",
+		featured: "Öne çıkan rehberler",
+		all: "Tüm yazılar",
+	},
+	en: {
+		search: "Search universities, cities, scholarships…",
+		searchAria: "Search the site",
+		button: "Search",
+		topics: "Topics",
+		featured: "Featured guides",
+		all: "All posts",
+	},
+	fr: {
+		search: "Rechercher universités, villes, bourses…",
+		searchAria: "Rechercher sur le site",
+		button: "Rechercher",
+		topics: "Thèmes",
+		featured: "Guides en vedette",
+		all: "Tous les articles",
+	},
+	id: {
+		search: "Cari universitas, kota, beasiswa…",
+		searchAria: "Cari di situs",
+		button: "Cari",
+		topics: "Topik",
+		featured: "Panduan unggulan",
+		all: "Semua artikel",
+	},
+};
+const t = UI[locale] ?? UI.en;
+---
+
+<div class="portal">
+	<section class="portal-hero">
+		<p class="portal-kicker">RoadToStudy</p>
+		<h1 class="portal-heading">{heading}</h1>
+		{summary && <p class="portal-summary">{summary}</p>}
+		<form class="portal-search" action="/search" method="get">
+			<input type="search" name="q" placeholder={t.search} aria-label={t.searchAria} />
+			<button type="submit">{t.button}</button>
+		</form>
+	</section>
+
+	{
+		categories.length > 0 && (
+			<section class="portal-topics-section" aria-label={t.topics}>
+				<h2 class="portal-section-label">{t.topics}</h2>
+				<nav class="portal-topics">
+					{categories.map((category) => (
+						<a class="portal-topic" href={category.href}>
+							<span class="portal-topic-label">{category.label}</span>
+							<span class="portal-topic-arrow" aria-hidden="true">
+								→
+							</span>
+						</a>
+					))}
+				</nav>
+			</section>
+		)
+	}
+
+	{
+		posts.length > 0 && (
+			<section class="portal-featured">
+				<header class="portal-section-head">
+					<h2 class="portal-section-label">{t.featured}</h2>
+					<a class="portal-all-link" href={viewAllHref}>
+						{t.all} →
+					</a>
+				</header>
+				<div class="portal-grid">
+					{posts.map((entry) => (
+						<PostCard
+							title={entry.data.title ?? "Untitled"}
+							excerpt={entry.data.excerpt}
+							featuredImage={entry.data.featured_image}
+							href={contentPath(entry.data.locale || locale, entry.data.slug || entry.id)}
+							date={entry.data.publishedAt ?? undefined}
+							readingTime={getReadingTime(entry.data.content)}
+						/>
+					))}
+				</div>
+			</section>
+		)
+	}
+</div>
+
+<style>
+	.portal {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: var(--spacing-10) var(--spacing-6) var(--spacing-16);
+	}
+
+	/* Hero */
+	.portal-hero {
+		max-width: 760px;
+		margin: 0 auto var(--spacing-12);
+		text-align: center;
+	}
+
+	.portal-kicker {
+		color: var(--color-accent);
+		font-size: var(--font-size-sm);
+		font-weight: 700;
+		letter-spacing: var(--tracking-wider);
+		text-transform: uppercase;
+		margin-bottom: var(--spacing-3);
+	}
+
+	.portal-heading {
+		font-size: var(--font-size-4xl);
+		line-height: var(--leading-tight);
+		letter-spacing: var(--tracking-tight);
+	}
+
+	.portal-summary {
+		margin: var(--spacing-4) auto 0;
+		max-width: 620px;
+		color: var(--color-text-secondary);
+		font-size: var(--font-size-lg);
+		line-height: var(--leading-relaxed);
+	}
+
+	.portal-search {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: var(--spacing-2);
+		max-width: 620px;
+		margin: var(--spacing-8) auto 0;
+	}
+
+	.portal-search input {
+		min-height: 54px;
+		width: 100%;
+		padding: 0 var(--spacing-5);
+		border: 1px solid var(--color-border);
+		border-radius: 999px;
+		background: var(--color-bg);
+		color: var(--color-text);
+		font: inherit;
+		box-shadow: 0 12px 30px color-mix(in srgb, var(--color-text) 8%, transparent);
+	}
+
+	.portal-search input:focus {
+		outline: none;
+		border-color: var(--color-accent);
+		box-shadow: 0 0 0 3px var(--color-accent-ring);
+	}
+
+	.portal-search button {
+		min-height: 54px;
+		padding: 0 var(--spacing-7);
+		border: none;
+		border-radius: 999px;
+		background: var(--color-accent);
+		color: var(--color-on-accent);
+		font: inherit;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.portal-search button:hover {
+		background: var(--color-accent-hover);
+	}
+
+	/* Section labels */
+	.portal-section-label {
+		font-size: var(--font-size-sm);
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wider);
+		color: var(--color-muted);
+	}
+
+	/* Topics */
+	.portal-topics-section {
+		margin-bottom: var(--spacing-12);
+	}
+
+	.portal-topics-section .portal-section-label {
+		margin-bottom: var(--spacing-4);
+	}
+
+	.portal-topics {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+		gap: var(--spacing-3);
+	}
+
+	.portal-topic {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--spacing-3);
+		min-height: 64px;
+		padding: 0 var(--spacing-5);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		background: var(--color-surface);
+		color: var(--color-text);
+		text-decoration: none;
+		font-weight: 600;
+		transition:
+			border-color var(--transition-fast),
+			color var(--transition-fast),
+			transform var(--transition-fast);
+	}
+
+	.portal-topic:hover {
+		border-color: var(--color-accent);
+		color: var(--color-accent);
+		transform: translateY(-1px);
+	}
+
+	.portal-topic-arrow {
+		color: var(--color-muted);
+		transition: color var(--transition-fast), transform var(--transition-fast);
+	}
+
+	.portal-topic:hover .portal-topic-arrow {
+		color: var(--color-accent);
+		transform: translateX(2px);
+	}
+
+	/* Featured */
+	.portal-section-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		margin-bottom: var(--spacing-8);
+		padding-bottom: var(--spacing-4);
+		border-bottom: 1px solid var(--color-border-subtle);
+	}
+
+	.portal-all-link {
+		font-size: var(--font-size-sm);
+		font-weight: 600;
+		color: var(--color-accent);
+		text-decoration: none;
+	}
+
+	.portal-all-link:hover {
+		color: var(--color-accent-hover);
+	}
+
+	.portal-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: var(--spacing-12) var(--spacing-8);
+	}
+
+	@media (max-width: 900px) {
+		.portal {
+			padding: var(--spacing-8) var(--spacing-4) var(--spacing-12);
+		}
+
+		.portal-heading {
+			font-size: var(--font-size-3xl);
+		}
+
+		.portal-grid {
+			grid-template-columns: repeat(2, 1fr);
+			gap: var(--spacing-8) var(--spacing-6);
+		}
+	}
+
+	@media (max-width: 600px) {
+		.portal-heading {
+			font-size: var(--font-size-2xl);
+		}
+
+		.portal-summary {
+			font-size: var(--font-size-base);
+		}
+
+		.portal-search {
+			grid-template-columns: 1fr;
+		}
+
+		.portal-search button {
+			width: 100%;
+		}
+
+		.portal-topics {
+			grid-template-columns: 1fr;
+		}
+
+		.portal-grid {
+			grid-template-columns: 1fr;
+			gap: var(--spacing-8);
+		}
+	}
+</style>

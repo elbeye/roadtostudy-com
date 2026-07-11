@@ -11,6 +11,10 @@ export interface Page {
   status: string;
   title: string;
   content?: PortableTextBlock[];
+  source_seo?: unknown;
+  content_html?: string;
+  wp_published_at?: string;
+  wp_modified_at?: string;
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;
@@ -24,8 +28,12 @@ export interface Post {
   status: string;
   title: string;
   featured_image?: { id: string; src?: string; alt?: string; width?: number; height?: number; provider?: string; previewUrl?: string; meta?: Record<string, unknown> };
-  content?: PortableTextBlock[];
   excerpt?: string;
+  content?: PortableTextBlock[];
+  source_seo?: unknown;
+  content_html?: string;
+  wp_published_at?: string;
+  wp_modified_at?: string;
   createdAt: Date;
   updatedAt: Date;
   publishedAt: Date | null;
