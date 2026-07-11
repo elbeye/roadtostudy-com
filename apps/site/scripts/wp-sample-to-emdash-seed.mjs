@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { buildFeaturedImage } from "./wp-media-lib.mjs";
+import { htmlToPortableText, decodeHtml } from "./html-to-portable-text.mjs";
 
 const inputPath = process.env.WP_SAMPLE_INPUT || "data/wp-sample.json";
 // Default to the seed the worker actually loads (package.json emdash.seed), so
@@ -326,42 +327,6 @@ function buildTaxonomies() {
 	});
 }
 
-function htmlToPortableText(html) {
-	const blocks = [];
-	let index = 0;
-	const matches = [...html.matchAll(/<h([1-6])[^>]*>([\s\S]*?)<\/h\1>|<p[^>]*>([\s\S]*?)<\/p>|<li[^>]*>([\s\S]*?)<\/li>/gi)];
-
-	for (const match of matches) {
-		const headingLevel = match[1];
-		const raw = match[2] || match[3] || match[4] || "";
-		const text = cleanText(raw);
-		if (!text) continue;
-		blocks.push(block(text, headingLevel ? `h${Math.min(Number(headingLevel), 4)}` : "normal", index++));
-	}
-
-	if (blocks.length === 0) {
-		const text = cleanText(html);
-		if (text) blocks.push(block(text, "normal", index++));
-	}
-
-	return blocks;
-}
-
-function block(text, style, index) {
-	return {
-		_type: "block",
-		style,
-		children: [
-			{
-				_type: "span",
-				text,
-				_key: `s${index}`,
-			},
-		],
-		_key: `b${index}`,
-	};
-}
-
 function cleanText(value) {
 	return decodeHtml(
 		String(value || "")
@@ -371,19 +336,6 @@ function cleanText(value) {
 			.replace(/\s+/g, " ")
 			.trim(),
 	);
-}
-
-function decodeHtml(value) {
-	return value
-		.replaceAll("&nbsp;", " ")
-		.replaceAll("&amp;", "&")
-		.replaceAll("&quot;", '"')
-		.replaceAll("&#039;", "'")
-		.replaceAll("&#8217;", "'")
-		.replaceAll("&#8211;", "-")
-		.replaceAll("&#8212;", "-")
-		.replaceAll("&lt;", "<")
-		.replaceAll("&gt;", ">");
 }
 
 await mkdir(dirname(outputPath), { recursive: true });
