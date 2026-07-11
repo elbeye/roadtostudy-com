@@ -114,7 +114,7 @@ Kullanıcının sağladığı WP application password + Cloudflare API token ile
 
 ### Kalan adımlar
 1. 🌐 **Workers Paid upgrade** (kullanıcı, dash) → Faz 4 yük testi tekrar (bulut oturumu koşabilir).
-2. 🔑 **Rank Math Redirections dökümü** — REST'te listeleme endpoint'i yok (yalnız `updateRedirection`); wp-admin → Rank Math → Redirections'tan export gerekir (veya kural yoksa adım kapanır).
+2. ~~🔑 Rank Math Redirections dökümü~~ **Bitti** — kullanıcı CSV export sağladı; 24 aktif kural (23×301 + 1×410) `redirects-data.mjs`'e birebir eklendi (görünmez PUA karakterli kaynaklar dahil; eşleyici artık percent-decode yapıyor; `/istanbul-universitesi/` için açık kural attachment varsayılanını bilinçli eziyor). Canlıda doğrulandı: 410, PUA'lı 301, boşluklu 301, override — hepsi çalışıyor; canlı URL'ler etkilenmiyor.
 3. 🌐 Faz 5: DNS + Managed Content + GSC (runbook yukarıdaki bölüm).
 
 ---

@@ -9,6 +9,7 @@ import { matchRedirect } from "./lib/redirects";
 // and never touches admin (/_emdash), media, or any live URL.
 export const onRequest = defineMiddleware((context, next) => {
 	const hit = matchRedirect(context.url.pathname);
-	if (hit) return context.redirect(hit.to, hit.status);
+	// 410 replicates a Rank Math "gone" rule — the URL is intentionally dead.
+	if (hit) return hit.status === 410 || !hit.to ? new Response("Gone", { status: 410 }) : context.redirect(hit.to, hit.status);
 	return next();
 });

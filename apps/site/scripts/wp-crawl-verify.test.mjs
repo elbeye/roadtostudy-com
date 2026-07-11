@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { decodeXml, parseLocs, sitemapType, mapToTarget, classifyResult } from "./wp-crawl-verify.mjs";
+import { normalizePath } from "../src/lib/redirects-data.mjs";
 
 test("parseLocs extracts and decodes every loc", () => {
 	const xml = `<?xml version="1.0"?><urlset>
@@ -80,4 +81,16 @@ test("classifyResult: uncovered redirect stays the 'redirect' warning", () => {
 	assert.equal(classifyResult("https://t.dev/bilinmeyen/", 302, "/nereye/", RULES), "redirect");
 	// empty rule table (the pre-extraction state) is a no-op: every redirect is uncovered
 	assert.equal(classifyResult("https://t.dev/eski-yazi/", 301, "/yeni-yazi/", []), "redirect");
+});
+
+test("normalizePath percent-decodes so encoded rule sources match", () => {
+	assert.equal(normalizePath("/a%20b/"), "/a b");
+	assert.equal(normalizePath("/%EE%80%80koc%EE%80%81-universitesi"), "/koc-universitesi");
+	// malformed escapes fall back to the raw pathname
+	assert.equal(normalizePath("/bad%zz/"), "/bad%zz");
+});
+
+test("classifyResult ignores to-less (410) rules when matching expected redirects", () => {
+	const rules = [{ from: "/gone/", status: 410 }];
+	assert.equal(classifyResult("https://t.example/gone/", 301, "/x/", rules), "redirect");
 });

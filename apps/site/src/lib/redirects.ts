@@ -8,13 +8,13 @@
 
 import { REDIRECTS as REDIRECT_DATA, normalizePath } from "./redirects-data.mjs";
 
-export type RedirectRule = { from: string; to: string; status: 301 | 302 };
+export type RedirectRule = { from: string; to?: string; status: 301 | 302 | 410 };
 
 export const REDIRECTS: RedirectRule[] = REDIRECT_DATA;
 
 const RULES_BY_PATH = new Map<string, RedirectRule>(REDIRECTS.map((rule) => [normalizePath(rule.from), rule]));
 
-export function matchRedirect(pathname: string): { to: string; status: 301 | 302 } | null {
+export function matchRedirect(pathname: string): { to?: string; status: 301 | 302 | 410 } | null {
 	const rule = RULES_BY_PATH.get(normalizePath(pathname));
 	return rule ? { to: rule.to, status: rule.status } : null;
 }

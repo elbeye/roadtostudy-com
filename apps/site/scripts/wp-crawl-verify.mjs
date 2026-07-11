@@ -69,7 +69,7 @@ export function classifyResult(targetUrl, status, location, rules = REDIRECTS) {
 	if (status === 200) return "ok";
 	if (status !== 301 && status !== 308 && status !== 302 && status !== 307) return "blocker";
 	const pathname = normalizePath(new URL(targetUrl).pathname);
-	const rule = rules.find((r) => normalizePath(r.from) === pathname);
+	const rule = rules.find((r) => r.to && normalizePath(r.from) === pathname);
 	if (!rule) return "redirect";
 	const got = location ? normalizePath(new URL(location, targetUrl).pathname) : "";
 	return got === normalizePath(rule.to) ? "expected-redirect" : "redirect-mismatch";

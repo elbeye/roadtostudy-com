@@ -12,7 +12,7 @@
 // Example once extracted:
 //   { from: "/old-slug/", to: "/new-slug/", status: 301 },
 
-/** @type {{ from: string; to: string; status: 301 | 302 }[]} */
+/** @type {{ from: string; to?: string; status: 301 | 302 | 410 }[]} */
 export const REDIRECTS = [
 	// WordPress attachment page parity (design spec §10 açık madde; runbook "Attachment page
 	// URL kararı", 2026-07-11). Rank Math 301s every attachment page on the source site:
@@ -874,11 +874,52 @@ export const REDIRECTS = [
 	{ from: "/yimer/foreigners-communication-center-in-turkey/", to: "/yimer/", status: 301 },
 	{ from: "/ytb-burslari-basvuru/ytb-scholarships-who-can-apply-how-to-apply-1-1024x772/", to: "/ytb-burslari-basvuru/", status: 301 },
 	{ from: "/yurt-konaklamasi-ikamet-izni/dormitory-accommodations-in-turkey-3/", to: "/yurt-konaklamasi-ikamet-izni/", status: 301 },
+	// Rank Math Redirections export parity (spec §6.2; CSV export 2026-07-11, 24 active
+	// exact-match rules). Kept verbatim, including sources that embed invisible
+	// private-use characters (\uE000/\uE001 — editor copy-paste artifacts on the source
+	// site); those are real broken-URL patterns, not self-redirects, and only match
+	// their exact weird path. This block comes AFTER the generated attachment rules on
+	// purpose: the lookup map keeps the last entry per path, so the explicit export rule
+	// for /istanbul-universitesi/ (-> /istanbul-universitesi-2/) overrides the orphan
+	// attachment default (-> /). The 410 entry replicates a Rank Math "gone" rule.
+	{ from: "/2025/01/14/work-permit-and-internship-visa-applications-while-studying-in-turkey-a-complete-guide/", status: 410 },
+	{ from: "/turkiye-medya-iletisim-okullari/", to: "/turkiye-medya-ve-iletisim-okullari/", status: 301 },
+	{ from: "/istanbul-teknik-universitesi-tanitim-rehberi/", to: "/istanbul-teknik-universitesi/", status: 301 },
+	{ from: "/2025/02/28/hello-world/", to: "/", status: 301 },
+	{ from: "/en/entering-turkey-with-a-student-visa-airport-procedures/When you arrive at the airport-first-steps", to: "/en/entering-turkey-with-a-student-visa-airport-procedures/", status: 301 },
+	{ from: "/uskudar-universitesi-tanitim/", to: "/uskudar-universitesi/", status: 301 },
+	{ from: "/turkiye-ogrenci-vizesi-basvuru-sureci", to: "/ogrenci-vizesi-basvuru-sureci/", status: 301 },
+	{ from: "/universiteler-\ue000kto\ue001-\ue000karatay\ue001-universitesi", to: "/universiteler-kto-karatay-universitesi/", status: 301 },
+	{ from: "/\ue000koc\ue001-universitesi", to: "/koc-universitesi/", status: 301 },
+	{ from: "/yeditepe-universitesi-tanitim-rehberi/", to: "/yeditepe-universitesi/", status: 301 },
+	{ from: "/koc-universitesi-egitim-rehberi/", to: "/koc-universitesi/", status: 301 },
+	{ from: "/munzur-universitesi-tanitim/", to: "/munzur-universitesi/", status: 301 },
+	{ from: "/istanbul-universitesi/", to: "/istanbul-universitesi-2/", status: 301 },
+	{ from: "/universiteler-\ue000kilis\ue001-\ue0007\ue001-aralik-universitesi", to: "/universiteler-kilis-7-aralik-universitesi/", status: 301 },
+	{ from: "/\ue000hasan\ue001-\ue000kalyoncu\ue001-universitesi-tanitim-rehberi", to: "/hasan-kalyoncu-universitesi-tanitim-rehberi/", status: 301 },
+	{ from: "/ankara-universitesi-tanitim-kampus-rehberi/", to: "/ankara-universitesi/", status: 301 },
+	{ from: "/en/costs-of-moving-house-in-turkey/_wp_link_placeholder", to: "/en/costs-of-moving-house-in-turkey/", status: 301 },
+	{ from: "/turkiyede-ev-yurt-degistirme-maliyetleri/_wp_link_placeholder", to: "/turkiyede-ev-yurt-degistirme-maliyetleri/", status: 301 },
+	{ from: "/\ue000batman\ue001-universitesi-tanitim", to: "/batman-universitesi-tanitim/", status: 301 },
+	{ from: "/en/change-of-immigration-status-in-turkey-options-and-processes/", to: "/en/immigration-status-change-in-turkey/", status: 301 },
+	{ from: "/en/category/uncategorized-en/", to: "/en/", status: 301 },
+	{ from: "/en/feed/When you arrive at the airport-first-steps", to: "/en/student-visa-preparations-checklist/", status: 301 },
+	{ from: "/turkiyede-freelance-calisma-2/", to: "/en/post-scholarship-expectations/", status: 301 },
+	{ from: "/turkiyede-kampus-ici-ve-disi-yasam-maliyetleri/", to: "/turkiyede-kampus-ici-disinda-yasam-maliyetleri/", status: 301 },
 ];
 
 // Compare on a trailing-slash-insensitive key so "/x" and "/x/" match the same
-// rule. Root ("/") is left as-is.
+// rule. Root ("/") is left as-is. Percent-decoded first so rules whose source
+// contains spaces or invisible characters (see the Rank Math export block) match
+// the encoded form a browser actually sends; malformed escapes fall back to the
+// raw pathname.
 export function normalizePath(pathname) {
-	if (pathname.length > 1 && pathname.endsWith("/")) return pathname.slice(0, -1);
-	return pathname;
+	let p = pathname;
+	try {
+		p = decodeURIComponent(p);
+	} catch {
+		// keep raw
+	}
+	if (p.length > 1 && p.endsWith("/")) return p.slice(0, -1);
+	return p;
 }
