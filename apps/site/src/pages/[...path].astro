@@ -58,12 +58,17 @@ const UI_COPY: Record<
 		tag: string;
 		postOne: string;
 		postMany: string;
+		// Archive pagination ("Page {current} of {total}", "← Newer", "Older →").
+		// {current}/{total} are replaced with the actual page numbers below.
+		pageOf: string;
+		newer: string;
+		older: string;
 	}
 > = {
-	tr: { updated: "Güncelleme:", minRead: "dk okuma", related: "İlgili yazılar", category: "Kategori", tag: "Etiket", postOne: "yazı", postMany: "yazı" },
-	en: { updated: "Updated", minRead: "min read", related: "Related posts", category: "Category", tag: "Tag", postOne: "post", postMany: "posts" },
-	fr: { updated: "Mis à jour le", minRead: "min de lecture", related: "Articles similaires", category: "Catégorie", tag: "Étiquette", postOne: "article", postMany: "articles" },
-	id: { updated: "Diperbarui", minRead: "menit baca", related: "Artikel terkait", category: "Kategori", tag: "Tag", postOne: "artikel", postMany: "artikel" },
+	tr: { updated: "Güncelleme:", minRead: "dk okuma", related: "İlgili yazılar", category: "Kategori", tag: "Etiket", postOne: "yazı", postMany: "yazı", pageOf: "Sayfa {current} / {total}", newer: "← Daha yeni", older: "Daha eski →" },
+	en: { updated: "Updated", minRead: "min read", related: "Related posts", category: "Category", tag: "Tag", postOne: "post", postMany: "posts", pageOf: "Page {current} of {total}", newer: "← Newer", older: "Older →" },
+	fr: { updated: "Mis à jour le", minRead: "min de lecture", related: "Articles similaires", category: "Catégorie", tag: "Étiquette", postOne: "article", postMany: "articles", pageOf: "Page {current} sur {total}", newer: "← Plus récents", older: "Plus anciens →" },
+	id: { updated: "Diperbarui", minRead: "menit baca", related: "Artikel terkait", category: "Kategori", tag: "Tag", postOne: "artikel", postMany: "artikel", pageOf: "Halaman {current} dari {total}", newer: "← Lebih baru", older: "Lebih lama →" },
 };
 // BCP 47 tags for visible date formatting (tr → "12 Temmuz 2026" etc.).
 const DATE_LOCALE: Record<string, string> = { tr: "tr-TR", en: "en-US", fr: "fr-FR", id: "id-ID" };
@@ -501,17 +506,17 @@ const alternates =
 					<nav class="wp-pagination" aria-label="Archive pagination">
 						{pageNum > 1 ? (
 							<a rel="prev" href={categoryPagePath(pageNum - 1)}>
-								← Newer
+								{t.newer}
 							</a>
 						) : (
 							<span class="wp-pagination-spacer" />
 						)}
 						<span class="wp-pagination-status">
-							Page {pageNum} of {termTotalPages}
+							{t.pageOf.replace("{current}", String(pageNum)).replace("{total}", String(termTotalPages))}
 						</span>
 						{pageNum < termTotalPages ? (
 							<a rel="next" href={categoryPagePath(pageNum + 1)}>
-								Older →
+								{t.older}
 							</a>
 						) : (
 							<span class="wp-pagination-spacer" />

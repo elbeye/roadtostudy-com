@@ -1,6 +1,7 @@
 ---
 import type { MediaValue, ContentBylineCredit } from "emdash";
 import { Image } from "emdash/ui";
+import { decodeHtml } from "../utils/decode-html";
 
 interface Props {
 	title: string;
@@ -40,6 +41,16 @@ const formattedDate = validDate
 			day: "numeric",
 		})
 	: null;
+
+// Reading-time unit, localized the same way as the post-header "dk okuma" /
+// "min read" strings ([...path].astro's UI_COPY). Unknown/absent locales keep
+// "min" so existing call sites are unaffected.
+const READING_TIME_UNIT: Record<string, string> = { tr: "dk", en: "min", fr: "min", id: "mnt" };
+const readingTimeUnit = READING_TIME_UNIT[locale ?? ""] ?? "min";
+
+// WordPress excerpts sometimes carry un-decoded HTML entities (e.g. "&#8230;")
+// that would otherwise leak to the page as literal text — see decode-html.ts.
+const decodedExcerpt = excerpt ? decodeHtml(excerpt) : excerpt;
 ---
 
 <article class="post-card">
@@ -96,10 +107,10 @@ const formattedDate = validDate
 				}
 				{formattedDate && <time datetime={validDate?.toISOString()}>{formattedDate}</time>}
 				{formattedDate && readingTime && <span class="meta-dot" />}
-				{readingTime && <span>{readingTime} min</span>}
+				{readingTime && <span>{readingTime} {readingTimeUnit}</span>}
 			</div>
 			<h2 class="card-title">{title}</h2>
-			{excerpt && <p class="card-excerpt">{excerpt}</p>}
+			{decodedExcerpt && <p class="card-excerpt">{decodedExcerpt}</p>}
 		</div>
 	</a>
 	{

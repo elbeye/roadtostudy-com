@@ -218,6 +218,17 @@ const t = UI[locale] ?? UI.en;
 		gap: var(--spacing-3);
 	}
 
+	/* At tablet widths `auto-fill` lands on 3 columns, which orphans one pill
+	   from the 10-item topic list in a mostly-empty last row. Force 2 columns
+	   in that range (evenly divides 10 into 5 full rows); above/below this the
+	   existing auto-fill (desktop) and single-column (mobile, <=600px) rules
+	   already avoid the orphan. */
+	@media (max-width: 1023px) and (min-width: 641px) {
+		.portal-topics {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
 	.portal-topic {
 		display: flex;
 		align-items: center;
