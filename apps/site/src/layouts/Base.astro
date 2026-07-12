@@ -1176,11 +1176,19 @@ const languageLinks = (
 					grid-column: 1 / -1;
 					grid-row: 2;
 					display: grid;
+					grid-template-columns: minmax(0, 1fr) auto;
 					row-gap: var(--spacing-2);
+					column-gap: var(--spacing-2);
+					/* cancel the desktop right-push: it shrinks the block to
+					   max-content and glues everything to the right edge */
+					margin-inline-start: 0;
+					width: 100%;
 				}
 
-				.site-search {
-					grid-column: 1;
+				/* :global — the LiveSearch wrapper comes from the component, so
+				   Base's scoped selectors never match it. */
+				.nav-right :global(.site-search) {
+					grid-column: 1 / -1;
 					width: 100%;
 					max-width: none;
 				}
@@ -1200,6 +1208,7 @@ const languageLinks = (
 
 				.nav-links {
 					grid-column: 1;
+					grid-row: 2;
 					display: flex;
 					column-gap: var(--spacing-3);
 					row-gap: var(--spacing-1);
@@ -1217,6 +1226,10 @@ const languageLinks = (
 				}
 
 				.language-switcher {
+					grid-column: 2;
+					grid-row: 2;
+					justify-self: end;
+					align-self: center;
 					width: max-content;
 					max-width: 100%;
 					overflow-x: auto;
