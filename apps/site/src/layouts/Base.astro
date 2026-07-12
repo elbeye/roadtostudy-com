@@ -1,5 +1,5 @@
 ---
-import { getMenu, getEmDashCollection, getSiteSettings } from "emdash";
+import { getMenu, getSiteSettings } from "emdash";
 import {
 	WidgetArea,
 	EmDashHead,
@@ -9,7 +9,6 @@ import {
 import { createPublicPageContext } from "emdash/page";
 import LiveSearch from "emdash/ui/search";
 import { Font } from "astro:assets";
-import { contentPath } from "../utils/content-url";
 import { resolveBlogSiteIdentity } from "../utils/site-identity";
 import { rewriteSourceHost } from "../utils/source-host";
 import "../styles/theme.css";
@@ -58,21 +57,113 @@ const {
 	exactTitle = false,
 	jsonLd,
 } = Astro.props;
-const { siteTitle, siteTagline, siteLogo } = resolveBlogSiteIdentity(await getSiteSettings());
+// Derive the page locale straight from the URL rather than trusting the `lang`
+// prop, which not every page sets consistently (some pages that call Base
+// omit it or pass it inconsistently). TR is the unprefixed default locale
+// (see astro.config.mjs i18n), so any other first path segment must be one of
+// the configured locales to count — matches the parsing in [...path].astro.
+const LOCALE_CODES = new Set(["en", "fr", "id"]);
+function localeFromPath(pathname: string): string {
+	const first = pathname.split("/").filter(Boolean)[0] || "";
+	return LOCALE_CODES.has(first) ? first : "tr";
+}
+const pageLocale = localeFromPath(Astro.url.pathname);
+
+const { siteTitle, siteLogo } = resolveBlogSiteIdentity(await getSiteSettings());
 // exactTitle: emit the migrated source title verbatim. Otherwise, append the site
 // title unless it's already present (from getSeoMeta).
 const fullTitle = exactTitle ? title : title.includes(siteTitle) ? title : `${title} — ${siteTitle}`;
 
-// Fetch primary menu defined in seed
-const menu = await getMenu("primary");
+// Small localized-copy dict for site chrome (header/footer), keyed by locale
+// — same pattern as the HOME_COPY dict in [...path].astro. Menus and the
+// site-settings tagline aren't locale-aware, so this dict is the source of
+// truth for UI strings that must read correctly in all four languages.
+type ChromeCopy = {
+	searchPlaceholder: string;
+	languageAria: string;
+	navHome: string;
+	navPosts: string;
+	footerExplore: string;
+	footerConnect: string;
+	rss: string;
+	footerDescription: string;
+};
+const CHROME_COPY: Record<string, ChromeCopy> = {
+	tr: {
+		searchPlaceholder: "Konu, üniversite, şehir ara...",
+		languageAria: "Dil seçimi",
+		navHome: "Ana Sayfa",
+		navPosts: "Yazılar",
+		footerExplore: "Keşfet",
+		footerConnect: "Bağlantılar",
+		rss: "RSS akışı",
+		footerDescription: "Uluslararası öğrenciler için Türkiye'de eğitim rehberi",
+	},
+	en: {
+		searchPlaceholder: "Search topics, universities, cities...",
+		languageAria: "Language selection",
+		navHome: "Home",
+		navPosts: "Posts",
+		footerExplore: "Explore",
+		footerConnect: "Connect",
+		rss: "RSS Feed",
+		footerDescription: "A study-in-Turkey guide for international students",
+	},
+	fr: {
+		searchPlaceholder: "Rechercher un sujet, une université, une ville...",
+		languageAria: "Sélection de la langue",
+		navHome: "Accueil",
+		navPosts: "Articles",
+		footerExplore: "Découvrir",
+		footerConnect: "Liens",
+		rss: "Flux RSS",
+		footerDescription: "Un guide pour étudier en Turquie destiné aux étudiants internationaux",
+	},
+	id: {
+		searchPlaceholder: "Cari topik, universitas, kota...",
+		languageAria: "Pilihan bahasa",
+		navHome: "Beranda",
+		navPosts: "Artikel",
+		footerExplore: "Jelajahi",
+		footerConnect: "Tautan",
+		rss: "Feed RSS",
+		footerDescription: "Panduan kuliah di Turki untuk mahasiswa internasional",
+	},
+};
+const copy = CHROME_COPY[pageLocale] ?? CHROME_COPY.tr;
 
-// Optional "social" menu. If a site defines a `social` menu in its seed,
-// it'll render in the footer's "Connect" column. Otherwise that column
-// just shows RSS, avoiding duplication with the "Navigate" column above.
-const socialMenu = await getMenu("social");
+// getMenu() resolves against the current request locale (defaulting to the
+// site's default locale, "tr", for a normal anonymous request) and returns
+// null when no menu row exists for that exact locale. The seeded "primary"
+// menu only has an "en" row, so a plain `getMenu("primary")` call went
+// missing depending on which locale a request happened to resolve to — this
+// is the root cause of the header nav disappearing inconsistently. Try the
+// page locale first, then fall back across the others so the nav renders the
+// same way everywhere regardless of which locale a menu happens to be stored
+// under.
+const MENU_LOCALE_CANDIDATES = [...new Set([pageLocale, "en", "tr", "fr", "id"])];
+async function resolveMenu(name: string) {
+	for (const candidate of MENU_LOCALE_CANDIDATES) {
+		const found = await getMenu(name, { locale: candidate });
+		if (found?.items?.length) return found;
+	}
+	return null;
+}
 
-// Fetch pages for footer
-const { entries: pages } = await getEmDashCollection("pages");
+// Fetch primary menu + optional "social" menu. If a site defines a `social`
+// menu in its seed, it renders in the footer's "Connect" column; otherwise
+// that column just shows RSS, avoiding duplication with the "Explore" column.
+const [menu, socialMenu] = await Promise.all([resolveMenu("primary"), resolveMenu("social")]);
+
+// The two default nav items ("Home", "Posts") are seeded with English labels
+// regardless of locale. Override just those known URLs so the header/footer
+// nav read correctly in the current locale; any other menu item an editor
+// adds later still renders with its own label, untouched.
+function localizedNavLabel(url: string, fallback: string): string {
+	if (url === "/") return copy.navHome;
+	if (url === "/posts") return copy.navPosts;
+	return fallback;
+}
 
 // Build public page context for plugin contributions
 // SEO data is passed here and rendered securely by EmDashHead
@@ -93,26 +184,44 @@ const pageCtx = createPublicPageContext({
 
 // Check if user is logged in (for showing admin link)
 const isLoggedIn = !!Astro.locals.user;
-const isTurkish = (lang || "tr").toLowerCase().startsWith("tr");
-const searchPlaceholder = isTurkish ? "Konu, universite, sehir ara..." : "Search topics, universities, cities...";
-const footerHomeLabel = isTurkish ? "Ana sayfa" : "Home";
-const footerPostsLabel = isTurkish ? "Tum yazilar" : "All Posts";
-const footerNavigateLabel = isTurkish ? "Kesfet" : "Navigate";
-const footerConnectLabel = isTurkish ? "Baglantilar" : "Connect";
-const rssLabel = isTurkish ? "RSS akisi" : "RSS Feed";
+const searchPlaceholder = copy.searchPlaceholder;
+
+// The footer description is intentionally NOT sourced from `getSiteSettings()`
+// tagline: that's a single global (non-localized) site-settings field, so it
+// can never be correct for all four locales — and in some environments it
+// still carries the EmDash starter template's leftover placeholder copy
+// ("A blog about software, design, and the occasional stray thought.").
+// Use the localized description for the current page locale instead. See
+// data/footer-fix.sql for the accompanying fix to the underlying (global) DB
+// value, which is still used elsewhere (e.g. default meta description).
+const footerDescription = copy.footerDescription;
+
 const languageLabels: Record<string, string> = {
 	tr: "TR",
 	en: "EN",
 	fr: "FR",
 	id: "ID",
 };
-const languageLinks = alternates
-	.filter((alternate) => alternate.hreflang !== "x-default")
-	.map((alternate) => ({
-		...alternate,
-		label: languageLabels[alternate.hreflang] || alternate.hreflang.toUpperCase(),
-		active: alternate.hreflang === lang,
-	}));
+// Header language switcher: use the page-supplied `alternates` when it
+// carries real per-content translations (posts/pages resolve accurate
+// per-locale slugs via contentAlternates()), otherwise fall back to linking
+// each locale's homepage. Without this fallback, pages that don't wire up
+// `alternates` (home, category/tag archives) lost the switcher entirely,
+// making the header inconsistent across the site. This fallback only feeds
+// the visual switcher — the `<link rel="alternate">` SEO tags above still use
+// the raw `alternates` prop as-is, so pages without real translations don't
+// emit misleading hreflang claims.
+const LOCALE_HOME_PATHS: Record<string, string> = { tr: "/", en: "/en/", fr: "/fr/", id: "/id/" };
+const hasRealAlternates = alternates.filter((alternate) => alternate.hreflang !== "x-default").length > 1;
+const languageLinks = (
+	hasRealAlternates
+		? alternates.filter((alternate) => alternate.hreflang !== "x-default")
+		: Object.entries(LOCALE_HOME_PATHS).map(([hreflang, href]) => ({ hreflang, href }))
+).map((alternate) => ({
+	...alternate,
+	label: languageLabels[alternate.hreflang] || alternate.hreflang.toUpperCase(),
+	active: alternate.hreflang === pageLocale,
+}));
 ---
 
 <!doctype html>
@@ -176,14 +285,14 @@ const languageLinks = alternates
 						{
 							menu?.items.map((item) => (
 								<a href={item.url} target={item.target}>
-									{item.label}
+									{localizedNavLabel(item.url, item.label)}
 								</a>
 							))
 						}
 					</div>
 					{
 						languageLinks.length > 1 && (
-							<div class="language-switcher" aria-label={isTurkish ? "Dil secimi" : "Language selection"}>
+							<div class="language-switcher" aria-label={copy.languageAria}>
 								{languageLinks.map((language) => (
 									<a
 										href={language.href}
@@ -222,18 +331,21 @@ const languageLinks = alternates
 								: siteTitle
 							}
 						</a>
-						<p class="footer-tagline">{siteTagline}</p>
+						<p class="footer-tagline">{footerDescription}</p>
 					</div>
 					<div class="footer-nav">
-						<h4 class="footer-heading">{footerNavigateLabel}</h4>
+						<h4 class="footer-heading">{copy.footerExplore}</h4>
 						<ul class="footer-links">
-							<li><a href="/">{footerHomeLabel}</a></li>
-							<li><a href="/posts">{footerPostsLabel}</a></li>
 							{
-								pages.slice(0, 3).map((page) => (
+								// Mirror the header's primary nav here instead of a raw, unordered
+								// dump of the "pages" collection — with 2000+ migrated WordPress
+								// pages in that collection, an uncurated slice(0, 3) surfaced
+								// arbitrary content (random university profile pages) instead of
+								// real site navigation.
+								menu?.items.map((item) => (
 									<li>
-										<a href={contentPath((page.data as any).locale, page.data.slug || page.id)}>
-											{page.data.title}
+										<a href={item.url} target={item.target}>
+											{localizedNavLabel(item.url, item.label)}
 										</a>
 									</li>
 								))
@@ -241,7 +353,7 @@ const languageLinks = alternates
 						</ul>
 					</div>
 					<div class="footer-nav">
-						<h4 class="footer-heading">{footerConnectLabel}</h4>
+						<h4 class="footer-heading">{copy.footerConnect}</h4>
 						<ul class="footer-links">
 							{
 								socialMenu?.items.map((item) => (
@@ -260,7 +372,7 @@ const languageLinks = alternates
 									</li>
 								))
 							}
-							<li><a href="/rss.xml">{rssLabel}</a></li>
+							<li><a href="/rss.xml">{copy.rss}</a></li>
 						</ul>
 					</div>
 					<div class="footer-widgets-section">
