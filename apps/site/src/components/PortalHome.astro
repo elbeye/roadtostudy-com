@@ -9,7 +9,7 @@ interface Props {
 	summary?: string;
 	/** Topic cards — real taxonomy terms for this locale ({ href, label }). */
 	categories: Array<{ href: string; label: string }>;
-	/** Featured guides (already locale-filtered entries). */
+	/** Latest posts for the "Son yazılar" grid (already locale-filtered entries). */
 	posts: any[];
 	/** "See all posts" target. */
 	viewAllHref?: string;
@@ -20,14 +20,14 @@ const { locale, heading, summary, categories, posts, viewAllHref = "/posts" } = 
 // Localized chrome. The search route itself is a single unprefixed /search page.
 const UI: Record<
 	string,
-	{ search: string; searchAria: string; button: string; topics: string; featured: string; all: string }
+	{ search: string; searchAria: string; button: string; topics: string; recent: string; all: string }
 > = {
 	tr: {
 		search: "Üniversite, şehir, burs veya vize ara",
 		searchAria: "Site içinde ara",
 		button: "Ara",
 		topics: "Konular",
-		featured: "Öne çıkan rehberler",
+		recent: "Son yazılar",
 		all: "Tüm yazılar",
 	},
 	en: {
@@ -35,7 +35,7 @@ const UI: Record<
 		searchAria: "Search the site",
 		button: "Search",
 		topics: "Topics",
-		featured: "Featured guides",
+		recent: "Latest posts",
 		all: "All posts",
 	},
 	fr: {
@@ -43,7 +43,7 @@ const UI: Record<
 		searchAria: "Rechercher sur le site",
 		button: "Rechercher",
 		topics: "Thèmes",
-		featured: "Guides en vedette",
+		recent: "Derniers articles",
 		all: "Tous les articles",
 	},
 	id: {
@@ -51,7 +51,7 @@ const UI: Record<
 		searchAria: "Cari di situs",
 		button: "Cari",
 		topics: "Topik",
-		featured: "Panduan unggulan",
+		recent: "Artikel terbaru",
 		all: "Semua artikel",
 	},
 };
@@ -89,13 +89,8 @@ const t = UI[locale] ?? UI.en;
 
 	{
 		posts.length > 0 && (
-			<section class="portal-featured">
-				<header class="portal-section-head">
-					<h2 class="portal-section-label">{t.featured}</h2>
-					<a class="portal-all-link" href={viewAllHref}>
-						{t.all} →
-					</a>
-				</header>
+			<section class="portal-recent" aria-label={t.recent}>
+				<h2 class="portal-section-label">{t.recent}</h2>
 				<div class="portal-grid">
 					{posts.map((entry) => (
 						<PostCard
@@ -107,6 +102,11 @@ const t = UI[locale] ?? UI.en;
 							readingTime={getReadingTime(entry.data.content)}
 						/>
 					))}
+				</div>
+				<div class="portal-section-footer">
+					<a class="portal-all-link" href={viewAllHref}>
+						{t.all} →
+					</a>
 				</div>
 			</section>
 		)
@@ -178,13 +178,14 @@ const t = UI[locale] ?? UI.en;
 
 	.portal-search button {
 		min-height: 54px;
-		padding: 0 var(--spacing-7);
+		padding: var(--spacing-3) var(--spacing-8);
 		border: none;
 		border-radius: 999px;
 		background: var(--color-accent);
 		color: var(--color-on-accent);
 		font: inherit;
 		font-weight: 700;
+		white-space: nowrap;
 		cursor: pointer;
 	}
 
@@ -251,14 +252,17 @@ const t = UI[locale] ?? UI.en;
 		transform: translateX(2px);
 	}
 
-	/* Featured */
-	.portal-section-head {
-		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
+	/* Recent posts */
+	.portal-recent .portal-section-label {
 		margin-bottom: var(--spacing-8);
 		padding-bottom: var(--spacing-4);
 		border-bottom: 1px solid var(--color-border-subtle);
+	}
+
+	.portal-section-footer {
+		display: flex;
+		justify-content: center;
+		margin-top: var(--spacing-10);
 	}
 
 	.portal-all-link {
