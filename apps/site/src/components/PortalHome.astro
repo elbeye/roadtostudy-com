@@ -98,7 +98,8 @@ const t = UI[locale] ?? UI.en;
 							excerpt={entry.data.excerpt}
 							featuredImage={entry.data.featured_image}
 							href={contentPath(entry.data.locale || locale, entry.data.slug || entry.id)}
-							date={entry.data.publishedAt ?? undefined}
+							date={entry.data.wp_published_at ?? entry.data.publishedAt ?? undefined}
+							locale={entry.data.locale || locale}
 							readingTime={getReadingTime(entry.data.content)}
 						/>
 					))}
