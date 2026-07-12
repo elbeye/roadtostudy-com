@@ -42,6 +42,32 @@ const HOME_COPY: Record<string, { heading: string; summary: string }> = {
 	id: { heading: "Kuliah di Turki", summary: "Panduan universitas, beasiswa, dan kehidupan mahasiswa untuk mahasiswa internasional." },
 };
 
+// Up to this many related posts render under an article (same category, same
+// locale, newest first, current post excluded).
+const RELATED_LIMIT = 4;
+// Localized body-chrome strings (post meta, archive kicker/counter, related
+// posts). Same dict pattern as HOME_COPY. These are body-markup strings only —
+// SEO head strings (titles/descriptions) are parity-gated and stay untouched.
+const UI_COPY: Record<
+	string,
+	{
+		updated: string;
+		minRead: string;
+		related: string;
+		category: string;
+		tag: string;
+		postOne: string;
+		postMany: string;
+	}
+> = {
+	tr: { updated: "Güncelleme:", minRead: "dk okuma", related: "İlgili yazılar", category: "Kategori", tag: "Etiket", postOne: "yazı", postMany: "yazı" },
+	en: { updated: "Updated", minRead: "min read", related: "Related posts", category: "Category", tag: "Tag", postOne: "post", postMany: "posts" },
+	fr: { updated: "Mis à jour le", minRead: "min de lecture", related: "Articles similaires", category: "Catégorie", tag: "Étiquette", postOne: "article", postMany: "articles" },
+	id: { updated: "Diperbarui", minRead: "menit baca", related: "Artikel terkait", category: "Kategori", tag: "Tag", postOne: "artikel", postMany: "artikel" },
+};
+// BCP 47 tags for visible date formatting (tr → "12 Temmuz 2026" etc.).
+const DATE_LOCALE: Record<string, string> = { tr: "tr-TR", en: "en-US", fr: "fr-FR", id: "id-ID" };
+
 // Language-home path: TR is unprefixed (/), other locales are /{locale}/.
 const localeHomePath = (l: string) => (l === "tr" ? "/" : `/${l}/`);
 
@@ -65,6 +91,27 @@ function getImageUrl(img: unknown): string | undefined {
 		(typeof meta?.storageKey === "string" ? meta.storageKey : undefined) ||
 		(typeof image.id === "string" ? image.id : undefined);
 	return storageKey ? `${Astro.url.origin}/_emdash/api/media/file/${storageKey}` : undefined;
+}
+
+// EmDash stores content-term links by translation_group, but the collection
+// where-filter joins terms by id — so only the group-root term's slug (the
+// locale the group was minted in) ever matches, and locale-scoped queries by a
+// sibling slug return 0 posts. Collecting every translation sibling's slug
+// keeps the root in the IN list regardless of which locale owns it; queries
+// stay locale-scoped, so results remain correct per locale. Shared by the
+// taxonomy archives and the related-posts query.
+async function termGroupSlugs(taxonomy: string, translationGroup: string): Promise<string[]> {
+	const siblingLists = await Promise.all(
+		["tr", ...LOCALES].map((l) => getTaxonomyTerms(taxonomy, { locale: l })),
+	);
+	return [
+		...new Set(
+			siblingLists
+				.flat()
+				.filter((t: any) => t.translationGroup === translationGroup)
+				.map((t: any) => t.slug),
+		),
+	];
 }
 
 const parsed = parsePath(Astro.params.path);
@@ -96,6 +143,8 @@ let termTotalPages = 1;
 let termTagsByEntry = new Map<string, Array<{ slug: string; label: string }>>();
 let homePosts: any[] = [];
 let homeCategories: Array<{ href: string; label: string }> = [];
+let postCategory: { slug: string; label: string } | null = null;
+let relatedPosts: any[] = [];
 
 // `/category/{slug}` and `/tag/{slug}` (plus their /{locale}/ prefixed forms) are
 // both taxonomy archives; the taxonomy name matches the query key exactly (seed
@@ -126,23 +175,9 @@ if (segments.length === 0) {
 	slug = second;
 	term = await getTerm(taxonomyView, slug, { locale });
 	if (term) {
-		// EmDash stores content-term links by translation_group, but the collection
-		// where-filter joins terms by id — so only the group-root term's slug (the
-		// locale the group was minted in) ever matches, and locale-scoped archive
-		// slugs return 0 posts. Passing every translation sibling's slug keeps the
-		// root in the IN list regardless of which locale owns it; the query is
-		// already locale-scoped, so results stay correct per archive.
-		const siblingLists = await Promise.all(
-			["tr", ...LOCALES].map((l) => getTaxonomyTerms(taxonomyView, { locale: l })),
-		);
-		const groupSlugs = [
-			...new Set(
-				siblingLists
-					.flat()
-					.filter((t: any) => t.translationGroup === term.translationGroup)
-					.map((t: any) => t.slug),
-			),
-		];
+		// See termGroupSlugs: sibling slugs work around the translation_group vs
+		// term-id join mismatch in the where-filter.
+		const groupSlugs = await termGroupSlugs(taxonomyView, term.translationGroup);
 		const result = await getEmDashCollection("posts", {
 			where: { [taxonomyView]: groupSlugs.length ? groupSlugs : term.slug },
 			orderBy: { published_at: "desc" },
@@ -178,6 +213,28 @@ if (segments.length === 0) {
 	if (post) {
 		if (Astro.cache?.enabled) Astro.cache.set(postResult.cacheHint);
 		view = "post";
+		// Category chip + related posts. Terms are hydrated in the entry's own
+		// locale; the first category term anchors both the breadcrumb chip and the
+		// related-posts query.
+		const entryTerms = await getTermsForEntries("posts", [post.data.id], "category", { locale });
+		const category = (entryTerms.get(post.data.id) ?? [])[0];
+		if (category) {
+			postCategory = { slug: category.slug, label: category.label };
+			// One collection query, sibling-slug workaround as in the archive branch.
+			// Fetch one extra so the list stays full when the current post is among
+			// the newest, then drop it and cap at RELATED_LIMIT.
+			const groupSlugs = await termGroupSlugs("category", category.translationGroup);
+			const related = await getEmDashCollection("posts", {
+				where: { category: groupSlugs.length ? groupSlugs : category.slug },
+				orderBy: { published_at: "desc" },
+				limit: RELATED_LIMIT + 1,
+				locale,
+			});
+			if (Astro.cache?.enabled) Astro.cache.set(related.cacheHint);
+			relatedPosts = related.entries
+				.filter((entry: any) => entry.data.id !== post.data.id)
+				.slice(0, RELATED_LIMIT);
+		}
 	} else {
 		const pageResult = await getEmDashEntry("pages", slug, { locale });
 		page = pageResult.entry;
@@ -245,6 +302,37 @@ const toIsoDate = (v: unknown): string | null => {
 	const d = v instanceof Date ? v : new Date(v as string);
 	return Number.isNaN(d.getTime()) ? null : d.toISOString();
 };
+const t = UI_COPY[locale] ?? UI_COPY.tr;
+// Visible post dates: WordPress dates (wp_published_at / wp_modified_at) are
+// the historically correct ones; published_at is the CMS fallback.
+const toDate = (v: unknown): Date | null => {
+	if (!v) return null;
+	const d = v instanceof Date ? v : new Date(v as string);
+	return Number.isNaN(d.getTime()) ? null : d;
+};
+const formatDisplayDate = (d: Date | null): string | null =>
+	d
+		? d.toLocaleDateString(DATE_LOCALE[locale] ?? "tr-TR", {
+				year: "numeric",
+				month: "long",
+				day: "numeric",
+			})
+		: null;
+const postPublishedDate =
+	view === "post"
+		? (toDate(currentPost.data.wp_published_at) ?? toDate(currentPost.data.publishedAt))
+		: null;
+const postModifiedDate = view === "post" ? toDate(currentPost.data.wp_modified_at) : null;
+const postPublishedDisplay = formatDisplayDate(postPublishedDate);
+// "Updated" renders only when meaningfully different: a later, different
+// calendar day than the publish date (same-day touch-ups stay silent).
+const postUpdatedDisplay =
+	postModifiedDate &&
+	postPublishedDate &&
+	postModifiedDate.getTime() > postPublishedDate.getTime() &&
+	formatDisplayDate(postModifiedDate) !== postPublishedDisplay
+		? formatDisplayDate(postModifiedDate)
+		: null;
 const alternates =
 	view === "post"
 		? await contentAlternates("posts", currentPost.data.id, Astro.url.origin, {
@@ -286,8 +374,30 @@ const alternates =
 					</div>
 				)}
 				<header class="wp-header">
-					<p class="wp-meta">{getReadingTime(currentPost.data.content)} min read</p>
+					{postCategory && (
+						<a class="wp-kicker" href={categoryPath(locale, postCategory.slug)}>
+							{postCategory.label}
+						</a>
+					)}
 					<h1>{currentPost.data.title}</h1>
+					<p class="wp-meta wp-meta-row">
+						{postPublishedDisplay && (
+							<time datetime={toIsoDate(postPublishedDate)}>{postPublishedDisplay}</time>
+						)}
+						{postUpdatedDisplay && (
+							<>
+								<span class="wp-meta-dot" aria-hidden="true" />
+								<span>
+									{t.updated}{" "}
+									<time datetime={toIsoDate(postModifiedDate)}>{postUpdatedDisplay}</time>
+								</span>
+							</>
+						)}
+						{(postPublishedDisplay || postUpdatedDisplay) && (
+							<span class="wp-meta-dot" aria-hidden="true" />
+						)}
+						<span>{`${getReadingTime(currentPost.data.content)} ${t.minRead}`}</span>
+					</p>
 					{currentPost.data.excerpt && <p class="wp-excerpt">{currentPost.data.excerpt}</p>}
 				</header>
 				{currentPost.data.content_html ? (
@@ -298,6 +408,24 @@ const alternates =
 					</div>
 				)}
 			</article>
+			{relatedPosts.length > 0 && (
+				<aside class="wp-related" aria-label={t.related}>
+					<h2 class="wp-related-title">{t.related}</h2>
+					<div class="wp-related-grid">
+						{relatedPosts.map((entry) => (
+							<PostCard
+								title={entry.data.title}
+								excerpt={entry.data.excerpt}
+								featuredImage={entry.data.featured_image}
+								href={contentPath(entry.data.locale || locale, entry.data.slug || entry.id)}
+								date={entry.data.wp_published_at ?? entry.data.publishedAt ?? undefined}
+								locale={locale}
+								readingTime={getReadingTime(entry.data.content)}
+							/>
+						))}
+					</div>
+				</aside>
+			)}
 		</Base>
 	)
 }
@@ -349,10 +477,10 @@ const alternates =
 		>
 			<section class="wp-archive">
 				<header class="wp-header">
-					<p class="wp-meta">{view === "tag" ? "Tag" : "Category"}</p>
+					<p class="wp-meta">{view === "tag" ? t.tag : t.category}</p>
 					<h1>{currentTerm.label}</h1>
 					<p class="wp-excerpt">
-						{termPostCount} {termPostCount === 1 ? "post" : "posts"}
+						{`${termPostCount} ${termPostCount === 1 ? t.postOne : t.postMany}`}
 					</p>
 				</header>
 				<div class="wp-grid">
@@ -362,7 +490,8 @@ const alternates =
 							excerpt={entry.data.excerpt}
 							featuredImage={entry.data.featured_image}
 							href={contentPath(entry.data.locale || locale, entry.data.slug || entry.id)}
-							date={entry.data.publishedAt ?? undefined}
+							date={entry.data.wp_published_at ?? entry.data.publishedAt ?? undefined}
+							locale={locale}
 							readingTime={getReadingTime(entry.data.content)}
 							tags={termTagsByEntry.get(entry.data.id)}
 						/>
@@ -486,6 +615,39 @@ const alternates =
 		margin-bottom: var(--spacing-2);
 	}
 
+	.wp-kicker {
+		display: inline-block;
+		color: var(--color-accent);
+		font-size: var(--font-size-sm);
+		font-weight: 700;
+		letter-spacing: var(--tracking-wider);
+		text-transform: uppercase;
+		text-decoration: none;
+		margin-bottom: var(--spacing-3);
+	}
+
+	.wp-kicker:hover {
+		color: var(--color-accent-hover);
+		text-decoration: underline;
+	}
+
+	.wp-meta-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		column-gap: var(--spacing-3);
+		row-gap: var(--spacing-1);
+		margin-top: var(--spacing-3);
+		margin-bottom: 0;
+	}
+
+	.wp-meta-dot {
+		width: 3px;
+		height: 3px;
+		border-radius: 50%;
+		background: var(--color-muted);
+	}
+
 	.wp-excerpt {
 		color: var(--color-muted);
 		font-size: var(--font-size-lg);
@@ -552,6 +714,35 @@ const alternates =
 		border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
 	}
 
+	.wp-related {
+		max-width: var(--wide-width);
+		margin: 0 auto;
+		padding: 0 var(--spacing-6) var(--spacing-16);
+	}
+
+	.wp-related-title {
+		font-size: var(--font-size-sm);
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: var(--tracking-wider);
+		color: var(--color-muted);
+		margin: 0 0 var(--spacing-6);
+		padding-top: var(--spacing-8);
+		border-top: 1px solid var(--color-border-subtle);
+	}
+
+	.wp-related-grid {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: var(--spacing-8) var(--spacing-6);
+	}
+
+	@media (max-width: 1000px) {
+		.wp-related-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
 	.wp-archive {
 		max-width: var(--wide-width);
 		margin: 0 auto;
@@ -600,6 +791,15 @@ const alternates =
 		}
 
 		.wp-grid {
+			grid-template-columns: 1fr;
+			gap: var(--spacing-8);
+		}
+
+		.wp-related {
+			padding: 0 var(--spacing-4) var(--spacing-12);
+		}
+
+		.wp-related-grid {
 			grid-template-columns: 1fr;
 			gap: var(--spacing-8);
 		}

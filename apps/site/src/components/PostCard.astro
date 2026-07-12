@@ -7,7 +7,10 @@ interface Props {
 	excerpt?: string;
 	featuredImage?: MediaValue | string;
 	href: string;
-	date?: Date;
+	/** Display date; ISO strings (e.g. migrated wp_published_at) are accepted. */
+	date?: Date | string;
+	/** Site locale ("tr" | "en" | "fr" | "id") for date formatting. Defaults to en. */
+	locale?: string;
 	readingTime?: number;
 	tags?: Array<{ slug: string; label: string }>;
 	bylines?: ContentBylineCredit[];
@@ -19,13 +22,19 @@ const {
 	featuredImage,
 	href,
 	date,
+	locale,
 	readingTime,
 	tags,
 	bylines,
 } = Astro.props;
 
-const formattedDate = date
-	? date.toLocaleDateString("en-US", {
+// BCP 47 tags for the site's locales; unknown/absent locales keep the previous
+// en-US formatting so existing call sites are unaffected.
+const DATE_LOCALE: Record<string, string> = { tr: "tr-TR", en: "en-US", fr: "fr-FR", id: "id-ID" };
+const parsedDate = date ? (date instanceof Date ? date : new Date(date)) : null;
+const validDate = parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate : null;
+const formattedDate = validDate
+	? validDate.toLocaleDateString(DATE_LOCALE[locale ?? ""] ?? "en-US", {
 			year: "numeric",
 			month: "short",
 			day: "numeric",
@@ -85,7 +94,7 @@ const formattedDate = date
 						</>
 					)
 				}
-				{formattedDate && <time>{formattedDate}</time>}
+				{formattedDate && <time datetime={validDate?.toISOString()}>{formattedDate}</time>}
 				{formattedDate && readingTime && <span class="meta-dot" />}
 				{readingTime && <span>{readingTime} min</span>}
 			</div>
