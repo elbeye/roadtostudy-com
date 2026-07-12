@@ -126,8 +126,25 @@ if (segments.length === 0) {
 	slug = second;
 	term = await getTerm(taxonomyView, slug, { locale });
 	if (term) {
+		// EmDash stores content-term links by translation_group, but the collection
+		// where-filter joins terms by id — so only the group-root term's slug (the
+		// locale the group was minted in) ever matches, and locale-scoped archive
+		// slugs return 0 posts. Passing every translation sibling's slug keeps the
+		// root in the IN list regardless of which locale owns it; the query is
+		// already locale-scoped, so results stay correct per archive.
+		const siblingLists = await Promise.all(
+			["tr", ...LOCALES].map((l) => getTaxonomyTerms(taxonomyView, { locale: l })),
+		);
+		const groupSlugs = [
+			...new Set(
+				siblingLists
+					.flat()
+					.filter((t: any) => t.translationGroup === term.translationGroup)
+					.map((t: any) => t.slug),
+			),
+		];
 		const result = await getEmDashCollection("posts", {
-			where: { [taxonomyView]: term.slug },
+			where: { [taxonomyView]: groupSlugs.length ? groupSlugs : term.slug },
 			orderBy: { published_at: "desc" },
 			locale,
 		});
