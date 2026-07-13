@@ -68,7 +68,7 @@ function getImageUrl(img: unknown): string | undefined {
 }
 
 const parsed = parsePath(Astro.params.path);
-if (!parsed) return Astro.redirect("/404");
+if (!parsed) return Astro.rewrite("/404");
 
 const locale: string = parsed.locale || "tr";
 const hasLocalePrefix = parsed.prefix !== "";
@@ -79,7 +79,7 @@ let segments: string[] = parsed.segments.filter((segment): segment is string => 
 let pageNum = 1;
 if (segments.length >= 2 && segments[segments.length - 2] === "page") {
 	const n = Number(segments[segments.length - 1]);
-	if (!Number.isInteger(n) || n < 1) return Astro.redirect("/404");
+	if (!Number.isInteger(n) || n < 1) return Astro.rewrite("/404");
 	pageNum = n;
 	segments = segments.slice(0, -2);
 }
@@ -136,7 +136,7 @@ if (segments.length === 0) {
 		termPostCount = allTermPosts.length;
 		termTotalPages = Math.max(1, Math.ceil(termPostCount / CATEGORY_PAGE_SIZE));
 		// Out-of-range archive page → 404 (an empty archive still has a valid page 1).
-		if (pageNum > termTotalPages) return Astro.redirect("/404");
+		if (pageNum > termTotalPages) return Astro.rewrite("/404");
 		termPosts = allTermPosts.slice((pageNum - 1) * CATEGORY_PAGE_SIZE, pageNum * CATEGORY_PAGE_SIZE);
 		// Restore the per-card tag chips the standalone archive routes rendered:
 		// one batched query rather than getEntryTerms() per post.
@@ -173,7 +173,7 @@ if (segments.length === 0) {
 
 // Migrated Rank Math redirects (§6.2) are handled earlier in src/middleware.ts;
 // an unresolved content path that no rule matched renders the 404 page.
-if (!view) return Astro.redirect("/404");
+if (!view) return Astro.rewrite("/404");
 
 const { siteTitle } = resolveBlogSiteIdentity(await getSiteSettings());
 const resolvedSlug: string = slug || "";

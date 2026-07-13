@@ -1,9 +1,10 @@
 ---
 import Base from "../layouts/Base.astro";
 
-// Return a real 404 status. Without this the page renders 200, so the
-// `Astro.redirect("/404")` used across content routes ends in a soft-404
-// (a 200 body at /404) that search engines may index instead of dropping.
+// Return a real 404 status. Content routes render this page via
+// `Astro.rewrite("/404")`, which keeps the requested URL and adopts this
+// route's status — so an unresolved path answers 404 at its own URL (a hard
+// 404 search engines drop), not a 302 hop or a soft 200.
 Astro.response.status = 404;
 ---
 
