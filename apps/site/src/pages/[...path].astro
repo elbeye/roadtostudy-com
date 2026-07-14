@@ -14,7 +14,7 @@ import Base from "../layouts/Base.astro";
 import PostCard from "../components/PostCard.astro";
 import PortalHome from "../components/PortalHome.astro";
 import { categoryPath, contentPath } from "../utils/content-url";
-import { contentAlternates } from "../utils/hreflang";
+import { contentAlternates, getHomeAlternates, homeLocalePath } from "../utils/hreflang";
 import { getReadingTime } from "../utils/reading-time";
 import { resolveBlogSiteIdentity } from "../utils/site-identity";
 import { rewriteSourceHost } from "../utils/source-host";
@@ -31,8 +31,6 @@ const DEFAULT_ROBOTS = "follow, index, max-snippet:-1, max-video-preview:-1, max
 const CATEGORY_PAGE_SIZE = 10;
 // Number of latest posts shown on a localized language home (/en/, /fr/, /id/).
 const LOCALE_HOME_LIMIT = 12;
-// hreflang ordering for the language-home cluster; x-default points at EN (§6.5).
-const HOME_LOCALE_ORDER = ["en", "tr", "fr", "id"] as const;
 // Minimal localized landing copy for the language homes. TR is included for
 // completeness even though the unprefixed root (/) is served by index.astro.
 const HOME_COPY: Record<string, { heading: string; summary: string }> = {
@@ -41,9 +39,6 @@ const HOME_COPY: Record<string, { heading: string; summary: string }> = {
 	fr: { heading: "Étudier en Turquie", summary: "Guides sur les universités, les bourses et la vie étudiante pour les étudiants internationaux." },
 	id: { heading: "Kuliah di Turki", summary: "Panduan universitas, beasiswa, dan kehidupan mahasiswa untuk mahasiswa internasional." },
 };
-
-// Language-home path: TR is unprefixed (/), other locales are /{locale}/.
-const localeHomePath = (l: string) => (l === "tr" ? "/" : `/${l}/`);
 
 function parsePath(pathParam: string | undefined) {
 	const segments = (pathParam || "").split("/").filter(Boolean).map(decodeSlug);
@@ -197,12 +192,10 @@ const pagedTitle = pageNum > 1 ? `${pageTitle} – Page ${pageNum}` : pageTitle;
 // bare /category/{slug}/ form; deeper pages append /page/N/.
 const categoryPagePath = (n: number) =>
 	`${Astro.url.origin}${categoryPath(locale, resolvedSlug)}${n > 1 ? `page/${n}/` : ""}`;
-const homeCanonical = `${Astro.url.origin}${localeHomePath(locale)}`;
-// hreflang cluster across the four language homes (+ x-default → EN, §6.5).
-const homeAlternates = [
-	...HOME_LOCALE_ORDER.map((l) => ({ hreflang: l, href: `${Astro.url.origin}${localeHomePath(l)}` })),
-	{ hreflang: "x-default", href: `${Astro.url.origin}${localeHomePath("en")}` },
-];
+const homeCanonical = `${Astro.url.origin}${homeLocalePath(locale)}`;
+// hreflang cluster across the four language homes (+ x-default → EN, §6.5). Shared
+// with index.astro (TR home) so the cluster stays reciprocal across all four homes.
+const homeAlternates = getHomeAlternates(Astro.url.origin);
 const featuredImageUrl = view === "post" ? getImageUrl(currentPost.data.featured_image) : undefined;
 const seo =
 	view === "post"

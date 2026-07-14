@@ -11,6 +11,22 @@ type TranslationSummary = {
 
 const LOCALE_ORDER = ["en", "tr", "fr", "id"];
 
+// Language-home cluster (§6.5). TR is the unprefixed root (/), other locales are
+// /{locale}/. x-default points at EN. Shared by index.astro (TR home) and the
+// catch-all's locale homes so every home in the cluster emits the SAME reciprocal
+// set — a home that omitted it would leave the others' annotations non-reciprocal
+// and Google would drop them.
+const HOME_LOCALE_ORDER = ["en", "tr", "fr", "id"] as const;
+
+export const homeLocalePath = (locale: string) => (locale === "tr" ? "/" : `/${locale}/`);
+
+export function getHomeAlternates(origin: string): Alternate[] {
+	return [
+		...HOME_LOCALE_ORDER.map((locale) => ({ hreflang: locale, href: `${origin}${homeLocalePath(locale)}` })),
+		{ hreflang: "x-default", href: `${origin}${homeLocalePath("en")}` },
+	];
+}
+
 export async function contentAlternates(
 	collection: string,
 	id: string,

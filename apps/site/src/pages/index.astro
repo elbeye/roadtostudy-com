@@ -3,6 +3,7 @@ import { getEmDashCollection, getTaxonomyTerms, getSiteSettings } from "emdash";
 import Base from "../layouts/Base.astro";
 import PortalHome from "../components/PortalHome.astro";
 import { categoryPath } from "../utils/content-url";
+import { getHomeAlternates } from "../utils/hreflang";
 import { resolveBlogSiteIdentity } from "../utils/site-identity";
 
 // TR is the unprefixed default locale. The home is a guide portal: prominent search,
@@ -28,7 +29,7 @@ const categories = (terms || [])
 	.map((term: any) => ({ href: categoryPath(locale, term.slug), label: term.label }));
 ---
 
-<Base title={siteTitle} description={SUMMARY} lang={locale}>
+<Base title={siteTitle} description={SUMMARY} lang={locale} alternates={getHomeAlternates(Astro.url.origin)}>
 	{
 		posts.length === 0 && categories.length === 0 ? (
 			<section class="empty-state">
