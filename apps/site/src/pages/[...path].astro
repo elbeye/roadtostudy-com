@@ -13,6 +13,7 @@ import { Image, PortableText } from "emdash/ui";
 import Base from "../layouts/Base.astro";
 import PostCard from "../components/PostCard.astro";
 import PortalHome from "../components/PortalHome.astro";
+import { resolveCollectionSlugPath } from "../lib/collection-url";
 import { categoryPath, contentPath } from "../utils/content-url";
 import { contentAlternates, getHomeAlternates, homeLocalePath } from "../utils/hreflang";
 import { getReadingTime } from "../utils/reading-time";
@@ -117,6 +118,11 @@ if (segments.length === 0) {
 			.map((t: any) => ({ href: categoryPath(locale, t.slug), label: t.label }));
 		view = "home";
 	}
+} else if ((first === "posts" || first === "pages") && second && segments.length === 2 && pageNum === 1) {
+	// EmDash LiveSearch links results to /{collection}/{slug}, which isn't our URL
+	// scheme. 301 to the entry's canonical path so search clicks land instead of 404.
+	const canonicalPath = await resolveCollectionSlugPath(first, second);
+	if (canonicalPath) return Astro.redirect(canonicalPath, 301);
 } else if (taxonomyView && second && segments.length === 2) {
 	slug = second;
 	term = await getTerm(taxonomyView, slug, { locale });
