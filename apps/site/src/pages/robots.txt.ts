@@ -1,15 +1,42 @@
 import type { APIRoute } from "astro";
 
-// Site-owned robots rules + sitemap pointer (§6.7). The source also served a
-// Cloudflare "Managed Content" block (AI-crawler disallows: GPTBot, Google-Extended,
-// meta-externalagent, …) which is injected by Cloudflare at the edge, not by the app —
-// re-enable Cloudflare Managed Content on the new zone to preserve those. Admin is at
-// /_emdash (not WordPress's /wp-admin), so that's what we disallow here.
+// Site-owned robots rules + sitemap pointer (§6.7). For GEO/answer-engine
+// discoverability, public content is explicitly open to search and AI retrieval bots
+// while the EmDash admin remains closed.
 export const prerender = false;
+
+const GEO_USER_AGENTS = [
+	"OAI-SearchBot",
+	"GPTBot",
+	"ChatGPT-User",
+	"ClaudeBot",
+	"Claude-SearchBot",
+	"Claude-User",
+	"PerplexityBot",
+	"Perplexity-User",
+	"Google-Extended",
+	"Googlebot",
+	"Googlebot-Image",
+	"GoogleOther",
+	"bingbot",
+];
+
+function renderRules(userAgent: string) {
+	return `User-agent: ${userAgent}
+Allow: /
+Disallow: /_emdash/
+Allow: /_emdash/api/media/
+`;
+}
 
 export const GET: APIRoute = ({ url }) => {
 	const origin = url.origin;
-	const body = `User-agent: *
+	const body = `# Public guide content is available for search, AI retrieval, and cited answer engines.
+# Machine-readable AI discovery: ${origin}/llms.txt
+# Do not enable Cloudflare Managed Content AI-crawler blocks for this zone unless the content policy changes.
+${GEO_USER_AGENTS.map(renderRules).join("\n")}
+User-agent: *
+Allow: /
 Disallow: /_emdash/
 Allow: /_emdash/api/media/
 

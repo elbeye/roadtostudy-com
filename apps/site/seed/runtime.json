@@ -1,0 +1,481 @@
+{
+  "$schema": "https://emdashcms.com/seed.schema.json",
+  "version": "1",
+  "meta": {
+    "name": "RoadToStudy WordPress Export Runtime Schema",
+    "description": "Schema-only runtime seed. Full migrated WordPress content is loaded into D1 with the migration SQL pipeline.",
+    "author": "RoadToStudy migration"
+  },
+  "settings": {
+    "title": "RoadToStudy",
+    "tagline": "Study in Turkey guides for international students"
+  },
+  "collections": [
+    {
+      "slug": "posts",
+      "label": "Posts",
+      "labelSingular": "Post",
+      "supports": [
+        "drafts",
+        "revisions",
+        "search",
+        "seo"
+      ],
+      "commentsEnabled": false,
+      "fields": [
+        {
+          "slug": "title",
+          "label": "Title",
+          "type": "string",
+          "required": true,
+          "searchable": true
+        },
+        {
+          "slug": "featured_image",
+          "label": "Featured Image",
+          "type": "image"
+        },
+        {
+          "slug": "excerpt",
+          "label": "Excerpt",
+          "type": "text",
+          "searchable": true
+        },
+        {
+          "slug": "content",
+          "label": "Content",
+          "type": "portableText",
+          "searchable": true
+        },
+        {
+          "slug": "source_seo",
+          "label": "Source SEO (verbatim head)",
+          "type": "json"
+        },
+        {
+          "slug": "content_html",
+          "label": "Body HTML (verbatim)",
+          "type": "text"
+        },
+        {
+          "slug": "wp_published_at",
+          "label": "Original Published",
+          "type": "datetime"
+        },
+        {
+          "slug": "wp_modified_at",
+          "label": "Original Modified",
+          "type": "datetime"
+        }
+      ]
+    },
+    {
+      "slug": "pages",
+      "label": "Pages",
+      "labelSingular": "Page",
+      "supports": [
+        "drafts",
+        "revisions",
+        "search",
+        "seo"
+      ],
+      "fields": [
+        {
+          "slug": "title",
+          "label": "Title",
+          "type": "string",
+          "required": true,
+          "searchable": true
+        },
+        {
+          "slug": "content",
+          "label": "Content",
+          "type": "portableText",
+          "searchable": true
+        },
+        {
+          "slug": "source_seo",
+          "label": "Source SEO (verbatim head)",
+          "type": "json"
+        },
+        {
+          "slug": "content_html",
+          "label": "Body HTML (verbatim)",
+          "type": "text"
+        },
+        {
+          "slug": "wp_published_at",
+          "label": "Original Published",
+          "type": "datetime"
+        },
+        {
+          "slug": "wp_modified_at",
+          "label": "Original Modified",
+          "type": "datetime"
+        }
+      ]
+    }
+  ],
+  "taxonomies": [
+    {
+      "id": "tax:category:en",
+      "name": "category",
+      "label": "Categories",
+      "labelSingular": "Category",
+      "hierarchical": true,
+      "collections": [
+        "posts"
+      ],
+      "locale": "en",
+      "terms": [
+        {
+          "id": "term:category:995",
+          "slug": "academic-support-and-success",
+          "label": "Academic Support and Success",
+          "locale": "en"
+        },
+        {
+          "id": "term:category:999",
+          "slug": "career-and-internship",
+          "label": "Career and Internship",
+          "locale": "en"
+        },
+        {
+          "id": "term:category:69",
+          "slug": "cost-of-living-and-accommodation",
+          "label": "Cost of Living and Accommodation",
+          "locale": "en"
+        },
+        {
+          "id": "term:category:57",
+          "slug": "cultural-adaptation",
+          "label": "Cultural Adaptation",
+          "locale": "en"
+        },
+        {
+          "id": "term:category:40",
+          "slug": "health-and-safety",
+          "label": "Health and Safety",
+          "locale": "en"
+        },
+        {
+          "id": "term:category:997",
+          "slug": "language-learning",
+          "label": "Language Learning",
+          "locale": "en"
+        },
+        {
+          "id": "term:category:51",
+          "slug": "scholarships-and-funding",
+          "label": "Scholarships and Funding",
+          "locale": "en"
+        },
+        {
+          "id": "term:category:59",
+          "slug": "student-life-and-travel",
+          "label": "Student Life and Travel",
+          "locale": "en"
+        },
+        {
+          "id": "term:category:65",
+          "slug": "university-and-programs",
+          "label": "University and Programs",
+          "locale": "en"
+        },
+        {
+          "id": "term:category:61",
+          "slug": "visa-and-immigration",
+          "label": "Visa and Immigration",
+          "locale": "en"
+        }
+      ]
+    },
+    {
+      "id": "tax:category:tr",
+      "name": "category",
+      "label": "Kategoriler",
+      "labelSingular": "Kategori",
+      "hierarchical": true,
+      "collections": [
+        "posts"
+      ],
+      "locale": "tr",
+      "translationOf": "tax:category:en",
+      "terms": [
+        {
+          "id": "term:category:6",
+          "slug": "akademik-destek-ve-basari",
+          "label": "Akademik Destek ve Başarı",
+          "locale": "tr",
+          "translationOf": "term:category:995"
+        },
+        {
+          "id": "term:category:7",
+          "slug": "burslar-ve-finansman",
+          "label": "Burslar ve Finansman",
+          "locale": "tr",
+          "translationOf": "term:category:51"
+        },
+        {
+          "id": "term:category:8",
+          "slug": "dil-ogrenimi",
+          "label": "Dil Öğrenimi",
+          "locale": "tr",
+          "translationOf": "term:category:997"
+        },
+        {
+          "id": "term:category:9",
+          "slug": "kariyer-ve-staj",
+          "label": "Kariyer ve Staj",
+          "locale": "tr",
+          "translationOf": "term:category:999"
+        },
+        {
+          "id": "term:category:10",
+          "slug": "kulturel-adaptasyon",
+          "label": "Kültürel Adaptasyon",
+          "locale": "tr",
+          "translationOf": "term:category:57"
+        },
+        {
+          "id": "term:category:11",
+          "slug": "ogrenci-hayati-ve-seyahat",
+          "label": "Öğrenci Hayatı ve Seyahat",
+          "locale": "tr",
+          "translationOf": "term:category:59"
+        },
+        {
+          "id": "term:category:1",
+          "slug": "saglik-ve-guvenlik",
+          "label": "Sağlık ve Güvenlik",
+          "locale": "tr",
+          "translationOf": "term:category:40"
+        },
+        {
+          "id": "term:category:13",
+          "slug": "universite-ve-programlar",
+          "label": "Üniversite ve Programlar",
+          "locale": "tr",
+          "translationOf": "term:category:65"
+        },
+        {
+          "id": "term:category:14",
+          "slug": "vize-ve-gocmenlik",
+          "label": "Vize ve Göçmenlik",
+          "locale": "tr",
+          "translationOf": "term:category:61"
+        },
+        {
+          "id": "term:category:15",
+          "slug": "yasam-maliyeti-ve-konaklama",
+          "label": "Yaşam Maliyeti ve Konaklama",
+          "locale": "tr",
+          "translationOf": "term:category:69"
+        }
+      ]
+    },
+    {
+      "id": "tax:category:fr",
+      "name": "category",
+      "label": "Categories",
+      "labelSingular": "Categorie",
+      "hierarchical": true,
+      "collections": [
+        "posts"
+      ],
+      "locale": "fr",
+      "translationOf": "tax:category:en",
+      "terms": [
+        {
+          "id": "term:category:985",
+          "slug": "adaptation-culturelle",
+          "label": "Adaptation culturelle",
+          "locale": "fr",
+          "translationOf": "term:category:57"
+        },
+        {
+          "id": "term:category:977",
+          "slug": "apprentissage-des-langues",
+          "label": "Apprentissage des langues",
+          "locale": "fr",
+          "translationOf": "term:category:997"
+        },
+        {
+          "id": "term:category:973",
+          "slug": "bourses-et-financement",
+          "label": "Bourses et Financement",
+          "locale": "fr",
+          "translationOf": "term:category:51"
+        },
+        {
+          "id": "term:category:981",
+          "slug": "carriere-et-stage",
+          "label": "Carrière et Stage",
+          "locale": "fr",
+          "translationOf": "term:category:999"
+        },
+        {
+          "id": "term:category:1009",
+          "slug": "cout-de-la-vie-et-hebergement",
+          "label": "Coût de la Vie et Hébergement",
+          "locale": "fr",
+          "translationOf": "term:category:69"
+        },
+        {
+          "id": "term:category:525",
+          "slug": "sante-et-securite",
+          "label": "Santé et Sécurité",
+          "locale": "fr",
+          "translationOf": "term:category:40"
+        },
+        {
+          "id": "term:category:993",
+          "slug": "soutien-et-reussite-academiques",
+          "label": "Soutien et Réussite Académiques",
+          "locale": "fr",
+          "translationOf": "term:category:995"
+        },
+        {
+          "id": "term:category:1001",
+          "slug": "universite-et-programmes",
+          "label": "Université et Programmes",
+          "locale": "fr",
+          "translationOf": "term:category:65"
+        },
+        {
+          "id": "term:category:989",
+          "slug": "vie-etudiante-et-voyages",
+          "label": "Vie étudiante et Voyages",
+          "locale": "fr",
+          "translationOf": "term:category:59"
+        },
+        {
+          "id": "term:category:1005",
+          "slug": "visa-et-immigration",
+          "label": "Visa et Immigration",
+          "locale": "fr",
+          "translationOf": "term:category:61"
+        }
+      ]
+    },
+    {
+      "id": "tax:category:id",
+      "name": "category",
+      "label": "Kategori",
+      "labelSingular": "Kategori",
+      "hierarchical": true,
+      "collections": [
+        "posts"
+      ],
+      "locale": "id",
+      "translationOf": "tax:category:en",
+      "terms": [
+        {
+          "id": "term:category:987",
+          "slug": "adaptasi-budaya",
+          "label": "Adaptasi Budaya",
+          "locale": "id",
+          "translationOf": "term:category:57"
+        },
+        {
+          "id": "term:category:975",
+          "slug": "beasiswa-dan-pendanaan",
+          "label": "Beasiswa dan Pendanaan",
+          "locale": "id",
+          "translationOf": "term:category:51"
+        },
+        {
+          "id": "term:category:1011",
+          "slug": "biaya-hidup-dan-akomodasi",
+          "label": "Biaya Hidup dan Akomodasi",
+          "locale": "id",
+          "translationOf": "term:category:69"
+        },
+        {
+          "id": "term:category:971",
+          "slug": "dukungan-dan-kesuksesan-akademik",
+          "label": "Dukungan dan Kesuksesan Akademik",
+          "locale": "id",
+          "translationOf": "term:category:995"
+        },
+        {
+          "id": "term:category:983",
+          "slug": "karier-dan-magang",
+          "label": "Karier dan Magang",
+          "locale": "id",
+          "translationOf": "term:category:999"
+        },
+        {
+          "id": "term:category:991",
+          "slug": "kehidupan-mahasiswa-dan-perjalanan",
+          "label": "Kehidupan Mahasiswa dan Perjalanan",
+          "locale": "id",
+          "translationOf": "term:category:59"
+        },
+        {
+          "id": "term:category:73",
+          "slug": "kesehatan-dan-keamanan",
+          "label": "Kesehatan dan Keamanan",
+          "locale": "id",
+          "translationOf": "term:category:40"
+        },
+        {
+          "id": "term:category:979",
+          "slug": "pembelajaran-bahasa",
+          "label": "Pembelajaran Bahasa",
+          "locale": "id",
+          "translationOf": "term:category:997"
+        },
+        {
+          "id": "term:category:1003",
+          "slug": "universitas-dan-program",
+          "label": "Universitas dan Program",
+          "locale": "id",
+          "translationOf": "term:category:65"
+        },
+        {
+          "id": "term:category:1007",
+          "slug": "visa-dan-imigrasi",
+          "label": "Visa dan Imigrasi",
+          "locale": "id",
+          "translationOf": "term:category:61"
+        }
+      ]
+    }
+  ],
+  "bylines": [
+    {
+      "id": "wp-user-2",
+      "slug": "anil",
+      "displayName": "anil"
+    },
+    {
+      "id": "wp-user-3",
+      "slug": "busra",
+      "displayName": "busra"
+    },
+    {
+      "id": "wp-user-1",
+      "slug": "murat",
+      "displayName": "Murat"
+    }
+  ],
+  "menus": [
+    {
+      "name": "primary",
+      "label": "Primary Navigation",
+      "items": [
+        {
+          "type": "custom",
+          "label": "Home",
+          "url": "/"
+        },
+        {
+          "type": "custom",
+          "label": "Posts",
+          "url": "/posts"
+        }
+      ]
+    }
+  ]
+}

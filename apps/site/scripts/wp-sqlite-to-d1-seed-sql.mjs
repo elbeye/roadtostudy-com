@@ -4,7 +4,7 @@ import Database from "better-sqlite3";
 
 const inputDb = process.env.WP_SQLITE_INPUT || "/private/tmp/wp-full-import-test-update.db";
 const outputDir = process.env.WP_D1_SEED_SQL_DIR || "data/d1-seed-sql";
-const maxChunkBytes = Math.max(1024 * 1024, Number(process.env.WP_D1_SQL_MAX_CHUNK_BYTES || 5 * 1024 * 1024));
+const maxChunkBytes = Math.max(128 * 1024, Number(process.env.WP_D1_SQL_MAX_CHUNK_BYTES || 5 * 1024 * 1024));
 
 const deleteOrder = [
 	"content_taxonomies",
@@ -77,13 +77,44 @@ function dumpInserts(table) {
 	if (columns.length === 0) throw new Error(`Table not found or has no columns: ${table}`);
 
 	const columnSql = columns.map(quoteIdent).join(", ");
+	const statements = [];
+	const splitContentHtml = table === "ec_posts" || table === "ec_pages";
+	const contentChunkSize = Number(process.env.WP_D1_CONTENT_HTML_CHUNK_CHARS || 16000);
 	return db
 		.prepare(`SELECT ${columnSql} FROM ${quoteIdent(table)} ORDER BY rowid`)
 		.all()
-		.map((row) => {
-			const values = columns.map((column) => sqlLiteral(row[column])).join(", ");
-			return `INSERT INTO ${quoteIdent(table)} (${columnSql}) VALUES (${values});`;
+		.flatMap((row) => {
+			const contentHtml = splitContentHtml && typeof row.content_html === "string" ? row.content_html : "";
+			const values = columns
+				.map((column) => {
+					const value = splitContentHtml && column === "content_html" && contentHtml ? "" : row[column];
+					return sqlLiteral(valueForDump(table, column, value));
+				})
+				.join(", ");
+			statements.push(`INSERT INTO ${quoteIdent(table)} (${columnSql}) VALUES (${values});`);
+			if (contentHtml) {
+				for (let offset = 0; offset < contentHtml.length; offset += contentChunkSize) {
+					const chunk = contentHtml.slice(offset, offset + contentChunkSize);
+					statements.push(
+						`UPDATE ${quoteIdent(table)} SET "content_html" = "content_html" || ${sqlLiteral(chunk)} WHERE "id" = ${sqlLiteral(row.id)};`,
+					);
+				}
+			}
+			const rowStatements = statements.splice(0);
+			return rowStatements;
 		});
+}
+
+function valueForDump(table, column, value) {
+	if (table !== "revisions" || column !== "data" || typeof value !== "string") return value;
+	try {
+		const data = JSON.parse(value);
+		delete data.content_html;
+		delete data.source_seo;
+		return JSON.stringify(data);
+	} catch {
+		return value;
+	}
 }
 
 function quoteIdent(name) {

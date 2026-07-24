@@ -62,6 +62,44 @@ const { siteTitle, siteTagline, siteLogo } = resolveBlogSiteIdentity(await getSi
 // exactTitle: emit the migrated source title verbatim. Otherwise, append the site
 // title unless it's already present (from getSeoMeta).
 const fullTitle = exactTitle ? title : title.includes(siteTitle) ? title : `${title} — ${siteTitle}`;
+const siteUrl = Astro.url.origin;
+const siteLogoUrl = siteLogo?.url ? new URL(siteLogo.url, siteUrl).href : null;
+const siteJsonLd = {
+	"@context": "https://schema.org",
+	"@graph": [
+		{
+			"@type": "Organization",
+			"@id": `${siteUrl}/#organization`,
+			name: siteTitle,
+			url: siteUrl,
+			...(siteLogoUrl
+				? {
+						logo: {
+							"@type": "ImageObject",
+							"@id": `${siteUrl}/#logo`,
+							url: siteLogoUrl,
+							contentUrl: siteLogoUrl,
+							caption: siteLogo?.alt || siteTitle,
+						},
+					}
+				: {}),
+		},
+		{
+			"@type": "WebSite",
+			"@id": `${siteUrl}/#website`,
+			url: siteUrl,
+			name: siteTitle,
+			description: siteTagline,
+			inLanguage: lang || "tr",
+			publisher: { "@id": `${siteUrl}/#organization` },
+			potentialAction: {
+				"@type": "SearchAction",
+				target: `${siteUrl}/search?q={search_term_string}`,
+				"query-input": "required name=search_term_string",
+			},
+		},
+	],
+};
 
 // Fetch primary menu defined in seed
 const menu = await getMenu("primary");
@@ -124,12 +162,19 @@ const languageLinks = alternates
 		<Font cssVariable="--font-mono" />
 		<title>{fullTitle}</title>
 		<EmDashHead page={pageCtx} />
+		<link rel="alternate" type="text/plain" title="llms.txt" href="/llms.txt" />
+		<link rel="author" type="text/plain" title="AI content policy" href="/ai.txt" />
 		{manualCanonical && canonical && <link rel="canonical" href={canonical} />}
 		{
 			alternates.map((alternate) => (
 				<link rel="alternate" hreflang={alternate.hreflang} href={alternate.href} />
 			))
 		}
+		<script
+			type="application/ld+json"
+			is:inline
+			set:html={JSON.stringify(siteJsonLd)}
+		/>
 		{
 			jsonLd?.map((graph) => (
 				<script

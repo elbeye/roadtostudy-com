@@ -18,6 +18,14 @@ function percentile(values, p) {
 	return sorted[index];
 }
 
+function maxValue(values) {
+	let max = 0;
+	for (const value of values) {
+		if (value > max) max = value;
+	}
+	return max;
+}
+
 async function hit(path) {
 	const url = new URL(path, baseUrl);
 	const controller = new AbortController();
@@ -88,7 +96,7 @@ console.log(JSON.stringify({
 		p90: Number(percentile(latencies, 90).toFixed(1)),
 		p95: Number(percentile(latencies, 95).toFixed(1)),
 		p99: Number(percentile(latencies, 99).toFixed(1)),
-		max: Number(Math.max(0, ...latencies).toFixed(1)),
+		max: Number(maxValue(latencies).toFixed(1)),
 	},
 	byPath: Object.fromEntries([...byPath.entries()].map(([path, value]) => [
 		path,
