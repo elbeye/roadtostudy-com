@@ -1,5 +1,34 @@
 This is an EmDash site -- a CMS built on Astro with a full admin UI.
 
+> **This is no longer the stock template.** It is roadtostudy.com: a WordPress
+> (Polylang + Rank Math) site migrated onto EmDash/Astro/Cloudflare, **live in
+> production since 2026-07-12** with DNS pointed at the Worker. Content lives in
+> prod D1 (~3.8k posts, 235 pages, 4 locales) and media in R2 — not in `seed/`.
+> Sections below marked _(template default)_ describe the starter kit and no longer
+> match this site. Read `## Migration facts` and `## Rules` before changing routing,
+> URLs, taxonomies, or SEO output. Full context:
+> `docs/superpowers/plans/2026-07-11-cutover-runbook.md`.
+
+## Migration facts
+
+- **Locales:** `tr` (default, **unprefixed**), `en`, `fr`, `id`. URL scheme is the
+  preserved WordPress one: `/{slug}/` for TR, `/{locale}/{slug}/` for the rest, with
+  trailing slashes. Never introduce `/tr/` URLs.
+- **Routing is one catch-all**, `src/pages/[...path].astro`: posts, pages, category
+  and tag archives, `/page/N/` archive pagination, and the localized language homes.
+  The unprefixed root is `src/pages/index.astro`.
+- **SEO parity is a hard requirement.** Migrated pages emit the source Rank Math head
+  verbatim from `source_seo` (title/description/canonical/robots/OG/JSON-LD). Don't
+  "improve" that output; a diff is a regression. `scripts/wp-seo-diff.mjs` checks it.
+- **Content is in prod D1.** `seed/seed.json` (the ~186MB full seed) is intentionally
+  **not tracked**; only the schema-only `seed/runtime.json` is, and that is what the
+  build consumes. `npm run build` skips regeneration when the full seed is absent.
+- **Media** is served from R2 through `src/pages/wp-content/uploads/[...path].ts`, so
+  the original `/wp-content/uploads/...` URLs keep resolving.
+- **Cutover gate:** `WP_TARGET_BASE=<origin> node scripts/wp-crawl-verify.mjs` must
+  exit 0 before shipping anything that touches URLs, routing, or archives. It checks
+  status *and* that archives actually render posts.
+
 ## Commands
 
 ```bash
@@ -15,7 +44,11 @@ The admin UI is at `http://localhost:4321/_emdash/admin`.
 | ------------------------ | ---------------------------------------------------------------------------------- |
 | `astro.config.mjs`       | Astro config with `emdash()` integration, database, and storage                    |
 | `src/live.config.ts`     | EmDash loader registration (boilerplate -- don't modify)                           |
-| `seed/seed.json`         | Schema definition + demo content (collections, fields, taxonomies, menus, widgets) |
+| `seed/runtime.json`      | **Schema-only seed the build actually applies** (`package.json` → `emdash.seed`); tracked |
+| `seed/seed.json`         | Full migrated content (~186MB), **untracked/regenerable** via `npm run wp:seed:full`   |
+| `src/middleware.ts`      | Rank Math redirect parity — runs before routing                                     |
+| `src/utils/hreflang.ts`  | hreflang clusters for content and taxonomy archives                                 |
+| `scripts/wp-crawl-verify.mjs` | Cutover gate: URL status **and** archive content parity                        |
 | `emdash-env.d.ts`        | Generated types for collections (auto-regenerated on dev server start)             |
 | `src/layouts/Base.astro` | Base layout with EmDash wiring (menus, search, page contributions)                 |
 | `src/pages/`             | Astro pages -- all server-rendered                                                 |
@@ -42,24 +75,57 @@ This template ships with `.mcp.json`, `.cursor/mcp.json`, and `.vscode/mcp.json`
 - Always call `Astro.cache.set(cacheHint)` on pages that query content.
 - Taxonomy names in queries must match the seed's `"name"` field exactly (e.g., `"category"` not `"categories"`).
 
-## This Template
+### Learned the hard way (2026-07-28 outage — don't undo these)
+
+- **A post must be linked to the taxonomy term in its own locale.** Terms are per-locale
+  rows sharing a `translation_group`. The migration linked all 3766 posts to the EN term,
+  so every TR/FR/ID archive returned 200 and rendered nothing — 1725 published posts
+  invisible. When writing `content_taxonomies`, match `post.locale` to `term.locale`.
+- **HTTP 200 is not proof a page works.** Any parity/verification gate you add must
+  assert on rendered content, not just status. The crawl gate stayed green through the
+  bug above for exactly this reason.
+- **An archive URL is canonical in one locale only.** `getTerm` follows the locale
+  fallback chain, so a TR slug also resolves under `/en/…`. The catch-all 301s those to
+  the term's own archive; without it you get duplicate content and an hreflang cluster
+  that omits the page emitting it.
+- **hreflang must include the page itself**, and paginated archives emit none (sibling
+  locales need not have the same page count). See `src/utils/hreflang.ts`.
+- **`getTaxonomyTerms` is expensive** — each call runs a count aggregate over
+  `content_taxonomies`, and the object cache is inert (no backend configured). Don't call
+  it per-request on a hot path; `taxonomyAlternates` memoizes per isolate.
+- Pages whose body already features search pass `headerSearch={false}` to `Base` so the
+  header field isn't duplicated.
+- The spacing scale is `1..6, 8, 10, 12, 16, 20, 24`. `var(--spacing-7)` and friends are
+  undefined, and an undefined token silently voids the whole declaration.
+
+## This Template _(template default — see the note at the top)_
 
 A blog with posts, pages, categories, tags, full-text search, and RSS. Designed for personal writing, technical writing, indie newsletters, and anything where the writing is the product. Editorial-tech aesthetic: confident sans-serif, restrained accent, real article structure with bylines and reading time.
 
 ## Pages
 
-| Page        | Path               | What it shows                                                                                          |
-| ----------- | ------------------ | ------------------------------------------------------------------------------------------------------ |
-| Home        | `/`                | Featured post hero (large image + excerpt), latest posts grid                                          |
-| All posts   | `/posts`           | Article count, full post list with excerpts and tag chips                                              |
-| Post detail | `/posts/[slug]`    | Featured image, title, body, left meta column (authors + date), right TOC + search + categories gutter |
-| Search      | `/search`          | Full-text search UI                                                                                    |
-| Page        | `/pages/[slug]`    | Static page content (Portable Text)                                                                    |
-| Category    | `/category/[slug]` | Posts filtered by category                                                                             |
-| Tag         | `/tag/[slug]`      | Posts filtered by tag                                                                                  |
-| RSS         | `/rss.xml`         | Generated feed                                                                                         |
+Actual routing (preserved WordPress URLs). `{loc}` is `en|fr|id`; the TR equivalent of
+every row is the same path without a prefix.
 
-## Schema
+| Page              | Path                                              | Route file                            |
+| ----------------- | ------------------------------------------------- | ------------------------------------- |
+| TR home           | `/`                                               | `index.astro`                         |
+| Language home     | `/{loc}/`                                         | `[...path].astro`                     |
+| Post              | `/{slug}/` · `/{loc}/{slug}/`                     | `[...path].astro`                     |
+| Page              | `/{slug}/` · `/{loc}/{slug}/`                     | `[...path].astro`                     |
+| Category archive  | `/category/{slug}/` · `/{loc}/category/{slug}/`   | `[...path].astro`                     |
+| Tag archive       | `/tag/{slug}/` · `/{loc}/tag/{slug}/`             | `[...path].astro`                     |
+| Archive page N    | `…/category/{slug}/page/{n}/` (10 posts/page)     | `[...path].astro`                     |
+| All posts         | `/posts`                                          | `posts/index.astro`                   |
+| Search            | `/search`                                         | `search.astro`                        |
+| Media (WP paths)  | `/wp-content/uploads/…`                           | `wp-content/uploads/[...path].ts`      |
+| Sitemaps          | `/sitemap_index.xml`, `post-sitemap{n}.xml`, `page-sitemap{n}.xml`, `category-sitemap.xml` | `*.xml.ts` |
+| RSS / robots / AI | `/rss.xml`, `/robots.txt`, `/llms.txt`, `/ai.txt` | matching files in `src/pages/`         |
+
+Posts and pages share one flat slug namespace: the catch-all tries `posts` first, then
+`pages`. Rank Math redirects run ahead of routing in `src/middleware.ts`.
+
+## Schema _(template default — see the note at the top)_
 
 - `posts` collection: `title`, `featured_image`, `content` (Portable Text), `excerpt` (text).
 - `pages` collection: `title`, `content` (Portable Text). Used for `/about` etc.
@@ -68,7 +134,7 @@ A blog with posts, pages, categories, tags, full-text search, and RSS. Designed 
 
 Site settings have `title` and `tagline` -- both render in the header / footer.
 
-## Visual character
+## Visual character _(template default — see the note at the top)_
 
 Single typeface: **Inter** on `--font-sans`, used for everything including headings (with tighter letter-spacing on h1/h2). **JetBrains Mono** on `--font-mono` for inline code and code blocks. Body and headings share the same family; weight and size carry the hierarchy.
 
@@ -76,7 +142,7 @@ The accent is `#0066cc` -- used for links, the post-card title hover, and the se
 
 The article layout is the standout feature: a three-column reading view with a left meta column (author bylines, date), centred 680px body column, and a right gutter for search, table of contents, and categories. Don't flatten that into one column on desktop -- the layout signals "this is something to read".
 
-## Customisation
+## Customisation _(template default — see the note at the top)_
 
 `src/styles/theme.css` is the only file to edit for visual changes. Every CSS variable from `Base.astro` is listed there as a commented default -- uncomment and change to override. The dark mode palette is defined inside `Base.astro` itself; light-mode overrides in `theme.css` won't affect dark mode. To customise dark mode, add `@media (prefers-color-scheme: dark)` and `:root.dark` rules in `theme.css`.
 
@@ -94,7 +160,7 @@ CSS variables worth knowing:
 - `--meta-col-width` (180px) -- left meta column on article pages
 - `--avatar-size-{xs,sm,md,lg}` -- byline avatar sizes at different scales
 
-## What not to do
+## What not to do _(template default — see the note at the top)_
 
 - Don't add a second accent colour or coloured section backgrounds. The page should be black, white, and one blue.
 - Don't replace Inter with a display sans (Bebas, Anton, etc.). Headings rely on weight contrast, not novelty faces.

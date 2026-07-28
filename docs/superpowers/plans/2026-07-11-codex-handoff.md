@@ -1,5 +1,21 @@
 # Codex Devir Listesi — RoadToStudy canlıya geçiş
 
+> ## ⛔ BU BELGE TAMAMLANDI — YENİDEN KOŞMAYIN
+> Aşağıdaki 1–5 numaralı görevlerin **hepsi bitti** ve site 2026-07-12'den beri
+> canlıda (DNS roadtostudy.com → Worker). İçerik prod D1'de, medya R2'de.
+>
+> Bu adımları bugün yeniden çalıştırmak **zararlı olur**: tam çıkarım artık kaynak
+> WordPress'e ulaşamaz (o domain artık Worker'ı sunuyor) ve D1'e tekrar import
+> etmek canlı içeriğin üzerine yazma riski taşır.
+>
+> Güncel durum, ölçümler ve cutover sonrası olay kaydı için:
+> **`docs/superpowers/plans/2026-07-11-cutover-runbook.md`**
+> Kod tarafı kurallar için: **`apps/site/AGENTS.md`**
+>
+> Belge tarihsel kayıt olarak korunuyor.
+
+---
+
 **Bağlam:** Migration kodu bulut oturumunda tamamlandı ve doğrulandı (branch
 `claude/project-understanding-review-l213qo`, 8 commit). Aşağıdaki adımlar **yerel `.env`
 (WP application password) ve Cloudflare token** gerektirir — bulut sandbox'ında çalıştırılamaz,

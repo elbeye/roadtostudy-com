@@ -1,5 +1,11 @@
 # EmDash Blog Template (Cloudflare)
 
+> **This is the upstream template README, kept for reference.** This repo is no longer
+> the template: it is the live roadtostudy.com site (WordPress → EmDash migration, 4
+> locales, production since 2026-07-12). The routes and features listed below are the
+> starter kit's, not this site's. For the real thing see `AGENTS.md` (routing,
+> invariants) and `../../README.md` (overview).
+
 A clean, minimal blog built with [EmDash](https://github.com/emdash-cms/emdash) and deployed on Cloudflare Workers with D1 and R2.
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/emdash-cms/templates/tree/main/blog-cloudflare)
