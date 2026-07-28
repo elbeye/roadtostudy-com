@@ -249,8 +249,15 @@ export function normalizeArchivePath(value) {
 // HEAD-only status check — exactly how the "every post linked to the EN term" migration
 // bug shipped unnoticed. For archives we GET the body and read the rendered count.
 // `null` means "count not found" (not an archive, or the markup changed) — never a blocker.
+//
+// The counter noun is localized per archive locale (UI_COPY in [...path].astro), so all
+// four spellings are matched. Leaving this English-only would have quietly turned the
+// content gate back into a status check for every TR/FR/ID archive — and TR is the whole
+// unprefixed corpus. Keep the alternation in step with UI_COPY's postOne/postMany.
+const ARCHIVE_COUNT_RE = /class="wp-excerpt"[^>]*>\s*(\d+)\s*(?:posts?|yazı|articles?|artikel)/i;
+
 export function parseArchiveCount(html) {
-	const m = String(html || "").match(/class="wp-excerpt"[^>]*>\s*(\d+)\s*posts?/i);
+	const m = String(html || "").match(ARCHIVE_COUNT_RE);
 	return m ? Number(m[1]) : null;
 }
 

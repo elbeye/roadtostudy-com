@@ -1,11 +1,32 @@
 import cloudflare from "@astrojs/cloudflare";
 import react from "@astrojs/react";
-import { d1, r2 } from "@emdash-cms/cloudflare";
+import { cloudflareCache, d1, r2 } from "@emdash-cms/cloudflare";
 import { defineConfig, fontProviders } from "astro/config";
 import emdash from "emdash/astro";
 
 export default defineConfig({
 	output: "server",
+	// Route caching. Content pages already call Astro.cache.set(cacheHint), but with no
+	// provider configured those calls stored nothing, so every request re-rendered and hit
+	// D1 — the dominant cost and latency driver at this corpus size. This wires the
+	// provider that makes them store to Cloudflare's edge Cache API; on a hit the Worker
+	// serves the rendered response with near-zero CPU and no D1 read.
+	//
+	// The provider caches GET only and bypasses the cache whenever an `astro-session=`
+	// cookie is present, so a logged-in editor always sees live content.
+	//
+	// OPERATIONAL REQUIREMENT: set CF_ZONE_ID and CF_CACHE_PURGE_TOKEN as Worker secrets.
+	// Content edits purge affected pages by cache tag; without those secrets the purge
+	// call errors and a published edit stays invisible to anonymous visitors until the TTL
+	// below expires it (fresh for maxAge, then served stale while revalidating for swr).
+	experimental: {
+		cache: { provider: cloudflareCache() },
+		routeRules: {
+			"/": { maxAge: 600, swr: 3600 },
+			"/posts": { maxAge: 600, swr: 3600 },
+			"/[...path]": { maxAge: 600, swr: 3600 },
+		},
+	},
 	// Enables EmDash localization (admin language UI + locale-aware content). EmDash
 	// reads this Astro i18n block. TR is the unprefixed default to match the preserved
 	// WordPress URL scheme (/{slug}/ for TR, /{locale}/{slug}/ for others); public

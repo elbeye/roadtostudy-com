@@ -71,6 +71,18 @@ test("parseArchiveCount reads the rendered post count from real archive markup",
 	assert.equal(parseArchiveCount('<p class="wp-excerpt">\n\t12 posts\n</p>'), 12);
 });
 
+// The counter is localized, and TR is the entire unprefixed corpus — an English-only
+// parser would report every TR archive as unreadable and silently skip the content check.
+test("parseArchiveCount reads the localized counter noun in all four locales", () => {
+	assert.equal(parseArchiveCount('<p class="wp-excerpt" data-astro-cid-x>104 yazı</p>'), 104);
+	assert.equal(parseArchiveCount('<p class="wp-excerpt" data-astro-cid-x>85 posts</p>'), 85);
+	assert.equal(parseArchiveCount('<p class="wp-excerpt" data-astro-cid-x>7 articles</p>'), 7);
+	assert.equal(parseArchiveCount('<p class="wp-excerpt" data-astro-cid-x>1 article</p>'), 1);
+	assert.equal(parseArchiveCount('<p class="wp-excerpt" data-astro-cid-x>12 artikel</p>'), 12);
+	// zero must still parse as 0 (a blocker), not as null (a warning)
+	assert.equal(parseArchiveCount('<p class="wp-excerpt" data-astro-cid-x>0 yazı</p>'), 0);
+});
+
 test("parseArchiveCount returns null when the count is absent, never 0", () => {
 	// null must stay distinct from 0: 0 fails the gate, null only warns.
 	assert.equal(parseArchiveCount("<html>a post page</html>"), null);

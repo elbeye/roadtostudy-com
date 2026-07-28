@@ -103,7 +103,8 @@ const t = UI[locale] ?? UI.en;
 							excerpt={entry.data.excerpt}
 							featuredImage={entry.data.featured_image}
 							href={contentPath(entry.data.locale || locale, entry.data.slug || entry.id)}
-							date={entry.data.publishedAt ?? undefined}
+							date={entry.data.wp_published_at ?? entry.data.publishedAt ?? undefined}
+							locale={entry.data.locale || locale}
 							readingTime={getReadingTime(entry.data.content)}
 						/>
 					))}
@@ -218,6 +219,16 @@ const t = UI[locale] ?? UI.en;
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
 		gap: var(--spacing-3);
+	}
+
+	/* At tablet widths `auto-fill` lands on 3 columns, which orphans one pill from the
+	   10-item topic list in a mostly-empty last row. Two columns divide 10 into 5 full
+	   rows; above and below this band the auto-fill (desktop) and single-column
+	   (mobile, <=600px) rules already avoid the orphan. */
+	@media (max-width: 1023px) and (min-width: 641px) {
+		.portal-topics {
+			grid-template-columns: repeat(2, 1fr);
+		}
 	}
 
 	.portal-topic {
