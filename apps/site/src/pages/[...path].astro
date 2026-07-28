@@ -13,7 +13,7 @@ import { Image, PortableText } from "emdash/ui";
 import Base from "../layouts/Base.astro";
 import PostCard from "../components/PostCard.astro";
 import PortalHome from "../components/PortalHome.astro";
-import { categoryPath, contentPath } from "../utils/content-url";
+import { categoryPath, contentPath, taxonomyPath } from "../utils/content-url";
 import { contentAlternates, taxonomyAlternates } from "../utils/hreflang";
 import { getReadingTime } from "../utils/reading-time";
 import { resolveBlogSiteIdentity } from "../utils/site-identity";
@@ -125,6 +125,13 @@ if (segments.length === 0) {
 } else if (taxonomyView && second && segments.length === 2) {
 	slug = second;
 	term = await getTerm(taxonomyView, slug, { locale });
+	// getTerm honours the locale fallback chain, so a Turkish slug resolves under a
+	// foreign prefix too (/en/category/dil-ogrenimi/ → the TR term). Serving that as
+	// 200 duplicates the archive across every locale prefix and leaves the URL outside
+	// the hreflang cluster it advertises. Send it to the term's own canonical archive.
+	if (term && term.locale && term.locale !== locale) {
+		return Astro.redirect(taxonomyPath(taxonomyView, term.locale, term.slug), 301);
+	}
 	if (term) {
 		const result = await getEmDashCollection("posts", {
 			where: { [taxonomyView]: term.slug },
@@ -241,8 +248,12 @@ const alternates =
 				})
 			: view === "home"
 				? homeAlternates
-				: view === "category" || view === "tag"
-					? await taxonomyAlternates(taxonomyView as "category" | "tag", currentTerm, Astro.url.origin)
+				: (view === "category" || view === "tag") && pageNum === 1
+					? // Only page 1 gets a cluster: the alternates address the archive itself, and
+						// a sibling locale need not have the same number of pages, so emitting them on
+						// /page/N/ would advertise page 1 against a page-N canonical (or a page that
+						// doesn't exist there). Deeper pages self-canonicalize with no hreflang.
+						await taxonomyAlternates(taxonomyView as "category" | "tag", currentTerm, Astro.url.origin)
 					: [];
 ---
 

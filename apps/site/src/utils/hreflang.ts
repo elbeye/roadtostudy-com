@@ -48,30 +48,65 @@ export async function contentAlternates(
 	return dedupeAlternates(alternates);
 }
 
+type TermRef = { translationGroup?: string | null; locale: string; slug: string; children?: TermRef[] };
+
+// getTaxonomyTerms has no "skip counts" option, so each call also runs a full
+// count aggregate over content_taxonomies — 4 locales per archive render, on a table
+// with a row per post. Nothing caches it either (the object cache is inert without an
+// explicit backend in astro.config.mjs), so this memoizes the slug map per isolate.
+// Terms change far less often than archives are served; a rename is visible after at
+// most SLUG_MAP_TTL_MS, and invalidateTermCache() does not reach this map.
+const SLUG_MAP_TTL_MS = 5 * 60 * 1000;
+const slugMapCache = new Map<string, { at: number; groups: Map<string, Map<string, string>> }>();
+
+// Terms come back as a tree when the taxonomy is hierarchical (category is), so a
+// nested term lives under .children and would otherwise be invisible here.
+function flattenTerms(terms: TermRef[]): TermRef[] {
+	return terms.flatMap((term) => [term, ...flattenTerms(term.children ?? [])]);
+}
+
+async function slugsByGroup(taxonomyName: string, now: number) {
+	const cached = slugMapCache.get(taxonomyName);
+	if (cached && now - cached.at < SLUG_MAP_TTL_MS) return cached.groups;
+
+	const perLocale = await Promise.all(
+		LOCALE_ORDER.map((locale) => getTaxonomyTerms(taxonomyName, { locale })),
+	);
+	const groups = new Map<string, Map<string, string>>();
+	for (const terms of perLocale) {
+		for (const candidate of flattenTerms((terms ?? []) as TermRef[])) {
+			if (!candidate.translationGroup || !candidate.slug) continue;
+			const byLocale = groups.get(candidate.translationGroup) ?? new Map<string, string>();
+			byLocale.set(candidate.locale, candidate.slug);
+			groups.set(candidate.translationGroup, byLocale);
+		}
+	}
+	slugMapCache.set(taxonomyName, { at: now, groups });
+	return groups;
+}
+
 // Language alternates for a taxonomy archive (/category/, /tag/). Sibling-locale
 // terms are found via the shared translationGroup, so /category/university-and-programs/
 // (EN) links to /category/universite-ve-programlar/ (TR) and vice versa. Returns []
 // when the term has no translations, so the switcher/hreflang simply don't render.
+// The caller must pass the term actually rendered, whose locale matches the URL —
+// otherwise the page's own URL would be missing from the cluster it advertises.
 export async function taxonomyAlternates(
 	taxonomyName: "category" | "tag",
-	term: { translationGroup?: string | null; locale: string; slug: string },
+	term: TermRef,
 	origin: string,
+	now: number = Date.now(),
 ): Promise<Alternate[]> {
 	const bySlug = new Map<string, string>();
 	bySlug.set(term.locale, term.slug);
 
-	const group = term.translationGroup;
-	if (group) {
-		const perLocale = await Promise.all(
-			LOCALE_ORDER.map((locale) => getTaxonomyTerms(taxonomyName, { locale })),
-		);
-		for (const terms of perLocale) {
-			for (const candidate of terms) {
-				if (candidate.translationGroup === group && candidate.slug) {
-					bySlug.set(candidate.locale, candidate.slug);
-				}
-			}
+	if (term.translationGroup) {
+		const groups = await slugsByGroup(taxonomyName, now);
+		for (const [locale, slug] of groups.get(term.translationGroup) ?? []) {
+			bySlug.set(locale, slug);
 		}
+		// Never let a stale cache drop the current URL out of its own cluster.
+		bySlug.set(term.locale, term.slug);
 	}
 
 	if (bySlug.size < 2) return [];
