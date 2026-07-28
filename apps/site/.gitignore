@@ -31,3 +31,9 @@ output/
 # generated crawl verification artifacts
 data/crawl-inventory.json
 data/crawl-report.json
+
+# generated link audit artifact
+data/link-audit.json
+
+# generated scheduled-publishing SQL (regenerable from the WP export)
+data/schedule-future.sql

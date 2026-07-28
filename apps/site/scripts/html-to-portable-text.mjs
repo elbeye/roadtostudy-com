@@ -38,6 +38,57 @@ function href(attrs) {
 	return m ? decodeHtml(m[1]) : null;
 }
 
+// Conservative repair of unambiguous link malformations found in the WP export
+// (§6.10). Exactly two rules — anything else is preserved byte-for-byte:
+//   1. Stacked schemes (`https://https://…`, `http://https://…`): drop the leading
+//      scheme(s); the innermost scheme is the real URL's own.
+//   2. Internal (roadtostudy.com) URLs only: collapse the doubled slash straight
+//      after the host (`https://roadtostudy.com//x` -> `https://roadtostudy.com/x`).
+//      The site has no empty path segments, so `//` there is always a
+//      concatenation artifact — for external hosts `//` could be meaningful, so
+//      those are left alone.
+const STACKED_SCHEME_RE = /^https?:\/\/(?=https?:\/\/)/i;
+const INTERNAL_DOUBLE_SLASH_RE = /^(https?:\/\/(?:www\.)?roadtostudy\.com)\/{2,}/i;
+
+export function normalizeHref(url) {
+	let out = String(url ?? "");
+	while (STACKED_SCHEME_RE.test(out)) out = out.replace(STACKED_SCHEME_RE, "");
+	return out.replace(INTERNAL_DOUBLE_SLASH_RE, "$1/");
+}
+
+// Editor mistakes where whole sentences were pasted into href ("http://Türkiye'nin
+// UNESCO … Rehberi"). No rewrite can recover the intended target, and the source
+// site serves them broken too — so the link is dropped and the anchor text kept.
+// Narrow on purpose: only absolute-looking hrefs that contain whitespace AND fail
+// URL parsing; relative paths and odd-but-valid URLs never match.
+export function isProseHref(url) {
+	const value = String(url ?? "").trim();
+	if (!/^https?:\/\//i.test(value) || !/\s/.test(value)) return false;
+	try {
+		new URL(value);
+		return false;
+	} catch {
+		return true;
+	}
+}
+
+// Apply normalizeHref to every href attribute in an HTML fragment. The malformed
+// region (scheme + host) never contains HTML entities, so rewriting the raw
+// attribute value is safe; hrefs normalizeHref leaves alone come back byte-for-byte.
+// Prose hrefs (see isProseHref) lose the attribute entirely — an <a> without href
+// renders as plain text, which is the intended unlink.
+export function normalizeHtmlHrefs(html) {
+	return String(html ?? "").replace(
+		/((?<![\w-])href\s*=\s*)("([^"]*)"|'([^']*)')/gi,
+		(full, prefix, quoted, dq, sq) => {
+			const value = dq ?? sq;
+			const fixed = normalizeHref(value);
+			if (isProseHref(fixed)) return "";
+			return fixed === value ? full : `${prefix}${quoted[0]}${fixed}${quoted[0]}`;
+		},
+	);
+}
+
 // Convert an inline HTML fragment into Portable Text spans + link markDefs. Unknown
 // tags are stripped (their text kept); <br> becomes a space.
 export function inlineToSpans(html, keyBase) {
@@ -78,9 +129,10 @@ export function inlineToSpans(html, keyBase) {
 				linkKey = null;
 			} else {
 				const url = href(attrs);
-				if (url) {
+				const fixed = url ? normalizeHref(url) : null;
+				if (fixed && !isProseHref(fixed)) {
 					const key = `${keyBase}l${markDefs.length}`;
-					markDefs.push({ _type: "link", _key: key, href: url });
+					markDefs.push({ _type: "link", _key: key, href: fixed });
 					linkKey = key;
 				} else {
 					linkKey = null;
