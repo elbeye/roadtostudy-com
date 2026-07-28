@@ -13,7 +13,12 @@
 
 export type RedirectRule = { from: string; to: string; status: 301 | 302 };
 
-export const REDIRECTS: RedirectRule[] = [];
+export const REDIRECTS: RedirectRule[] = [
+	{ from: "/category/universiteler/", to: "/category/universite-ve-programlar/", status: 301 },
+	{ from: "/en/category/universities/", to: "/en/category/university-and-programs/", status: 301 },
+	{ from: "/fr/category/universites/", to: "/fr/category/universite-et-programmes/", status: 301 },
+	{ from: "/id/category/universitas/", to: "/id/category/universitas-dan-program/", status: 301 },
+];
 
 function normalize(pathname: string): string {
 	// Compare on a trailing-slash-insensitive key so "/x" and "/x/" match the same

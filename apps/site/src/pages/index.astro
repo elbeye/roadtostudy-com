@@ -9,6 +9,7 @@ import { resolveBlogSiteIdentity } from "../utils/site-identity";
 // topic cards (real category taxonomy), and featured guides. Posts are filtered to
 // the TR locale so the Turkish home doesn't mix in EN/FR/ID articles.
 const locale = "tr";
+const HOME_LOCALE_ORDER = ["en", "tr", "fr", "id"] as const;
 const HEADING = "Türkiye'de okumak için rehberin";
 const SUMMARY =
 	"Üniversite seçiminden bursa, vizeden öğrenci hayatına — uluslararası öğrenciler için güncel rehberler.";
@@ -26,9 +27,14 @@ const { siteTitle } = resolveBlogSiteIdentity(settings);
 const categories = (terms || [])
 	.filter((term: any) => term.locale === locale && term.slug)
 	.map((term: any) => ({ href: categoryPath(locale, term.slug), label: term.label }));
+const localeHomePath = (l: string) => (l === "tr" ? "/" : `/${l}/`);
+const alternates = [
+	...HOME_LOCALE_ORDER.map((l) => ({ hreflang: l, href: `${Astro.url.origin}${localeHomePath(l)}` })),
+	{ hreflang: "x-default", href: `${Astro.url.origin}${localeHomePath("en")}` },
+];
 ---
 
-<Base title={siteTitle} description={SUMMARY} lang={locale}>
+<Base title={siteTitle} description={SUMMARY} lang={locale} alternates={alternates}>
 	{
 		posts.length === 0 && categories.length === 0 ? (
 			<section class="empty-state">
