@@ -63,7 +63,10 @@ Bu değerler canlı roadtostudy.com'a karşı ölçüldü; cutover kapılarını
 ## Faz 4 — Otomatik doğrulama (cutover kapısı) 🟢/🔑
 Hedef geçici domainde ayaktayken:
 1. **Crawl parite** (🟢 araç, 🔑 hedef): `WP_TARGET_BASE=<worker-url> node scripts/wp-crawl-verify.mjs`
-   - Kaynak sitemap'teki **2421 URL** hedefte 200/301 döner. Beklenmeyen 404/5xx = **cutover blocker** (script exit 1).
+   - Kaynak sitemap'teki URL'ler hedefte 200/301 döner. Beklenmeyen 404/5xx = **cutover blocker** (script exit 1).
+   - Ayrıca **içerik kapısı**: kategori arşivleri GET edilip render edilen yazı sayısı okunur. 200 dönüp 0 yazı gösteren arşiv = blocker. Yalnızca `DEFAULT_EXPECTED_EMPTY` listesindeki (tüm yazıları `scheduled` olan) arşivler muaf.
+   - Rank Math kategori sitemap'i sadece prefix'siz TR arşivlerini içerdiği için EN/FR/ID arşivleri `DEFAULT_LOCALIZED_ARCHIVES` üzerinden **varsayılan olarak** taranır. Taksonomi değişirse bu listeyi güncelle.
+   - Geçici ağ hataları (status 0) 3 denemeye kadar retry edilir; gerçek 404/5xx retry edilmez.
 2. **SEO/meta parite** (🟢/🔑): `WP_TARGET_BASE=<worker-url> node scripts/wp-seo-diff.mjs`
    - title/description/canonical/robots/OG/Twitter/JSON-LD birebir; hreflang bilinçli olarak kaynağı aşar (x-default).
 3. **Medya parite** (🔑): `media:upload:full` sonundaki HEAD doğrulaması 200.
@@ -90,3 +93,23 @@ Hedef geçici domainde ayaktayken:
 1. Migration-grade HTML→PortableText (§7.2) + testler.
 2. `wp-crawl-verify` için beklenen-301 haritası (bilinçli redirect'lerde 301'i "ok" say).
 3. Attachment page URL davranışı kararı (§10 açık) — kaynak crawl'ıyla tespit.
+
+---
+
+## Cutover sonrası olay kaydı — 2026-07-28: boş kategori arşivleri
+
+**Belirti:** `/fr/category/adaptation-culturelle/` (ve benzerleri) 200 dönüyor ama hiç yazı göstermiyordu.
+
+**Kök neden:** Migration her postu, kendi dilindeki kategori terimi yerine **EN terimine** bağlamıştı. `translation_group` doğru kurulmuştu ama `content_taxonomies` bağları yanlış uçtaydı. Arşiv sorgusu aktif dilin terimini aradığı için TR/FR/ID'de 0 sonuç dönüyordu.
+
+**Etki:** 40 kategori arşivinin **30'u boştu** — TR 10/10, FR 10/10, ID 10/10 (sitemap'teki 10 TR URL'i dahil). Görünmeyen yayında yazı: **1725**.
+
+**Neden kapıdan geçti (iki kör nokta):**
+1. Crawl gate yalnız HTTP kodunu ölçüyordu; boş sayfa da 200 = "ok" sayılıyordu.
+2. Kategori sitemap'i sadece TR'yi içerdiği için EN/FR/ID arşivleri hiç taranmıyordu.
+
+**Onarım:** `content_taxonomies.taxonomy_id`, `translation_group` üzerinden postun kendi dilindeki terime taşındı — **2824 satır**. Öncesinde yedek alındı (`data/content-taxonomies-backup.json`). Sonrası: hatalı bağ 0; TR 924 / FR 476 / ID 325 yayında yazı arşivlerde göründü. Kalan 6 boş arşiv meşru (yazıları `scheduled`, biri EN'de hiç yazı içermiyor).
+
+**Kalıcı önlem:** Faz 4 crawl kapısına içerik doğrulaması + varsayılan locale arşiv taraması + retry eklendi (yukarı bkz.). Ek olarak kategori/tag arşivlerine dil değiştirici + hreflang eklendi (`taxonomyAlternates`).
+
+**Ders:** "HTTP 200" içerik doğruluğu demek değil. Parite kapıları, kullanıcının gördüğü çıktıyı ölçmeli.
