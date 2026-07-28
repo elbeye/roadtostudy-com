@@ -15,16 +15,19 @@ export default defineConfig({
 	// The provider caches GET only and bypasses the cache whenever an `astro-session=`
 	// cookie is present, so a logged-in editor always sees live content.
 	//
-	// OPERATIONAL REQUIREMENT: set CF_ZONE_ID and CF_CACHE_PURGE_TOKEN as Worker secrets.
-	// Content edits purge affected pages by cache tag; without those secrets the purge
-	// call errors and a published edit stays invisible to anonymous visitors until the TTL
-	// below expires it (fresh for maxAge, then served stale while revalidating for swr).
+	// TTLs are deliberately short so this is correct with NO extra setup. Tag-based purge on
+	// content edits needs CF_ZONE_ID + CF_CACHE_PURGE_TOKEN as Worker secrets; without them
+	// the purge call errors and a page can only go stale until its TTL expires. At 60s that
+	// is a non-event for a mostly-static migrated corpus, and it still removes essentially
+	// every repeat render — the win here is volume, not TTL length. If those secrets get
+	// set, maxAge can go up (600/3600 was the original proposal) since purge then makes
+	// staleness bounded by the edit, not by the clock.
 	experimental: {
 		cache: { provider: cloudflareCache() },
 		routeRules: {
-			"/": { maxAge: 600, swr: 3600 },
-			"/posts": { maxAge: 600, swr: 3600 },
-			"/[...path]": { maxAge: 600, swr: 3600 },
+			"/": { maxAge: 60, swr: 600 },
+			"/posts": { maxAge: 60, swr: 600 },
+			"/[...path]": { maxAge: 60, swr: 600 },
 		},
 	},
 	// Enables EmDash localization (admin language UI + locale-aware content). EmDash

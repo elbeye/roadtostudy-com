@@ -133,7 +133,7 @@ Eşzamanlı crawl'da isteklerin ~%4-6'sı **503 (Cloudflare error 1102 — Worke
 
 Bundan çıkan iki kalıcı sonuç:
 - **`/posts` sınırsız render edilemez.** 2200+ postu tek istekte render etmek CPU sınırını aşıyor. Sayfa artık 24 kayıt + keyset sayfalama (`?cursor=`).
-- **Cache API `*.workers.dev` üzerinde çalışmaz**, yani o günkü ölçümler **önbelleksiz en kötü durumdu**. Gerçek zone'a bağlandıktan sonra edge route cache devreye alınabilir hâle geldi — 2026-07-28'de açıldı (`astro.config.mjs` → `experimental.cache`). **Şart:** `CF_ZONE_ID` + `CF_CACHE_PURGE_TOKEN` Worker secret olarak tanımlı olmalı; yoksa tag-bazlı purge hata verir ve yayınlanan bir düzenleme TTL (600s) dolana kadar anonim ziyaretçiye görünmez.
+- **Cache API `*.workers.dev` üzerinde çalışmaz**, yani o günkü ölçümler **önbelleksiz en kötü durumdu**. Gerçek zone'a bağlandıktan sonra edge route cache devreye alınabilir hâle geldi — 2026-07-28'de açıldı (`astro.config.mjs` → `experimental.cache`). TTL bilinçli olarak kısa (maxAge 60s / swr 600s): tag-bazlı purge `CF_ZONE_ID` + `CF_CACHE_PURGE_TOKEN` secret'larını gerektiriyor, onlar tanımsızken bir sayfa yalnızca TTL ile tazelenebilir. 60 saniyede bu pratikte önemsiz ve tekrar render'ların neredeyse tamamı yine ortadan kalkıyor — kazanç TTL uzunluğundan değil hacimden geliyor. Secret'lar tanımlanırsa maxAge yükseltilebilir (ilk öneri 600/3600'dü), çünkü o zaman bayatlık düzenlemeyle sınırlı olur, saatle değil.
 
 ---
 
