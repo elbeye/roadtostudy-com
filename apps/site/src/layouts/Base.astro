@@ -35,6 +35,10 @@ interface Props {
 	exactTitle?: boolean;
 	/** Verbatim JSON-LD graph objects to emit as-is (source Rank Math schema). */
 	jsonLd?: unknown[] | null;
+	/** Set false on pages that already give search a prominent place in the body (the
+	 * portal home). Two search fields stacked in one viewport is noise, and on mobile
+	 * the header one pushed the actual content below the fold. */
+	headerSearch?: boolean;
 }
 
 const {
@@ -54,6 +58,7 @@ const {
 	publishedTime,
 	modifiedTime,
 	author,
+	headerSearch = true,
 	content,
 	exactTitle = false,
 	jsonLd,
@@ -132,12 +137,12 @@ const pageCtx = createPublicPageContext({
 // Check if user is logged in (for showing admin link)
 const isLoggedIn = !!Astro.locals.user;
 const isTurkish = (lang || "tr").toLowerCase().startsWith("tr");
-const searchPlaceholder = isTurkish ? "Konu, universite, sehir ara..." : "Search topics, universities, cities...";
+const searchPlaceholder = isTurkish ? "Konu, üniversite, şehir ara…" : "Search topics, universities, cities...";
 const footerHomeLabel = isTurkish ? "Ana sayfa" : "Home";
-const footerPostsLabel = isTurkish ? "Tum yazilar" : "All Posts";
-const footerNavigateLabel = isTurkish ? "Kesfet" : "Navigate";
-const footerConnectLabel = isTurkish ? "Baglantilar" : "Connect";
-const rssLabel = isTurkish ? "RSS akisi" : "RSS Feed";
+const footerPostsLabel = isTurkish ? "Tüm yazılar" : "All Posts";
+const footerNavigateLabel = isTurkish ? "Keşfet" : "Navigate";
+const footerConnectLabel = isTurkish ? "Bağlantılar" : "Connect";
+const rssLabel = isTurkish ? "RSS akışı" : "RSS Feed";
 const languageLabels: Record<string, string> = {
 	tr: "TR",
 	en: "EN",
@@ -209,26 +214,33 @@ const languageLinks = alternates
 					}
 				</a>
 				<div class="nav-right">
-					<LiveSearch
-						placeholder={searchPlaceholder}
-						class="site-search"
-						inputClass="site-search-input"
-						resultsClass="site-search-results"
-						resultClass="site-search-result"
-						collections={["posts", "pages"]}
-					/>
-					<div class="nav-links">
-						{
-							menu?.items.map((item) => (
-								<a href={item.url} target={item.target}>
-									{item.label}
-								</a>
-							))
-						}
-					</div>
+					{
+						headerSearch && (
+							<LiveSearch
+								placeholder={searchPlaceholder}
+								class="site-search"
+								inputClass="site-search-input"
+								resultsClass="site-search-results"
+								resultClass="site-search-result"
+								collections={["posts", "pages"]}
+							/>
+						)
+					}
+					{
+						// An empty menu still rendered this row, adding a gap for nothing.
+						!!menu?.items?.length && (
+							<div class="nav-links">
+								{menu.items.map((item) => (
+									<a href={item.url} target={item.target}>
+										{item.label}
+									</a>
+								))}
+							</div>
+						)
+					}
 					{
 						languageLinks.length > 1 && (
-							<div class="language-switcher" aria-label={isTurkish ? "Dil secimi" : "Language selection"}>
+							<div class="language-switcher" aria-label={isTurkish ? "Dil seçimi" : "Language selection"}>
 								{languageLinks.map((language) => (
 									<a
 										href={language.href}
@@ -1109,6 +1121,16 @@ const languageLinks = alternates
 					grid-column: 1 / -1;
 					grid-row: 2;
 					display: grid;
+					/* A definite single column is what makes the children's width:100%
+					   resolve to the header width. Without it the auto column collapses to
+					   the desktop --search-input-width, so the search stayed ~200px and its
+					   placeholder was cut off. margin-inline-start:auto is a desktop-only
+					   right-align and must not survive here or the whole block hugs the
+					   right edge. */
+					grid-template-columns: minmax(0, 1fr);
+					justify-items: stretch;
+					width: 100%;
+					margin-inline-start: 0;
 					row-gap: var(--spacing-2);
 				}
 

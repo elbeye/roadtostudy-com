@@ -34,7 +34,13 @@ const alternates = [
 ];
 ---
 
-<Base title={siteTitle} description={SUMMARY} lang={locale} alternates={alternates}>
+<Base
+	title={siteTitle}
+	description={SUMMARY}
+	lang={locale}
+	alternates={alternates}
+	headerSearch={false}
+>
 	{
 		posts.length === 0 && categories.length === 0 ? (
 			<section class="empty-state">
