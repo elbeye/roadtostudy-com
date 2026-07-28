@@ -5,7 +5,19 @@ export function contentPath(locale: string | null | undefined, slug: string | nu
 }
 
 export function categoryPath(locale: string | null | undefined, slug: string | null | undefined) {
+	return taxonomyPath("category", locale, slug);
+}
+
+// Archive URL for a taxonomy term. TR is unprefixed (/{tax}/{slug}/), other
+// locales are /{locale}/{tax}/{slug}/ — the same scheme as content URLs.
+export function taxonomyPath(
+	taxonomy: "category" | "tag",
+	locale: string | null | undefined,
+	slug: string | null | undefined,
+) {
 	const cleanSlug = slug || "";
-	if (!cleanSlug) return "/category/";
-	return locale && locale !== "tr" ? `/${locale}/category/${cleanSlug}/` : `/category/${cleanSlug}/`;
+	if (!cleanSlug) return `/${taxonomy}/`;
+	return locale && locale !== "tr"
+		? `/${locale}/${taxonomy}/${cleanSlug}/`
+		: `/${taxonomy}/${cleanSlug}/`;
 }

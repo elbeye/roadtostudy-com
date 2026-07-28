@@ -1,6 +1,6 @@
-import { getTranslations } from "emdash";
+import { getTaxonomyTerms, getTranslations } from "emdash";
 
-import { contentPath } from "./content-url";
+import { contentPath, taxonomyPath } from "./content-url";
 
 type Alternate = { hreflang: string; href: string };
 type TranslationSummary = {
@@ -45,6 +45,47 @@ export async function contentAlternates(
 		});
 	}
 
+	return dedupeAlternates(alternates);
+}
+
+// Language alternates for a taxonomy archive (/category/, /tag/). Sibling-locale
+// terms are found via the shared translationGroup, so /category/university-and-programs/
+// (EN) links to /category/universite-ve-programlar/ (TR) and vice versa. Returns []
+// when the term has no translations, so the switcher/hreflang simply don't render.
+export async function taxonomyAlternates(
+	taxonomyName: "category" | "tag",
+	term: { translationGroup?: string | null; locale: string; slug: string },
+	origin: string,
+): Promise<Alternate[]> {
+	const bySlug = new Map<string, string>();
+	bySlug.set(term.locale, term.slug);
+
+	const group = term.translationGroup;
+	if (group) {
+		const perLocale = await Promise.all(
+			LOCALE_ORDER.map((locale) => getTaxonomyTerms(taxonomyName, { locale })),
+		);
+		for (const terms of perLocale) {
+			for (const candidate of terms) {
+				if (candidate.translationGroup === group && candidate.slug) {
+					bySlug.set(candidate.locale, candidate.slug);
+				}
+			}
+		}
+	}
+
+	if (bySlug.size < 2) return [];
+
+	const ordered = LOCALE_ORDER.filter((locale) => bySlug.has(locale));
+	const alternates = ordered.map((locale) => ({
+		hreflang: locale,
+		href: `${origin}${taxonomyPath(taxonomyName, locale, bySlug.get(locale) as string)}`,
+	}));
+	const xDefault = bySlug.has("en") ? "en" : term.locale;
+	alternates.push({
+		hreflang: "x-default",
+		href: `${origin}${taxonomyPath(taxonomyName, xDefault, bySlug.get(xDefault) as string)}`,
+	});
 	return dedupeAlternates(alternates);
 }
 

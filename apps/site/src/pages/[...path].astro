@@ -14,7 +14,7 @@ import Base from "../layouts/Base.astro";
 import PostCard from "../components/PostCard.astro";
 import PortalHome from "../components/PortalHome.astro";
 import { categoryPath, contentPath } from "../utils/content-url";
-import { contentAlternates } from "../utils/hreflang";
+import { contentAlternates, taxonomyAlternates } from "../utils/hreflang";
 import { getReadingTime } from "../utils/reading-time";
 import { resolveBlogSiteIdentity } from "../utils/site-identity";
 import { rewriteSourceHost } from "../utils/source-host";
@@ -241,7 +241,9 @@ const alternates =
 				})
 			: view === "home"
 				? homeAlternates
-				: [];
+				: view === "category" || view === "tag"
+					? await taxonomyAlternates(taxonomyView as "category" | "tag", currentTerm, Astro.url.origin)
+					: [];
 ---
 
 {
@@ -328,6 +330,7 @@ const alternates =
 			canonical={view === "category" ? categoryPagePath(pageNum) : undefined}
 			manualCanonical={view === "category"}
 			lang={locale}
+			alternates={alternates}
 			robots={DEFAULT_ROBOTS}
 		>
 			<section class="wp-archive">
