@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
 	archiveKey,
+	classifyResult,
 	decodeXml,
 	expectedEmptySet,
 	localizedArchivePaths,
@@ -11,6 +12,7 @@ import {
 	parseLocs,
 	sitemapType,
 } from "./wp-crawl-verify.mjs";
+import { normalizePath } from "../src/lib/redirects-data.mjs";
 
 test("parseLocs extracts and decodes every loc", () => {
 	const xml = `<?xml version="1.0"?><urlset>
@@ -118,4 +120,57 @@ test("every expected-empty archive is one the crawler actually visits", () => {
 	for (const path of expectedEmptySet(undefined)) {
 		assert.ok(visited.has(path), `${path} is allow-listed but never crawled`);
 	}
+});
+
+// The matcher is injected rather than reaching for the live table, so these assert
+// classifyResult's logic instead of the current contents of redirects-data.mjs.
+const match = (rules) => (pathname) => {
+	const hit = rules.find((r) => normalizePath(r.from) === normalizePath(pathname));
+	return hit ? { to: hit.to, status: hit.status } : null;
+};
+const RULES = match([{ from: "/eski-yazi/", to: "/yeni-yazi/", status: 301 }]);
+
+test("classifyResult: 200 is ok, non-redirect non-200 is a blocker", () => {
+	assert.equal(classifyResult("https://t.dev/eski-yazi/", 200, undefined, RULES), "ok");
+	assert.equal(classifyResult("https://t.dev/eski-yazi/", 404, undefined, RULES), "blocker");
+	assert.equal(classifyResult("https://t.dev/x/", 500, undefined, RULES), "blocker");
+	assert.equal(classifyResult("https://t.dev/x/", 0, undefined, RULES), "blocker");
+});
+
+test("classifyResult: intentional redirect with matching Location passes", () => {
+	// relative Location
+	assert.equal(classifyResult("https://t.dev/eski-yazi/", 301, "/yeni-yazi/", RULES), "expected-redirect");
+	// absolute Location on the target origin
+	assert.equal(classifyResult("https://t.dev/eski-yazi/", 301, "https://t.dev/yeni-yazi/", RULES), "expected-redirect");
+	// trailing-slash difference on either side is tolerated
+	assert.equal(classifyResult("https://t.dev/eski-yazi", 308, "/yeni-yazi", RULES), "expected-redirect");
+});
+
+test("classifyResult: intentional redirect with wrong Location is a blocker (mismatch)", () => {
+	assert.equal(classifyResult("https://t.dev/eski-yazi/", 301, "/baska-yere/", RULES), "redirect-mismatch");
+	// a redirect with no Location header at all can't match the configured target
+	assert.equal(classifyResult("https://t.dev/eski-yazi/", 301, undefined, RULES), "redirect-mismatch");
+});
+
+test("classifyResult: uncovered redirect stays the 'redirect' warning", () => {
+	assert.equal(classifyResult("https://t.dev/bilinmeyen/", 301, "/nereye/", RULES), "redirect");
+	assert.equal(classifyResult("https://t.dev/bilinmeyen/", 302, "/nereye/", RULES), "redirect");
+	// an empty table is a no-op: every redirect is uncovered
+	assert.equal(classifyResult("https://t.dev/eski-yazi/", 301, "/yeni-yazi/", match([])), "redirect");
+});
+
+test("classifyResult: 410 passes only where a gone rule says so", () => {
+	const gone = match([{ from: "/gone/", status: 410 }]);
+	assert.equal(classifyResult("https://t.dev/gone/", 410, undefined, gone), "expected-gone");
+	// an unexplained 410 is a blocker — the site should not be dropping URLs on its own
+	assert.equal(classifyResult("https://t.dev/other/", 410, undefined, gone), "blocker");
+	// a to-less rule can never satisfy an expected *redirect*
+	assert.equal(classifyResult("https://t.dev/gone/", 301, "/x/", gone), "redirect");
+});
+
+test("normalizePath percent-decodes so encoded rule sources match", () => {
+	assert.equal(normalizePath("/a%20b/"), "/a b");
+	assert.equal(normalizePath("/%EE%80%80koc%EE%80%81-universitesi"), "/koc-universitesi");
+	// malformed escapes fall back to the raw pathname
+	assert.equal(normalizePath("/bad%zz/"), "/bad%zz");
 });

@@ -1,11 +1,17 @@
 // Cutover crawl gate (§7.4): every URL in the SOURCE Rank Math sitemap must return
-// 200 (or an expected 301) on the TARGET before DNS cutover. Any unexpected 404/5xx
+// 200 (or an expected 301/410) on the TARGET before DNS cutover. Any unexpected 404/5xx
 // is a cutover blocker. Read-only.
 //
-// Status alone is not enough: a category archive whose posts are linked to the wrong
-// locale's term still returns 200 while rendering nothing. So archives are also
-// checked for content (see parseArchiveCount) and the localized EN/FR/ID archives —
-// which Rank Math's TR-only category sitemap omits — are crawled by default.
+// Status alone is not enough, in two directions:
+//   - A category archive whose posts are linked to the wrong locale's term still returns
+//     200 while rendering nothing. So archives are also checked for content (see
+//     parseArchiveCount) and the localized EN/FR/ID archives — which Rank Math's TR-only
+//     category sitemap omits — are crawled by default.
+//   - A 3xx tells you nothing about WHERE it went. Redirects the intentional table
+//     (src/lib/redirects-data.mjs, served by src/middleware.ts) predicts are asserted
+//     against their configured target: matching Location passes as "expected-redirect",
+//     a different Location is a "redirect-mismatch" blocker. Redirects no rule covers
+//     stay a non-blocking "redirect" warning.
 //
 // Two modes:
 //   --inventory                       Enumerate the source sitemap URL set only
@@ -28,6 +34,8 @@
 //     node scripts/wp-crawl-verify.mjs
 //   WP_SOURCE_BASE=https://roadtostudy.com node scripts/wp-crawl-verify.mjs --json
 import { mkdir, writeFile } from "node:fs/promises";
+
+import { matchRedirectPath, normalizePath } from "../src/lib/redirects-data.mjs";
 
 const XML_ENTITIES = [
 	[/&amp;/g, "&"],
@@ -61,6 +69,31 @@ export function sitemapType(url) {
 export function mapToTarget(sourceUrl, sourceBase, targetBase) {
 	const path = sourceUrl.startsWith(sourceBase) ? sourceUrl.slice(sourceBase.length) : new URL(sourceUrl).pathname;
 	return `${targetBase.replace(/\/$/, "")}${path.startsWith("/") ? "" : "/"}${path}`;
+}
+
+// Map an observed status + Location header onto a verdict:
+//   200                                          -> "ok"
+//   410 and a rule says gone                     -> "expected-gone" (passes)
+//   3xx covered by a rule, Location matches       -> "expected-redirect" (passes)
+//   3xx covered by a rule, Location differs       -> "redirect-mismatch" (BLOCKER: the
+//                                                   redirect layer is misconfigured)
+//   3xx not covered by any rule                  -> "redirect" (warning, non-blocking)
+//   anything else                                -> "blocker"
+//
+// A 3xx the redirect table predicts is not merely tolerated, it is *asserted*: sending a
+// migrated URL somewhere other than its configured target loses the link equity the rule
+// exists to carry, and a status-only check would call that green. Location may be
+// relative or absolute, so it is resolved against the checked URL and compared
+// trailing-slash-insensitively on the pathname.
+export function classifyResult(targetUrl, status, location, match = matchRedirectPath) {
+	if (status === 200) return "ok";
+	const pathname = new URL(targetUrl).pathname;
+	const rule = match(pathname);
+	if (status === 410) return rule?.status === 410 ? "expected-gone" : "blocker";
+	if (status !== 301 && status !== 302 && status !== 307 && status !== 308) return "blocker";
+	if (!rule?.to) return "redirect";
+	const got = location ? normalizePath(new URL(location, targetUrl).pathname) : "";
+	return got === normalizePath(rule.to) ? "expected-redirect" : "redirect-mismatch";
 }
 
 const SOURCE_BASE = (process.env.WP_SOURCE_BASE || "https://roadtostudy.com").replace(/\/$/, "");
@@ -317,8 +350,7 @@ async function main() {
 		const target = mapToTarget(url, SOURCE_BASE, TARGET_BASE);
 		const { status, location, error, attempts } = await checkStatus(target);
 		const ok = status === 200;
-		const redirect = status === 301 || status === 308 || status === 302 || status === 307;
-		let verdict = ok ? "ok" : redirect ? "redirect" : "blocker";
+		let verdict = classifyResult(target, status, location);
 		// Content-level gate for archives: 200 with zero rendered posts fails, unless
 		// the archive is a known scheduled-only one (see DEFAULT_EXPECTED_EMPTY).
 		let postCount;
@@ -331,7 +363,9 @@ async function main() {
 		return { source: url, target, type, status, location, error, attempts, postCount, verdict };
 	});
 
-	const blockers = results.filter((r) => r.verdict === "blocker");
+	// A redirect-mismatch is a blocker too: the URL is covered by an intentional rule but
+	// the layer sends it somewhere other than the configured target.
+	const blockers = results.filter((r) => r.verdict === "blocker" || r.verdict === "redirect-mismatch");
 	const empties = results.filter((r) => r.verdict === "empty");
 	const redirects = results.filter((r) => r.verdict === "redirect");
 	const retried = results.filter((r) => (r.attempts ?? 1) > 1);
@@ -348,6 +382,9 @@ async function main() {
 		target: TARGET_BASE,
 		total: results.length,
 		ok: results.filter((r) => r.status === 200).length,
+		expectedRedirects: results.filter((r) => r.verdict === "expected-redirect").length,
+		expectedGone: results.filter((r) => r.verdict === "expected-gone").length,
+		redirectMismatches: results.filter((r) => r.verdict === "redirect-mismatch").length,
 		redirects: redirects.length,
 		blockers: blockers.length,
 		empties: empties.length,
@@ -375,10 +412,23 @@ function renderInventory(s) {
 }
 
 function renderReport(r, blockers, empties = []) {
-	const head = `Crawl parity: ${r.source} -> ${r.target}\n  total ${r.total} | 200 ${r.ok} | redirect ${r.redirects} | BLOCKERS ${r.blockers} | EMPTY ARCHIVES ${r.empties ?? 0} | expected-empty ${r.expectedEmpty ?? 0}`;
+	const head =
+		`Crawl parity: ${r.source} -> ${r.target}\n` +
+		`  total ${r.total} | 200 ${r.ok} | expected-301 ${r.expectedRedirects ?? 0} | expected-410 ${r.expectedGone ?? 0} | ` +
+		`redirect ${r.redirects} | BLOCKERS ${r.blockers} | EMPTY ARCHIVES ${r.empties ?? 0} | expected-empty ${r.expectedEmpty ?? 0}`;
 	const sections = [];
 	if (blockers.length) {
-		sections.push(`  ✗ blockers (first 20):\n${blockers.slice(0, 20).map((b) => `    [${b.status || b.error}] ${b.target}`).join("\n")}`);
+		// A redirect-mismatch needs its destination shown — the status alone doesn't say
+		// what went wrong, and "301" next to a URL reads like a pass.
+		sections.push(
+			`  ✗ blockers (first 20):\n${blockers
+				.slice(0, 20)
+				.map(
+					(b) =>
+						`    [${b.verdict === "redirect-mismatch" ? `${b.status} -> ${b.location || "(no Location)"}` : b.status || b.error}] ${b.target}`,
+				)
+				.join("\n")}`,
+		);
 	}
 	if (empties.length) {
 		sections.push(`  ✗ archives returning 200 with zero posts (first 20):\n${empties.slice(0, 20).map((b) => `    [empty] ${b.target}`).join("\n")}`);
@@ -395,8 +445,8 @@ function renderReport(r, blockers, empties = []) {
 		sections.push(`  ⚠ ${r.retried} URL(s) only answered after a retry (target flakiness, not a blocker):\n${(r.retriedSample || []).slice(0, 10).map((x) => `    [${x.attempts} attempts] ${x.target}`).join("\n")}`);
 	}
 	const clean = !blockers.length && !empties.length && !r.gateDegraded;
-	if (clean && !sections.length) return `${head}\n  ✓ every source URL resolves (200/redirect) and no archive is empty.`;
-	if (clean) return `${head}\n  ✓ every source URL resolves (200/redirect) and no archive is empty.\n${sections.join("\n")}`;
+	if (clean && !sections.length) return `${head}\n  ✓ every source URL resolves (200/expected/redirect) and no archive is empty.`;
+	if (clean) return `${head}\n  ✓ every source URL resolves (200/expected/redirect) and no archive is empty.\n${sections.join("\n")}`;
 	return `${head}\n${sections.join("\n")}`;
 }
 

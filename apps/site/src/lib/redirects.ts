@@ -1,35 +1,27 @@
-// Rank Math Redirections parity (spec §6.2). The source WordPress site's redirect
-// rules (301/302) are extracted during the full migration (spec §7 — still pending),
-// so this table starts EMPTY and the matcher is a safe no-op until it's populated.
+// Typed façade over the redirect data, applied in src/middleware.ts on EVERY request
+// BEFORE routing — Rank Math fired its redirects early too, so this reproduces the
+// source ordering.
 //
-// How to populate: add one entry per extracted rule. `from` and `to` are absolute
-// site paths (leading slash). Matching is exact on the pathname, tolerant of a
-// trailing-slash difference (WordPress canonical paths keep the trailing slash).
-// Only wired into the catch-all's not-found path, so a rule never shadows a URL that
-// still resolves to live content — it only rescues old URLs that would 404.
+// The rules and the matcher itself live in ./redirects-data.mjs, a plain-data module, so
+// that scripts/wp-crawl-verify.mjs (plain Node, cannot import TypeScript) checks exactly
+// the same table the site serves. Add rules THERE, not here. Two tiers, exact first:
 //
-// Example once extracted:
-//   { from: "/old-slug/", to: "/new-slug/", status: 301 },
+//   1. exact-path rules — generated WP attachment redirects, the Rank Math CSV export,
+//      and category slug aliases.
+//   2. structural patterns — /page/N/, /author/{slug}/, …/feed/.
+//
+// Because these run before routing, a rule whose `from` equals a path that still
+// resolves to live content WILL shadow that content. ./redirects.test.ts pins that
+// invariant against the live route shapes.
 
-export type RedirectRule = { from: string; to: string; status: 301 | 302 };
+import { matchRedirectPath, REDIRECTS as REDIRECT_DATA } from "./redirects-data.mjs";
 
-export const REDIRECTS: RedirectRule[] = [
-	{ from: "/category/universiteler/", to: "/category/universite-ve-programlar/", status: 301 },
-	{ from: "/en/category/universities/", to: "/en/category/university-and-programs/", status: 301 },
-	{ from: "/fr/category/universites/", to: "/fr/category/universite-et-programmes/", status: 301 },
-	{ from: "/id/category/universitas/", to: "/id/category/universitas-dan-program/", status: 301 },
-];
+export type RedirectStatus = 301 | 302 | 410;
+// `to` is absent only on a 410 ("gone") rule — there is nowhere to send the request.
+export type RedirectRule = { from: string; to?: string; status: RedirectStatus };
 
-function normalize(pathname: string): string {
-	// Compare on a trailing-slash-insensitive key so "/x" and "/x/" match the same
-	// rule. Root ("/") is left as-is.
-	if (pathname.length > 1 && pathname.endsWith("/")) return pathname.slice(0, -1);
-	return pathname;
-}
+export const REDIRECTS: RedirectRule[] = REDIRECT_DATA;
 
-const RULES_BY_PATH = new Map<string, RedirectRule>(REDIRECTS.map((rule) => [normalize(rule.from), rule]));
-
-export function matchRedirect(pathname: string): { to: string; status: 301 | 302 } | null {
-	const rule = RULES_BY_PATH.get(normalize(pathname));
-	return rule ? { to: rule.to, status: rule.status } : null;
+export function matchRedirect(pathname: string): { to?: string; status: RedirectStatus } | null {
+	return matchRedirectPath(pathname);
 }
