@@ -1,17 +1,17 @@
 ---
 import Base from "../layouts/Base.astro";
 
-// Return a real 404 status. Without this the page renders 200, so the
-// `Astro.redirect("/404")` used across content routes ends in a soft-404
-// (a 200 body at /404) that search engines may index instead of dropping.
+// Return a real 404 status. Content routes render this page via `Astro.rewrite("/404")`,
+// which keeps the requested URL and adopts this route's status — so an unresolved path
+// answers a hard 404 at its own URL, not a 302 hop to /404 or a soft 200.
 Astro.response.status = 404;
 ---
 
-<Base title="Page not found">
+<Base title="Sayfa bulunamadı">
 	<div class="not-found">
 		<h1>404</h1>
-		<p>The page you're looking for doesn't exist.</p>
-		<a href="/">Go back home</a>
+		<p>Aradığınız sayfa bulunamadı.</p>
+		<a href="/">Ana sayfaya dön</a>
 	</div>
 </Base>
 
