@@ -136,13 +136,66 @@ const pageCtx = createPublicPageContext({
 
 // Check if user is logged in (for showing admin link)
 const isLoggedIn = !!Astro.locals.user;
-const isTurkish = (lang || "tr").toLowerCase().startsWith("tr");
-const searchPlaceholder = isTurkish ? "Konu, üniversite, şehir ara…" : "Search topics, universities, cities...";
-const footerHomeLabel = isTurkish ? "Ana sayfa" : "Home";
-const footerPostsLabel = isTurkish ? "Tüm yazılar" : "All Posts";
-const footerNavigateLabel = isTurkish ? "Keşfet" : "Navigate";
-const footerConnectLabel = isTurkish ? "Bağlantılar" : "Connect";
-const rssLabel = isTurkish ? "RSS akışı" : "RSS Feed";
+// Site chrome strings per locale — same dict pattern as HOME_COPY/UI_COPY in
+// [...path].astro. This used to be a TR-or-English ternary, which meant French and
+// Indonesian readers got the English chrome ("RSS Feed" on /fr/ instead of "Flux RSS");
+// the site serves four locales, so the fallback language was wrong for two of them.
+// Menus and the site-settings tagline are not locale-aware, so this dict is the source of
+// truth for chrome that has to read correctly in all four.
+type ChromeCopy = {
+	searchPlaceholder: string;
+	languageAria: string;
+	footerHome: string;
+	footerPosts: string;
+	footerNavigate: string;
+	footerConnect: string;
+	rss: string;
+};
+const CHROME_COPY: Record<string, ChromeCopy> = {
+	tr: {
+		searchPlaceholder: "Konu, üniversite, şehir ara…",
+		languageAria: "Dil seçimi",
+		footerHome: "Ana sayfa",
+		footerPosts: "Tüm yazılar",
+		footerNavigate: "Keşfet",
+		footerConnect: "Bağlantılar",
+		rss: "RSS akışı",
+	},
+	en: {
+		searchPlaceholder: "Search topics, universities, cities...",
+		languageAria: "Language selection",
+		footerHome: "Home",
+		footerPosts: "All Posts",
+		footerNavigate: "Explore",
+		footerConnect: "Connect",
+		rss: "RSS Feed",
+	},
+	fr: {
+		searchPlaceholder: "Rechercher un sujet, une université, une ville...",
+		languageAria: "Sélection de la langue",
+		footerHome: "Accueil",
+		footerPosts: "Tous les articles",
+		footerNavigate: "Découvrir",
+		footerConnect: "Liens",
+		rss: "Flux RSS",
+	},
+	id: {
+		searchPlaceholder: "Cari topik, universitas, kota...",
+		languageAria: "Pilihan bahasa",
+		footerHome: "Beranda",
+		footerPosts: "Semua artikel",
+		footerNavigate: "Jelajahi",
+		footerConnect: "Tautan",
+		rss: "Umpan RSS",
+	},
+};
+const chrome = CHROME_COPY[(lang || "tr").toLowerCase().slice(0, 2)] ?? CHROME_COPY.tr;
+const searchPlaceholder = chrome.searchPlaceholder;
+const footerHomeLabel = chrome.footerHome;
+const footerPostsLabel = chrome.footerPosts;
+const footerNavigateLabel = chrome.footerNavigate;
+const footerConnectLabel = chrome.footerConnect;
+const rssLabel = chrome.rss;
 const languageLabels: Record<string, string> = {
 	tr: "TR",
 	en: "EN",
@@ -240,7 +293,7 @@ const languageLinks = alternates
 					}
 					{
 						languageLinks.length > 1 && (
-							<div class="language-switcher" aria-label={isTurkish ? "Dil seçimi" : "Language selection"}>
+							<div class="language-switcher" aria-label={chrome.languageAria}>
 								{languageLinks.map((language) => (
 									<a
 										href={language.href}

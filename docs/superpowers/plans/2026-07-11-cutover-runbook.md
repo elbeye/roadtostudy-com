@@ -71,10 +71,12 @@ Bu değerler canlı roadtostudy.com'a karşı ölçüldü; cutover kapılarını
 `WP_SAMPLE_INPUT=data/wp-full.json npm run media:upload:full:confirmed` (idempotent, maliyet-korumalı; ~4496 R2 key).
 - Kapı: upload seti HEAD 200; gövde/featured/OG'deki `/wp-content/uploads/...` hedefte 200 döner (§7.4 medya).
 
-## Faz 3 — Redirect'ler ✅ (kategori alias'ları uygulandı)
-1. 🔑 Rank Math Redirections'ı WP'den çıkar (app password ile) → kurallar.
-2. 🟢 Kuralları `src/lib/redirects.ts` içindeki `REDIRECTS` dizisine yaz (`{ from, to, status }`).
-   - Kapı: örnek eski URL'ler middleware'de 301/302 döner; canlı URL'ler etkilenmez.
+## Faz 3 — Redirect'ler ✅ (tamamlandı 2026-07-28)
+1. ~~Rank Math Redirections'ı WP'den çıkar~~ **Bitti** — REST'te listeleme endpoint'i yok (yalnız `updateRedirection`), export wp-admin → Rank Math → Redirections'tan alındı: 24 aktif exact-match kural.
+2. ~~Kuralları yaz~~ **Bitti** — tablo artık `src/lib/redirects-data.mjs` (düz veri, `wp-crawl-verify.mjs` ile paylaşılıyor), `src/lib/redirects.ts` yalnız tipli cephe. **877 exact kural** üç blok hâlinde: 853 üretilmiş attachment redirect'i (bkz. aşağıdaki "Attachment page URL kararı"), 24 Rank Math export kuralı (1 tanesi 410), 4 kategori slug alias'ı. Blok sırası anlamlı — lookup map son girdiyi tutar, yani export kuralı üretilmiş attachment varsayılanını ezer.
+3. **Yapısal pattern'ler** (`redirects.ts` değil, aynı veri modülünde — böylece kapı da görüyor): `/page/N/` ve `/{locale}/page/N/` → kendi dilinin ana sayfası, `/author/{slug}/` → ana sayfa, herhangi bir `…/feed/` → `/rss.xml`. `/page/N/` pattern'i path başına sabitli, çünkü `/category/{slug}/page/N/` **canlı** bir route.
+   - Kapı: 877 kuralın hepsi güncel sitemap'e (2591 URL) karşı tarandı — **0 çakışma**, yani hiçbir kural canlı içeriği gölgelemiyor. Hedeflerin 660'ından 657'si canlıda çözülüyor; 2 ölü hedef düzeltildi, 1 zincir düzleştirildi. `src/lib/redirects.test.ts` bu invariantları sabitliyor.
+   - Kurallar routing'den **önce** koştuğu için yeni kural eklerken veya korpus büyüdüğünde bu çakışma taramasını tekrarla.
 
 ## Faz 4 — Otomatik doğrulama (cutover kapısı) ✅ (yeşil, sürekli koşulabilir)
 Hedef geçici domainde ayaktayken:
@@ -106,9 +108,32 @@ Hedef geçici domainde ayaktayken:
 | Google Search Console | Faz 5 izleme | Kullanıcı (GSC zaten bağlı, §2) |
 
 ## Sıradaki repo-içi işler (kimlik-bilgisi beklemeden yapılabilir) 🟢
-1. Migration-grade HTML→PortableText (§7.2) + testler.
-2. `wp-crawl-verify` için beklenen-301 haritası (bilinçli redirect'lerde 301'i "ok" say).
-3. Attachment page URL davranışı kararı (§10 açık) — kaynak crawl'ıyla tespit.
+1. ~~Migration-grade HTML→PortableText (§7.2) + testler.~~ **Bitti.**
+2. ~~`wp-crawl-verify` için beklenen-301 haritası.~~ **Bitti** — tablo kapsamındaki 3xx'ler Location'ı hedefle karşılaştırılıp "expected-redirect" sayılır; **yanlış Location blocker'dır** (`redirect-mismatch`). Kural destekli 410 geçer, açıklanamayan 410 blocker.
+3. ~~Attachment page URL davranışı kararı (§10 açık).~~ **Çözüldü** — bkz. aşağıdaki "Attachment page URL kararı".
+4. ~~Zamanlanmış yayın paritesi.~~ **Bitti** — `scripts/wp-schedule-future.mjs`.
+
+---
+
+## Attachment page URL kararı (§10 açık → çözüldü)
+
+Kaynak site canlı crawl'ı + public REST (`wp/v2/media`, auth gerekmez) ile ölçüldü.
+
+**Bulgu:** Rank Math kaynak sitede her attachment sayfasını 301'liyordu — **parent'ı olan** attachment kendi parent permalink'ine (URL'in son segmenti düşer), **orphan** attachment ana sayfaya. Bu davranış, public olarak sayılabilen 853 attachment'ın tamamı için birebir kopyalandı ve canlı yanıtlara karşı örneklemle doğrulandı.
+
+**Karar:** Attachment sayfaları hedefte **canlı route olarak üretilmiyor**; kaynağın 301'leri replike ediliyor. Böylece dış linkler ve eski indeks girdileri değer kaybetmiyor, ama migrasyona hiç içerik eklemiyor.
+
+**Üretim notu:** Blok `from` alanına göre sıralı ve üretilmiş — elle düzenlemek yerine yeniden üret. İki elle müdahale bilinçli ve yorumda işaretli: bir zincir düzleştirildi (`/kare-logo/kare-logo-2/` parent'ı da orphan'dı) ve bir Rank Math hedefi migrasyonda var olmayan bir path'i gösterdiği için düzeltildi (404'e giden 301 değer taşımaz).
+
+---
+
+## Kapasite bulgusu (2026-07-11, cutover öncesi yük testi)
+
+Eşzamanlı crawl'da isteklerin ~%4-6'sı **503 (Cloudflare error 1102 — Worker CPU/kaynak sınırı)** alıyordu; başarısız set koşudan koşuya değişiyor, hepsi solo istekte 200 dönüyordu. Örüntü (solo 200, eşzamanlıda 503, render ~400ms wall) **Workers Free'nin 10 ms CPU sınırıyla** tutarlıydı. Yük altında ana sayfa ~%20, `/posts` ~%90 503 veriyordu.
+
+Bundan çıkan iki kalıcı sonuç:
+- **`/posts` sınırsız render edilemez.** 2200+ postu tek istekte render etmek CPU sınırını aşıyor. Sayfa artık 24 kayıt + keyset sayfalama (`?cursor=`).
+- **Cache API `*.workers.dev` üzerinde çalışmaz**, yani o günkü ölçümler **önbelleksiz en kötü durumdu**. Gerçek zone'a bağlandıktan sonra edge route cache devreye alınabilir hâle geldi — 2026-07-28'de açıldı (`astro.config.mjs` → `experimental.cache`). **Şart:** `CF_ZONE_ID` + `CF_CACHE_PURGE_TOKEN` Worker secret olarak tanımlı olmalı; yoksa tag-bazlı purge hata verir ve yayınlanan bir düzenleme TTL (600s) dolana kadar anonim ziyaretçiye görünmez.
 
 ---
 

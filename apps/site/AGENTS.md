@@ -42,11 +42,13 @@ The admin UI is at `http://localhost:4321/_emdash/admin`.
 
 | File                     | Purpose                                                                            |
 | ------------------------ | ---------------------------------------------------------------------------------- |
-| `astro.config.mjs`       | Astro config with `emdash()` integration, database, and storage                    |
+| `astro.config.mjs`       | Astro config with `emdash()` integration, database, storage, **and edge route cache** |
 | `src/live.config.ts`     | EmDash loader registration (boilerplate -- don't modify)                           |
 | `seed/runtime.json`      | **Schema-only seed the build actually applies** (`package.json` → `emdash.seed`); tracked |
 | `seed/seed.json`         | Full migrated content (~186MB), **untracked/regenerable** via `npm run wp:seed:full`   |
-| `src/middleware.ts`      | Rank Math redirect parity — runs before routing                                     |
+| `src/middleware.ts`      | Applies the redirect layer — runs before routing, exempts `/404` + `/_emdash`        |
+| `src/lib/redirects-data.mjs` | **The redirect rules** (877 exact + structural patterns) + the shared matcher. Edit rules HERE |
+| `src/lib/redirects.ts`   | Typed façade over that data — no rules of its own                                   |
 | `src/utils/hreflang.ts`  | hreflang clusters for content and taxonomy archives                                 |
 | `scripts/wp-crawl-verify.mjs` | Cutover gate: URL status **and** archive content parity                        |
 | `emdash-env.d.ts`        | Generated types for collections (auto-regenerated on dev server start)             |
@@ -98,6 +100,26 @@ This template ships with `.mcp.json`, `.cursor/mcp.json`, and `.vscode/mcp.json`
 - The spacing scale is `1..6, 8, 10, 12, 16, 20, 24`. `var(--spacing-7)` and friends are
   undefined, and an undefined token silently voids the whole declaration.
 
+### Learned porting the parallel branches (2026-07-28)
+
+- **A redirect rule runs before routing, so it can delete a page.** Before adding to
+  `redirects-data.mjs`, check every `from` against the live sitemap — the corpus grows, so a
+  collision check that passed once is not evidence today. `redirects.test.ts` pins the live
+  route shapes; extend it, don't bypass it.
+- **A 301 into a 404 is worse than no redirect** — it spends the crawl and carries no
+  equity. Verify destinations resolve, and never leave a chain (`A→B→C`) where `A→C` works.
+- **Localizing user-visible copy can blind a gate.** The cutover gate reads the archive post
+  count out of rendered HTML; translating that counter silently downgraded the content check
+  to a status check. If a string is parsed anywhere, grep for the parser before changing it.
+- **Don't port a workaround whose root cause is fixed.** The other branch reached related
+  posts through a translation-group fan-out that existed only because posts were linked to
+  the wrong locale's term. That is fixed in the data now, and the fan-out is the exact call
+  that cost 4.2s of archive TTFB.
+- The header's `primary` menu row exists only under locale `en` and holds the starter
+  template's English "Home / Posts", so `getMenu("primary")` returns null on a TR request and
+  the nav row is hidden by design. Resolving it across locales would put template English on
+  a Turkish site — fix the menu content first, not the lookup.
+
 ## This Template _(template default — see the note at the top)_
 
 A blog with posts, pages, categories, tags, full-text search, and RSS. Designed for personal writing, technical writing, indie newsletters, and anything where the writing is the product. Editorial-tech aesthetic: confident sans-serif, restrained accent, real article structure with bylines and reading time.
@@ -116,14 +138,21 @@ every row is the same path without a prefix.
 | Category archive  | `/category/{slug}/` · `/{loc}/category/{slug}/`   | `[...path].astro`                     |
 | Tag archive       | `/tag/{slug}/` · `/{loc}/tag/{slug}/`             | `[...path].astro`                     |
 | Archive page N    | `…/category/{slug}/page/{n}/` (10 posts/page)     | `[...path].astro`                     |
-| All posts         | `/posts`                                          | `posts/index.astro`                   |
+| All posts         | `/posts` (24/page, keyset `?cursor=`)             | `posts/index.astro`                   |
 | Search            | `/search`                                         | `search.astro`                        |
 | Media (WP paths)  | `/wp-content/uploads/…`                           | `wp-content/uploads/[...path].ts`      |
 | Sitemaps          | `/sitemap_index.xml`, `post-sitemap{n}.xml`, `page-sitemap{n}.xml`, `category-sitemap.xml` | `*.xml.ts` |
 | RSS / robots / AI | `/rss.xml`, `/robots.txt`, `/llms.txt`, `/ai.txt` | matching files in `src/pages/`         |
 
 Posts and pages share one flat slug namespace: the catch-all tries `posts` first, then
-`pages`. Rank Math redirects run ahead of routing in `src/middleware.ts`.
+`pages`. An unresolved path is rendered through `Astro.rewrite("/404")` — a hard 404 at
+the requested URL, never a redirect to `/404`.
+
+Redirects run ahead of routing in `src/middleware.ts` (rules in
+`src/lib/redirects-data.mjs`): 877 exact rules — migrated WP attachment pages, the Rank
+Math export, category slug aliases — plus structural patterns that 301 `/page/N/`,
+`/author/{slug}/` and any `…/feed/` to the home of their locale or to `/rss.xml`. One rule
+is a 410. `/{collection}/{slug}` (EmDash search result links) 301s to the canonical path.
 
 ## Schema _(template default — see the note at the top)_
 
