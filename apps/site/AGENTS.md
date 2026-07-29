@@ -100,6 +100,21 @@ This template ships with `.mcp.json`, `.cursor/mcp.json`, and `.vscode/mcp.json`
 - The spacing scale is `1..6, 8, 10, 12, 16, 20, 24`. `var(--spacing-7)` and friends are
   undefined, and an undefined token silently voids the whole declaration.
 
+### `content_taxonomies` stores a term id, not a translation group
+
+`getTermsForEntries` / `getEntryTerms` join `taxonomies.translation_group =
+content_taxonomies.taxonomy_id` — they expect the link row to name a translation *group* and
+then pick the locale's term off it. **This database stores the locale-specific term's own
+`id`**, written by the 2026-07-28 repair. Nothing errors when the two disagree; the join
+just returns nothing, and the failure is locale-shaped: only a term that IS its group's root
+satisfies the library join, there are 10 of those out of 40, and all 10 are `en`. So those
+helpers silently return no category for TR/FR/ID — the whole unprefixed corpus included.
+
+Use `getEntryCategory` (`src/lib/entry-category.ts`), which joins on `taxonomies.id`. The
+archives are unaffected: their collection `where: { category: slug }` query resolves the
+link a different way and works against this shape. If the link rows are ever migrated to
+hold `translation_group`, re-verify the archives before switching back.
+
 ### Learned porting the parallel branches (2026-07-28)
 
 - **A redirect rule runs before routing, so it can delete a page.** Before adding to
