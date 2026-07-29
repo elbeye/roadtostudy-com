@@ -1,0 +1,4 @@
+# Wrangler's local state/cache. apps/site/.gitignore already ignores this, but that only
+# covers apps/site — wrangler writes here too when invoked from the repo root, and the
+# account cache it drops (account id + name) is local tooling state, not source.
+.wrangler/
