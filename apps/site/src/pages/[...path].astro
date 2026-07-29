@@ -19,6 +19,7 @@ import { getReadingTime } from "../utils/reading-time";
 import { resolveBlogSiteIdentity } from "../utils/site-identity";
 import { rewriteSourceHost } from "../utils/source-host";
 import { resolveCollectionSlugPath } from "../lib/collection-url";
+import { getEntryCategory } from "../lib/entry-category";
 
 const LOCALES = new Set(["en", "fr", "id"]);
 
@@ -209,15 +210,14 @@ if (segments.length === 0) {
 	if (post) {
 		if (Astro.cache?.enabled) Astro.cache.set(postResult.cacheHint);
 		view = "post";
-		// Category chip + related posts. Terms are hydrated in the entry's own locale, so
-		// the first category term anchors both. A plain locale-scoped slug query is enough
-		// because content_taxonomies now links each post to the term in its own locale
-		// (the 2026-07-28 fix); reaching across translation groups here would re-introduce
-		// the getTaxonomyTerms fan-out that put archive TTFB at ~4.2s.
-		const entryTerms = await getTermsForEntries("posts", [post.data.id], "category", { locale });
-		const category = (entryTerms.get(post.data.id) ?? [])[0];
+		// Category chip + related posts, both anchored on the post's category in its own
+		// locale. getEntryCategory rather than getTermsForEntries: the library helper joins
+		// on translation_group, this DB stores the locale-specific term id, and the only
+		// terms that satisfy that join are the 10 group roots — all of which are EN. See
+		// src/lib/entry-category.ts.
+		const category = await getEntryCategory("posts", post.data.id, locale);
 		if (category) {
-			postCategory = { slug: category.slug, label: category.label };
+			postCategory = category;
 			// Fetch one extra so the list stays full when the current post is itself among
 			// the newest, then drop it and cap at RELATED_LIMIT.
 			const related = await getEmDashCollection("posts", {
