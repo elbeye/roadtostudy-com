@@ -136,6 +136,29 @@ const pageCtx = createPublicPageContext({
 
 // Check if user is logged in (for showing admin link)
 const isLoggedIn = !!Astro.locals.user;
+
+// GA4. The WordPress source fired this property, but the migration had no path to carry
+// it: the SEO capture lifts a fixed list of meta fields (title/description/robots/OG/
+// Twitter/canonical/hreflang/JSON-LD) and never touched scripts, so the tag was simply
+// left behind at the 2026-07-12 cutover and the site reported nothing for 16 days. The
+// GA4 UI kept showing "data collection active" the whole time, which is why nobody caught
+// it — that signal was almost certainly the old WordPress install, still reachable as the
+// cutover backup and still carrying the tag.
+//
+// A measurement ID is public by design (it ships in the HTML), so it is a constant rather
+// than an env var: an unset variable would silently disable analytics again, which is the
+// failure mode being fixed here.
+const GA_MEASUREMENT_ID = "G-TZ649Y7PDX";
+// Not for logged-in editors (their sessions are not audience data) and not in dev. The
+// route cache bypasses on the session cookie, so a signed-in render is never cached and
+// served on to anonymous visitors.
+const loadAnalytics = import.meta.env.PROD && !isLoggedIn;
+// The measurement ID is a literal here, not interpolated from user input, so there is
+// nothing to escape — but keep it that way if this ever becomes configurable.
+const GA_SNIPPET = `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GA_MEASUREMENT_ID}');`;
 // Site chrome strings per locale — same dict pattern as HOME_COPY/UI_COPY in
 // [...path].astro. This used to be a TR-or-English ternary, which meant French and
 // Indonesian readers got the English chrome ("RSS Feed" on /fr/ instead of "Flux RSS");
@@ -241,6 +264,19 @@ const languageLinks = alternates
 					set:html={rewriteSourceHost(JSON.stringify(graph), Astro.url.origin)}
 				/>
 			))
+		}
+		{
+			loadAnalytics && (
+				<Fragment>
+					<script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} />
+					{/* set:html rather than define:vars: define:vars wraps the body in an IIFE,
+					    which would scope `gtag` locally. dataLayer is global either way so
+					    pageviews would still land, but any later gtag(...) call — a custom
+					    event, an outbound-click handler — would throw on an undefined name.
+					    This is Google's documented snippet, verbatim. */}
+					<script is:inline set:html={GA_SNIPPET} />
+				</Fragment>
+			)
 		}
 		<script is:inline>
 			// Apply theme immediately to prevent flash

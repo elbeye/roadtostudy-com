@@ -115,6 +115,23 @@ archives are unaffected: their collection `where: { category: slug }` query reso
 link a different way and works against this shape. If the link rows are ever migrated to
 hold `translation_group`, re-verify the archives before switching back.
 
+### The migration carries meta, never scripts
+
+`buildSourceSeo` (`scripts/wp-sample-to-emdash-seed.mjs`) lifts a **fixed list** of head
+fields — title, description, robots, OG, Twitter, canonical, hreflang, JSON-LD. Anything the
+source emitted as a `<script>` or as a tag outside that list was never in scope and left
+WordPress behind silently. GA4 was lost exactly this way and went unnoticed for 16 days
+because the GA4 UI still read "data collection active" — that traffic was the old WordPress
+install, kept alive as the cutover backup and still carrying the tag. **A green analytics
+dashboard is not evidence the migrated site is reporting.**
+
+GA4 now ships from `Base.astro` (`G-TZ649Y7PDX`), skipped for signed-in editors and in dev.
+Still unverified and worth checking if they ever mattered on the source: search-console /
+Bing / Yandex / Pinterest verification meta tags (the live head emits none), and any
+consent/analytics plugin behaviour. The site serves FR and other EU-facing locales with no
+consent gate in front of analytics — a deliberate decision to make, not an oversight to
+inherit.
+
 ### Learned porting the parallel branches (2026-07-28)
 
 - **A redirect rule runs before routing, so it can delete a page.** Before adding to
