@@ -4,6 +4,7 @@ import Base from "../layouts/Base.astro";
 import PortalHome from "../components/PortalHome.astro";
 import { categoryPath } from "../utils/content-url";
 import { resolveBlogSiteIdentity } from "../utils/site-identity";
+import { DEFAULT_ROBOTS } from "../lib/seo";
 
 // TR is the unprefixed default locale. The home is a guide portal: prominent search,
 // topic cards (real category taxonomy), and featured guides. Posts are filtered to
@@ -32,11 +33,20 @@ const alternates = [
 	...HOME_LOCALE_ORDER.map((l) => ({ hreflang: l, href: `${Astro.url.origin}${localeHomePath(l)}` })),
 	{ hreflang: "x-default", href: `${Astro.url.origin}${localeHomePath("en")}` },
 ];
+// Self-referential canonical, same as the /en/, /fr/, /id/ homes get from the
+// catch-all. Without it this route emitted no canonical at all, and because the
+// root answers 200 to any query string, every leftover WordPress block-pagination
+// URL (`/?query-465-page=14`) was an indexable duplicate of the home. `origin`
+// carries no query, so the tag always collapses them onto the bare `/`.
+const canonical = `${Astro.url.origin}${localeHomePath(locale)}`;
 ---
 
 <Base
 	title={siteTitle}
 	description={SUMMARY}
+	canonical={canonical}
+	manualCanonical
+	robots={DEFAULT_ROBOTS}
 	lang={locale}
 	alternates={alternates}
 	headerSearch={false}

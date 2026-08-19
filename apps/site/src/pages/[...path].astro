@@ -20,12 +20,11 @@ import { resolveBlogSiteIdentity } from "../utils/site-identity";
 import { rewriteSourceHost } from "../utils/source-host";
 import { resolveCollectionSlugPath } from "../lib/collection-url";
 import { getEntryCategory } from "../lib/entry-category";
+// Rank Math's indexable robots directive. Shared with the hand-built routes (the
+// unprefixed home, /posts, /search) so all four can't drift apart — see src/lib/seo.ts.
+import { DEFAULT_ROBOTS } from "../lib/seo";
 
 const LOCALES = new Set(["en", "fr", "id"]);
-
-// Rank Math emits this exact robots directive on every indexable page. Matching it
-// keeps the migrated pages' robots meta identical (SEO parity §6.3).
-const DEFAULT_ROBOTS = "follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large";
 
 // WordPress archive pagination (§6.1: /page/N/ must resolve). Confirmed against the
 // live source: roadtostudy.com category archives list 10 posts per page and use the

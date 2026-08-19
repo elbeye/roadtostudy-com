@@ -4,6 +4,7 @@ export const prerender = false;
 import { search } from "emdash";
 import Base from "../layouts/Base.astro";
 import { contentPath } from "../utils/content-url";
+import { NOINDEX_ROBOTS } from "../lib/seo";
 
 const query = Astro.url.searchParams.get("q")?.trim() || "";
 
@@ -16,9 +17,17 @@ const { items: results } = query
 	: { items: [] };
 ---
 
+{/*
+  Search result pages are `noindex, follow` — one indexable URL per query is exactly
+  the internal-search-results pattern Google asks sites not to publish, and `?q=` is
+  unbounded. `follow` is kept so the result links still pass equity to the posts.
+  Not blocked in robots.txt on purpose: a blocked URL never gets fetched, so the
+  noindex would never be read.
+*/}
 <Base
 	title={query ? `Ara: ${query}` : "Ara"}
 	description="Yazılarda ara"
+	robots={NOINDEX_ROBOTS}
 >
 	<section class="search-page">
 		<h1 class="search-title">Ara</h1>

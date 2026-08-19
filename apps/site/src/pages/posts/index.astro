@@ -4,6 +4,7 @@ import Base from "../../layouts/Base.astro";
 import PostCard from "../../components/PostCard.astro";
 import { contentPath } from "../../utils/content-url";
 import { getReadingTime } from "../../utils/reading-time";
+import { DEFAULT_ROBOTS, NOINDEX_ROBOTS } from "../../lib/seo";
 
 // This route is unprefixed (/posts) — the site default locale is TR, and the
 // vast majority of the migrated corpus is Turkish, so the page is TR-primary
@@ -41,9 +42,24 @@ const tagsByEntry = await getTermsForEntries(
 	posts.map((p) => p.data.id),
 	"tag",
 );
+
+// Keyset pagination is an unbounded URL space — every `?cursor=` is a distinct 200,
+// and Google had already picked four of them up. Page 1 is the indexable entry point
+// and self-canonicalises (which also collapses the `/posts/` variant onto `/posts`);
+// the cursor tail is `noindex, follow` so the deep corpus stays crawlable through it
+// without the cursors themselves competing in the index. No canonical on the tail:
+// pointing it at page 1 would contradict the noindex, and self-canonicalising it
+// would mint one canonical per cursor for no gain.
+const canonical = isFirstPage ? `${Astro.url.origin}/posts` : undefined;
 ---
 
-<Base title="Tüm Yazılar" description="Tüm blog yazılarına göz atın">
+<Base
+	title="Tüm Yazılar"
+	description="Tüm blog yazılarına göz atın"
+	canonical={canonical}
+	manualCanonical={isFirstPage}
+	robots={isFirstPage ? DEFAULT_ROBOTS : NOINDEX_ROBOTS}
+>
 	<div class="posts-page">
 		<header class="page-header">
 			<h1 class="page-title">Tüm Yazılar</h1>
